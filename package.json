@@ -1,0 +1,21 @@
+{
+  "name": "your-website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "",
+    "verceldev": "vercel dev",
+    "dev": "",
+    "deploy": "vercel deploy --prod",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/node": "^3.0.20",
+    "dotenv": "^16.4.5",
+    "vercel": "^33.4.1"
+  }
+}

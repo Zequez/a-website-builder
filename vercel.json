@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "api/update.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/fileHandler.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/((?!api).*)",
+      "destination": "/api/fileHandler"
+    }
+  ]
+}
