@@ -22,17 +22,14 @@ export default async (request: VercelRequest, response: VercelResponse) => {
     if (fileName.endsWith('/')) fileName += 'index.html';
     if (!fileName.match(/\./)) fileName += '.html';
 
-    console.log(url.pathname, fileName);
-
     const ext = path.extname(fileName);
-    console.log(ext);
     const mimeType = getMime(ext);
     return { fileName, mimeType };
   }
 
   if (subdomain === url.hostname) {
     const { fileName, mimeType } = parseUrlFile(url);
-    const filePath = `./app/${fileName}`;
+    const filePath = `./app_dist/${fileName}`;
 
     if (!fs.existsSync(filePath)) {
       return notFound(response, 'File not found');
