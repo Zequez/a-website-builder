@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import { getMime } from '../lib/utils';
 import { T } from '../db/driver';
 
 if (!process.env.BASE_HOSTNAME) throw 'BASE_HOSTNAME environment variable not set';
@@ -13,8 +16,33 @@ export default async (request: VercelRequest, response: VercelResponse) => {
 
   const subdomain = url.hostname.replace(new RegExp(`.${process.env.BASE_HOSTNAME}$`), '');
 
+  function parseUrlFile(url: URL) {
+    let fileName = url.pathname.slice(1);
+    if (!fileName) fileName = 'index.html';
+    if (fileName.endsWith('/')) fileName += 'index.html';
+    if (!fileName.match(/\./)) fileName += '.html';
+
+    console.log(url.pathname, fileName);
+
+    const ext = path.extname(fileName);
+    console.log(ext);
+    const mimeType = getMime(ext);
+    return { fileName, mimeType };
+  }
+
   if (subdomain === url.hostname) {
-    return response.status(200).json({ title: `SHOW APP HERE` });
+    const { fileName, mimeType } = parseUrlFile(url);
+    const filePath = `./app/${fileName}`;
+
+    if (!fs.existsSync(filePath)) {
+      return notFound(response, 'File not found');
+    } else {
+      const file = fs.readFileSync(filePath);
+      response.status(200);
+      response.setHeader('Content-Type', mimeType);
+      response.write(file);
+      response.end();
+    }
   } else {
     // Search site
     const site = await T.sites.where({ local_name: subdomain }).one();
@@ -23,19 +51,15 @@ export default async (request: VercelRequest, response: VercelResponse) => {
     // Search member
     const member = await T.members.where({ id: site.member_id }).one();
 
-    // Search file
-    let fileName = url.pathname.slice(1);
-    if (!fileName) fileName = 'index.html';
-    if (fileName.endsWith('/')) fileName += 'index.html';
-    if (!fileName.match(/\./)) fileName += '.html';
+    const { fileName, mimeType } = parseUrlFile(url);
 
     const file = await T.files.where({ site_id: site.id, name: fileName }).one();
 
     if (!file) return notFound(response, 'File not found');
 
     response.status(200);
-    response.setHeader('Content-Type', 'text/html');
-    response.write(file.data.toString('utf8'));
+    response.setHeader('Content-Type', mimeType);
+    response.write(mimeType.match(/text/) ? file.data.toString('utf8') : file.data);
     response.end();
   }
 };

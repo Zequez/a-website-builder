@@ -13,3 +13,22 @@ export function rowsToJson(rows: Record<string, any>[], excludeColumns: string[]
     return json;
   });
 }
+
+export function getMime(ext: string) {
+  switch (ext) {
+    case '.html':
+      return 'text/html';
+    case '.css':
+      return 'text/css';
+    case '.js':
+      return 'application/javascript';
+    case '.png':
+      return 'image/png';
+    case '.ico':
+      return 'image/x-icon';
+    case '':
+      return 'text/plain';
+    default:
+      return 'application/octet-stream';
+  }
+}
