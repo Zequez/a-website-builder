@@ -2,8 +2,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
-import { getMime } from '../lib/utils';
-import { T } from '../db/driver';
+import { getMime } from '../lib/utils.js';
+import { T } from '../db/driver.js';
 
 if (!process.env.BASE_HOSTNAME) throw 'BASE_HOSTNAME environment variable not set';
 

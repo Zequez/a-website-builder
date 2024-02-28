@@ -1,8 +1,13 @@
 import 'dotenv/config';
-import { Pool } from 'pg';
+import pg from 'pg';
+const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
-import { colorConsole } from '../lib/utils';
+import { fileURLToPath } from 'url';
+import { colorConsole } from '../lib/utils.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 if (!process.env.DATABASE_URL) throw 'DATABASE_URL environment variable not set';
 
