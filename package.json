@@ -19,12 +19,14 @@
   "dependencies": {
     "@types/node": "^20.11.20",
     "@types/pg": "^8.11.1",
+    "@unocss/preset-uno": "^0.58.5",
     "@vercel/node": "^3.0.20",
     "@vercel/postgres": "^0.7.2",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "pg": "^8.11.3",
     "ts-node": "^10.9.2",
+    "unocss": "^0.58.5",
     "vercel": "^33.5.2",
     "vite": "^5.1.4"
   }
