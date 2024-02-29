@@ -1,0 +1,22 @@
+{
+  "name": "a-website-builder",
+  "sources": [{
+    "dir": "app",
+    "subdirs": true
+  }],
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": false
+    }
+  ],
+  "jsx": { "version": 4 },
+  "suffix": ".res.js",
+  "bs-dependencies": [
+    "@rescript/core",
+    "@rescript/react"
+  ],
+  "bsc-flags": [
+    "-open RescriptCore"
+  ]
+}

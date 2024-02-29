@@ -1,6 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@jihchi/vite-plugin-rescript': ^5.5.0
+  '@rescript/core': ^1.1.0
+  '@rescript/react': ^0.12.1
   '@types/node': ^20.11.21
   '@types/pg': ^8.11.2
   '@unocss/preset-uno': ^0.58.5
@@ -9,12 +12,18 @@ specifiers:
   concurrently: ^8.2.2
   dotenv: ^16.4.5
   pg: ^8.11.3
+  react: ^18.2.0
+  react-dom: ^18.2.0
+  rescript: ^11.0.1
   tsx: ^4.7.1
   unocss: ^0.58.5
   vercel: ^33.5.2
   vite: ^5.1.4
 
 dependencies:
+  '@jihchi/vite-plugin-rescript': 5.5.0_rescript@11.0.1+vite@5.1.4
+  '@rescript/core': 1.1.0_rescript@11.0.1
+  '@rescript/react': 0.12.1_biqbaboplfbrettd7655fr4n2y
   '@types/node': 20.11.21
   '@types/pg': 8.11.2
   '@unocss/preset-uno': 0.58.5
@@ -23,6 +32,9 @@ dependencies:
   concurrently: 8.2.2
   dotenv: 16.4.5
   pg: 8.11.3
+  react: 18.2.0
+  react-dom: 18.2.0_react@18.2.0
+  rescript: 11.0.1
   tsx: 4.7.1
   unocss: 0.58.5_vite@5.1.4
   vercel: 33.5.2
@@ -633,6 +645,20 @@ packages:
       - supports-color
     dev: false
 
+  /@jihchi/vite-plugin-rescript/5.5.0_rescript@11.0.1+vite@5.1.4:
+    resolution: {integrity: sha512-Bvr77dOrr9MVe5bsP8/m3Lt1OV7QH8NNMyjDTC6K4sj0GQehScacbHJw0XOwngdDFvOIzjOC8SYGE+bDHLGqXQ==}
+    engines: {node: '>=16.0'}
+    peerDependencies:
+      rescript: '>=9'
+      vite: '>=3'
+    dependencies:
+      chalk: 4.1.2
+      execa: 5.1.1
+      npm-run-path: 4.0.1
+      rescript: 11.0.1
+      vite: 5.1.4_@types+node@20.11.21
+    dev: false
+
   /@jridgewell/gen-mapping/0.3.4:
     resolution: {integrity: sha512-Oud2QPM5dHviZNn4y/WhhYKSXksv+1xLEIsNrAbGcFzUN3ubqWRFT5gwPchNc5NuzILOU4tPBDTZ4VwhL8Y7cw==}
     engines: {node: '>=6.0.0'}
@@ -717,6 +743,24 @@ packages:
 
   /@polka/url/1.0.0-next.24:
     resolution: {integrity: sha512-2LuNTFBIO0m7kKIQvvPHN6UE63VjpmL9rnEEaOOaiSPbZK+zUOYIzBAWcED+3XYzhYsd/0mD57VdxAEqqV52CQ==}
+    dev: false
+
+  /@rescript/core/1.1.0_rescript@11.0.1:
+    resolution: {integrity: sha512-pz/CL8+9hBUTeMpUouvZohNsa5rqIwurlXoa1CZWN0ZKuWjMVjaoQ3V+0NB72J/QBbs6/8W82VABKBaDn3fGCA==}
+    peerDependencies:
+      rescript: '>=11.0.0 || ^11.1.0-rc.2'
+    dependencies:
+      rescript: 11.0.1
+    dev: false
+
+  /@rescript/react/0.12.1_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-ZD7nhDr5FZgLYqRH9s4CNM+LRz/3IMuTb+LH12fd2Akk0xYkYUP+DZveB2VQUC2UohJnTf/c8yPSNsiFihVCCg==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
     dev: false
 
   /@rollup/pluginutils/4.2.1:
@@ -2455,6 +2499,13 @@ packages:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: false
 
+  /loose-envify/1.4.0:
+    resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
+    hasBin: true
+    dependencies:
+      js-tokens: 4.0.0
+    dev: false
+
   /lru-cache/5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
     dependencies:
@@ -2991,6 +3042,23 @@ packages:
       unpipe: 1.0.0
     dev: false
 
+  /react-dom/18.2.0_react@18.2.0:
+    resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
+    peerDependencies:
+      react: ^18.2.0
+    dependencies:
+      loose-envify: 1.4.0
+      react: 18.2.0
+      scheduler: 0.23.0
+    dev: false
+
+  /react/18.2.0:
+    resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      loose-envify: 1.4.0
+    dev: false
+
   /readable-stream/3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
@@ -3026,6 +3094,13 @@ packages:
   /require-from-string/2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /rescript/11.0.1:
+    resolution: {integrity: sha512-7T4PRp/d0+CBNnY6PYKffFqo9tGZlvnZpboF/n+8SKS+JZ6VvXJO7W538VPZXf3EYx1COGAWWvkF9e/HgSAqHg==}
+    engines: {node: '>=10'}
+    hasBin: true
+    requiresBuild: true
     dev: false
 
   /resolve-from/5.0.0:
@@ -3090,6 +3165,12 @@ packages:
 
   /safer-buffer/2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
+    dev: false
+
+  /scheduler/0.23.0:
+    resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
+    dependencies:
+      loose-envify: 1.4.0
     dev: false
 
   /semver/6.3.1:

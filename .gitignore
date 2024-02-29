@@ -1,3 +1,5 @@
 node_modules
 .vercel
 app_dist
+lib/bs
+lib/es6

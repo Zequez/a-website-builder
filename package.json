@@ -25,6 +25,9 @@
     }
   },
   "dependencies": {
+    "@jihchi/vite-plugin-rescript": "^5.5.0",
+    "@rescript/core": "^1.1.0",
+    "@rescript/react": "^0.12.1",
     "@types/node": "^20.11.21",
     "@types/pg": "^8.11.2",
     "@unocss/preset-uno": "^0.58.5",
@@ -33,6 +36,9 @@
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "pg": "^8.11.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rescript": "^11.0.1",
     "tsx": "^4.7.1",
     "unocss": "^0.58.5",
     "vercel": "^33.5.2",
