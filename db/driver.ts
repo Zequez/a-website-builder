@@ -82,10 +82,19 @@ export type File_ = {
   created_at: string;
 };
 
+export type MembersSession = {
+  id: string;
+  member_id: number;
+  token: string;
+  created_at: string;
+};
+
 function select<T>(table: string) {
   const q = `SELECT * FROM ${table}`;
   return {
     all: async (): Promise<T[]> => await query(q),
+    insert: async (keyValues: Record<string, any>): Promise<T> =>
+      (await insertQuery<T>(table, keyValues))[0],
     where: (keyValues: Record<string, any>) => {
       const whereQ = Object.keys(keyValues)
         .map((k, i) => `${k} = $${i + 1}`)
@@ -100,11 +109,23 @@ function select<T>(table: string) {
   };
 }
 
+async function insertQuery<T>(table: string, keyValues: Record<string, any>) {
+  const keys = Object.keys(keyValues);
+  const valuesString = keys.map((k, i) => `$${i + 1}`);
+  const values = Object.values(keyValues);
+  return (await query(
+    `INSERT INTO ${table} (${keys}) VALUES (${valuesString}) RETURNING *`,
+    values,
+  )) as T[];
+}
+
+const membersSessions = select<MembersSession>('members_sessions');
 const members = select<Member>('members');
 const sites = select<Site>('sites');
 const files = select<File_>('files');
 
 export const T = {
+  membersSessions,
   members,
   sites,
   files,

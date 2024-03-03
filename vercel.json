@@ -1,18 +1,15 @@
 {
-  "functions": {
-    "api/update.js": {
-      "memory": 1024,
-      "maxDuration": 60
-    },
-    "api/fileHandler.ts": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  },
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/((?!api).*)",
-      "destination": "/api/fileHandler"
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server_dist/index.js"
     }
   ]
 }
