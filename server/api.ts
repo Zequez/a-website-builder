@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { Member, T } from '../db/driver.js';
+import { Member, T } from './db/driver.js';
 import {
   generateToken,
   hashCompare,

@@ -9,6 +9,6 @@
     "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
     "allowSyntheticDefaultImports": true
   },
-  "include": ["api/**/*", "db/**/*", "lib/**/*"],              /* Specify an array of filenames or patterns to include files for compilation. */
+  "include": ["api/**/*", "server/db/**/*", "lib/**/*"],              /* Specify an array of filenames or patterns to include files for compilation. */
   "exclude": ["node_modules"]           /* Specify an array of filenames or patterns to exclude files from compilation. */
 }

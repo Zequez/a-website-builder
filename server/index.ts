@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-import { T } from '../db/driver.js';
+import { T } from './db/driver.js';
 import api from './api';
 import logger from './logger';
 import { parseUrlFile, getSubdomain } from './utils.js';

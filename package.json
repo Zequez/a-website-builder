@@ -11,7 +11,7 @@
     "server:dev": "NODE_ENV=development tsx watch ./server/index.ts",
     "server:build": "tsc ./server/index.ts --outDir ./server_dist",
     "deploy:prod": "vercel deploy --prod",
-    "db:migrate": "tsx ./db/migrate.ts",
+    "db:migrate": "tsx ./server/db/migrate.ts",
     "test": "vitest"
   },
   "type": "module",

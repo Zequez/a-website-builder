@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { T } from '../db/driver';
+import { T } from './db/driver';
 import { verifyToken, tokenData, generateToken } from './utils';
-import { beforeEach } from 'node:test';
 
 const devServer = 'http://localhost:3000';
 

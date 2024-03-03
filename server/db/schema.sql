@@ -1,6 +1,6 @@
 DROP TABLE files;
 DROP TABLE sites;
-DROP TABLE members;
+DROP TABLE members CASCADE;
 
 CREATE TABLE IF NOT EXISTS members (
   id SERIAL PRIMARY KEY,
