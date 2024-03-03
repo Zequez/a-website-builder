@@ -40,7 +40,9 @@ function useAuth() {
 const App = () => {
   const { token, data: tokenMember, setToken } = useAuth();
 
-  const [mode, setMode] = useState<'signUp' | 'signIn' | 'me'>(token ? 'me' : 'signUp');
+  const [mode, setMode] = useState<'signUp' | 'signIn' | 'me' | 'changePass'>(
+    token ? 'me' : 'signUp',
+  );
 
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
@@ -50,6 +52,9 @@ const App = () => {
   const [member, setMember] = useState<null | { email: string; full_name: string }>();
 
   const [showAccountCreated, setShowAccountCreated] = useState(false);
+
+  const [newPassphrase, setNewPassphrase] = useState('');
+  const [confirmNewPassphrase, setConfirmNewPassphrase] = useState('');
 
   async function submitSignUp(ev: React.FormEvent) {
     ev.preventDefault();
@@ -95,6 +100,25 @@ const App = () => {
     setMember(null);
     setToken('');
     setMode('signIn');
+  }
+
+  async function handleChangePass(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (newPassphrase === confirmNewPassphrase) {
+      const res = await api.changePass({ oldPassphrase: passphrase, newPassphrase }, token);
+      if (res.status === 200) {
+        setPassphrase('');
+        setNewPassphrase('');
+        setConfirmNewPassphrase('');
+        setFormErrors([]);
+        setMode('me');
+      } else {
+        const { error, errors } = await res.json();
+        setFormErrors(errors || [error]);
+      }
+    } else {
+      setFormErrors(['Passphrases do not match']);
+    }
   }
 
   return (
@@ -179,8 +203,41 @@ const App = () => {
                 {tokenMember ? JSON.stringify(tokenMember) : 'No token?'}
                 <div>
                   <button onClick={handleSignOut}>Sign Out</button>
+                  <button onClick={() => setMode('changePass')}>Change passphrase</button>
                 </div>
               </div>
+            );
+          case 'changePass':
+            return (
+              <form onSubmit={handleChangePass}>
+                <div>Change passphrase</div>
+                <div>
+                  <input
+                    value={passphrase}
+                    type="password"
+                    onChange={(e) => setPassphrase(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <input
+                    value={newPassphrase}
+                    type="password"
+                    onChange={(e) => setNewPassphrase(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <input
+                    value={confirmNewPassphrase}
+                    type="password"
+                    onChange={(e) => setConfirmNewPassphrase(e.target.value)}
+                  />
+                </div>
+                <div>{formErrors && formErrors.map((error) => <div>{error}</div>)}</div>
+                <div>
+                  <button onClick={() => setMode('me')}>Back</button>
+                  <button type="submit">Change</button>
+                </div>
+              </form>
             );
         }
       })()}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { T } from './db/driver';
-import { verifyToken, tokenData, generateToken } from './utils';
+import { verifyToken, tokenData, generateToken, hashCompare } from './utils';
 
 const devServer = 'http://localhost:3000';
 
@@ -214,6 +214,56 @@ describe('Current user', () => {
     });
     console.log(await res.json());
     expect(res.status).toBe(401);
+  });
+});
+
+describe('Change password', () => {
+  it('should change password if correct credentials', async () => {
+    const email = randomEmail();
+    const res1 = await signUpWith({
+      email,
+      passphrase: '123456',
+      fullName: 'a',
+    });
+    expect(res1.status).toBe(201);
+    const { token, member } = await res1.json();
+    const res2 = await fetchApi('auth/changePass', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        oldPassphrase: '123456',
+        newPassphrase: '1234567',
+      }),
+    });
+    expect(res2.status).toBe(200);
+    const updatedMember = await T.members.get(member.id);
+    expect(await hashCompare('1234567', updatedMember.passphrase)).toBeTruthy();
+  });
+
+  it('should not change password if incorrect correct credentials', async () => {
+    const email = randomEmail();
+    const res1 = await signUpWith({
+      email,
+      passphrase: '123456',
+      fullName: 'a',
+    });
+    expect(res1.status).toBe(201);
+    const { token, member } = await res1.json();
+    const res2 = await fetchApi('auth/changePass', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        oldPassphrase: '123',
+        newPassphrase: '123457',
+      }),
+    });
+    expect(res2.status).toBe(400);
   });
 });
 

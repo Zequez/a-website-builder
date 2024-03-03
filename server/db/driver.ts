@@ -93,8 +93,22 @@ function select<T>(table: string) {
   const q = `SELECT * FROM ${table}`;
   return {
     all: async (): Promise<T[]> => await query(q),
+    get: async (id: number | string): Promise<T> =>
+      (await query(`${q} WHERE id = $1 LIMIT 1`, [id]))[0],
     insert: async (keyValues: Record<string, any>): Promise<T> =>
       (await insertQuery<T>(table, keyValues))[0],
+    update: async (id: number | string, keyValues: Record<string, any>): Promise<T> => {
+      const keys = Object.keys(keyValues);
+      const values = Object.values(keyValues);
+      const numbers = values.map((_, i) => `$${i + 1}`);
+      const idNum = numbers.length + 1;
+      return (
+        await query(
+          `UPDATE ${table} SET (${keys}) = (${numbers}) WHERE id = $${idNum} RETURNING *`,
+          [...values, id],
+        )
+      )[0];
+    },
     where: (keyValues: Record<string, any>) => {
       const whereQ = Object.keys(keyValues)
         .map((k, i) => `${k} = $${i + 1}`)

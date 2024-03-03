@@ -58,9 +58,13 @@ api.post('/auth/signUp', jsonParser, async (req, res) => {
 api.post('/auth/signIn', jsonParser, async (req, res) => {
   const { email, passphrase } = req.body;
 
-  const members = await T.members.all();
-  const member = members.find((m) => m.email === email);
-  if (!member || !(await hashCompare(passphrase, member.passphrase)))
+  const member = await T.members.where({ email }).one();
+
+  if (
+    !member ||
+    (member.passphrase && !(await hashCompare(passphrase, member.passphrase))) ||
+    (!member.passphrase && !!passphrase)
+  )
     return res.status(401).json({ error: 'Unauthorized' });
 
   return res
@@ -71,20 +75,46 @@ api.post('/auth/signIn', jsonParser, async (req, res) => {
 api.get('/auth/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  console.log(tokenData(token));
-  const { memberId, iat, exp } = tokenData(token);
-
-  console.log('ISSUED AT / EXPIRES AT', iat, exp);
-
+  const { memberId, exp } = tokenData(token);
   if (new Date(exp * 1000).getTime() < new Date().getTime()) {
     return res.status(401).json({ error: 'Token expired' });
   }
 
-  const members = await T.members.all();
-  const member = members.find((m) => m.id === memberId);
+  const member = await T.members.get(memberId);
   if (!member) return res.status(404).json({ error: 'Member deleted maybe' });
 
   return res.status(200).json({ member: sanitizeMember(member) });
+});
+
+api.post('/auth/changePass', jsonParser, async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Need a token' });
+  const { memberId } = tokenData(token);
+  const member = await T.members.get(memberId);
+  if (!member) return res.status(404).json({ error: 'Member deleted maybe' });
+
+  const { oldPassphrase, newPassphrase } = req.body;
+
+  if (newPassphrase.length < 6) {
+    return res.status(400).json({ error: 'Passphrase must be at least 6 characters' });
+  }
+
+  if (!oldPassphrase && member.passphrase) {
+    return res.status(400).json({ error: 'Old passphrase is required' });
+  }
+
+  console.log('PASS', member.passphrase);
+
+  if (
+    (member.passphrase && !(await hashCompare(oldPassphrase, member.passphrase))) ||
+    (!member.passphrase && !!oldPassphrase)
+  ) {
+    return res.status(400).json({ error: 'Wrong password' });
+  }
+
+  await T.members.update(member.id, { passphrase: await hashPass(newPassphrase) });
+
+  res.status(200).json({});
 });
 
 api.get('/members', async (req, res) => {
