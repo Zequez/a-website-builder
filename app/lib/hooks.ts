@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, StateUpdater } from 'preact/hooks';
 
 export function useStateLocalStorage<T>(key: string, initialValue: T) {
   const [value, setValue] = useState<T>(() => getLocalStorageValue<T>(key) || initialValue);
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value));
   }, [key, value]);
-  return [value, setValue] as [T, React.Dispatch<React.SetStateAction<T>>];
+  return [value, setValue] as [T, StateUpdater<T>];
 }
 
-function getLocalStorageValue<T>(key: string) {
+export function getLocalStorageValue<T>(key: string): T | null {
   const existingValue = localStorage.getItem(key);
   if (existingValue) {
     try {

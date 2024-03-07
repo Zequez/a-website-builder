@@ -75,7 +75,7 @@ api.post('/auth/signIn', jsonParser, async (req, res) => {
 api.get('/auth/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  const { memberId, exp } = tokenData(token);
+  const { id: memberId, exp } = tokenData(token);
   if (new Date(exp * 1000).getTime() < new Date().getTime()) {
     return res.status(401).json({ error: 'Token expired' });
   }
@@ -89,7 +89,7 @@ api.get('/auth/me', async (req, res) => {
 api.post('/auth/changePass', jsonParser, async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Need a token' });
-  const { memberId } = tokenData(token);
+  const { id: memberId } = tokenData(token);
   const member = await T.members.get(memberId);
   if (!member) return res.status(404).json({ error: 'Member deleted maybe' });
 
@@ -130,7 +130,7 @@ export default api;
 
 async function tokenFromMember(member: Member) {
   return await generateToken({
-    memberId: member.id,
+    id: member.id,
     email: member.email,
     fullName: member.full_name,
   });

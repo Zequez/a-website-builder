@@ -69,14 +69,13 @@ export async function hashCompare(plainPass: string, hashedPass: string) {
   return bcrypt.compare(plainPass, hashedPass);
 }
 
-export async function generateToken(
-  member: {
-    memberId: number;
-    email: string;
-    fullName: string;
-  },
-  expIn = 60 * 60 * 24 * 30,
-) {
+type TokenMember = {
+  id: number;
+  email: string;
+  fullName: string;
+};
+
+export async function generateToken(member: TokenMember, expIn = 60 * 60 * 24 * 30) {
   if (!process.env.JWT_SECRET) throw 'JWT_SECRET environment variable not set';
   const exp = Math.round(new Date().getTime() / 1000) + expIn;
   const token = jwt.sign({ ...member, exp }, process.env.JWT_SECRET);
@@ -88,7 +87,7 @@ export function verifyToken(token: string) {
   return jwt.verify(token, process.env.JWT_SECRET);
 }
 
-export function tokenData(token: string) {
+export function tokenData(token: string): TokenMember & { exp: number; iat: number } {
   return JSON.parse(atob(token.split('.')[1]));
 }
 

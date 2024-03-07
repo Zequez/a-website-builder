@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'preact/hooks';
 import cx from 'classnames';
 import * as api from './lib/api';
 
-import Auth from './components/Auth';
+import Auth, { useAuth } from './components/Auth';
 
 type Member = {
   id: number;
@@ -14,6 +14,7 @@ type Member = {
 };
 
 const App = () => {
+  const { memberAuth, signOut } = useAuth();
   const [membersStatus, setMembersStatus] = useState<'loading' | 'error' | 'loaded'>('loading');
   const [members, setMembers] = useState<null | Member[]>(null);
   const [error, setError] = useState<null | string>(null);
@@ -45,12 +46,22 @@ const App = () => {
       ) : null}
       <div className="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
         <div className="flex-grow">A Web Club</div>
-        <button
-          className="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm"
-          onClick={() => setShowAuth(true)}
-        >
-          Access
-        </button>
+        <div>
+          {memberAuth ? (
+            <button
+              class="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm mr-4"
+              onClick={signOut}
+            >
+              Logout
+            </button>
+          ) : null}
+          <button
+            className="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm"
+            onClick={() => setShowAuth(true)}
+          >
+            {memberAuth ? 'Account' : 'Access'}
+          </button>
+        </div>
       </div>
       <div className="flex-grow">
         {membersStatus === 'loading' ? (
