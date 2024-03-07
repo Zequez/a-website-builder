@@ -3,4 +3,5 @@ node_modules
 app_dist
 server_dist
 ./lib
+./lib/bs
 elm-stuff
