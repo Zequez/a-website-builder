@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import cx from 'classnames';
 import * as api from './lib/api';
 
-import Auth, { useAuth } from './components/Auth';
+import Auth, { useAuth } from './components/Auth/Auth';
 
 type Member = {
   id: number;
