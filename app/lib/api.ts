@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/_api_';
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
 const api =
   (path: string, method: 'GET' | 'POST') =>
@@ -31,4 +31,4 @@ export const signUp = api('auth/signUp', 'POST');
 export const signIn = api('auth/signIn', 'POST');
 export const me = api('auth/me', 'GET');
 export const changePass = api('auth/changePass', 'POST');
-export const members = api('/members', 'GET');
+export const members = api('members', 'GET');

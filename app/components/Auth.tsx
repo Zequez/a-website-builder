@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { JSX } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import cx from 'classnames';
 
 import * as api from '../lib/api';
@@ -23,7 +24,7 @@ const Auth = () => {
   const [newPassphrase, setNewPassphrase] = useState('');
   const [confirmNewPassphrase, setConfirmNewPassphrase] = useState('');
 
-  async function submitSignUp(ev: React.FormEvent) {
+  const submitSignUp: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
     const res = await api.signUp({ email, passphrase, fullName });
 
@@ -44,9 +45,9 @@ const Auth = () => {
         setShowAccountCreated(false);
       }, 3000);
     }
-  }
+  };
 
-  async function submitSignIn(ev: React.FormEvent) {
+  const submitSignIn: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
     const res = await api.signIn({ email, passphrase });
     if (res.status !== 200) {
@@ -61,15 +62,9 @@ const Auth = () => {
       setToken(token);
       setMode('me');
     }
-  }
+  };
 
-  function handleSignOut() {
-    setMember(null);
-    setToken('');
-    setMode('signIn');
-  }
-
-  async function handleChangePass(ev: React.FormEvent) {
+  const submitChangePass: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
     if (newPassphrase === confirmNewPassphrase) {
       const res = await api.changePass({ oldPassphrase: passphrase, newPassphrase }, token);
@@ -86,6 +81,12 @@ const Auth = () => {
     } else {
       setFormErrors(['Passphrases do not match']);
     }
+  };
+
+  function handleSignOut() {
+    setMember(null);
+    setToken('');
+    setMode('signIn');
   }
 
   return (
@@ -115,14 +116,14 @@ const Auth = () => {
                   <input
                     value={email}
                     placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={({ currentTarget }) => setEmail(currentTarget.value)}
                   />
                 </div>
                 <div>
                   <input
                     value={fullName}
                     placeholder="Full name"
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={({ currentTarget }) => setFullName(currentTarget.value)}
                   />
                 </div>
                 <div>
@@ -130,7 +131,7 @@ const Auth = () => {
                     value={passphrase}
                     type="password"
                     placeholder="Password"
-                    onChange={(e) => setPassphrase(e.target.value)}
+                    onChange={({ currentTarget }) => setPassphrase(currentTarget.value)}
                   />
                 </div>
                 {formErrors && formErrors.map((error) => <div>{error}</div>)}
@@ -146,7 +147,7 @@ const Auth = () => {
                   <input
                     value={email}
                     placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={({ currentTarget }) => setEmail(currentTarget.value)}
                   />
                 </div>
                 <div>
@@ -154,7 +155,7 @@ const Auth = () => {
                     value={passphrase}
                     type="password"
                     placeholder="Password"
-                    onChange={(e) => setPassphrase(e.target.value)}
+                    onChange={({ currentTarget }) => setPassphrase(currentTarget.value)}
                   />
                 </div>
                 {formErrors && formErrors.map((error) => <div>{error}</div>)}
@@ -166,7 +167,7 @@ const Auth = () => {
           case 'me':
             return (
               <div>
-                <div>You are signed in</div>
+                <div class="bg-green-400">You are signed in</div>
                 {tokenMember ? JSON.stringify(tokenMember) : 'No token?'}
                 <div>
                   <button onClick={handleSignOut}>Sign Out</button>
@@ -176,27 +177,27 @@ const Auth = () => {
             );
           case 'changePass':
             return (
-              <form onSubmit={handleChangePass}>
+              <form onSubmit={submitChangePass}>
                 <div>Change passphrase</div>
                 <div>
                   <input
                     value={passphrase}
                     type="password"
-                    onChange={(e) => setPassphrase(e.target.value)}
+                    onChange={({ currentTarget }) => setPassphrase(currentTarget.value)}
                   />
                 </div>
                 <div>
                   <input
                     value={newPassphrase}
                     type="password"
-                    onChange={(e) => setNewPassphrase(e.target.value)}
+                    onChange={({ currentTarget }) => setNewPassphrase(currentTarget.value)}
                   />
                 </div>
                 <div>
                   <input
                     value={confirmNewPassphrase}
                     type="password"
-                    onChange={(e) => setConfirmNewPassphrase(e.target.value)}
+                    onChange={({ currentTarget }) => setConfirmNewPassphrase(currentTarget.value)}
                   />
                 </div>
                 <div>{formErrors && formErrors.map((error) => <div>{error}</div>)}</div>

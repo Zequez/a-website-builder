@@ -7,8 +7,11 @@
     "esModuleInterop": true,            /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. */
     "skipLibCheck": true,               /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "lib": ["DOM"]
   },
-  "include": ["api/**/*", "server/db/**/*", "lib/**/*"],              /* Specify an array of filenames or patterns to include files for compilation. */
+  "include": ["api/**/*", "server/db/**/*", "lib/**/*", "types/**/*", "app/**/*"],              /* Specify an array of filenames or patterns to include files for compilation. */
   "exclude": ["node_modules"]           /* Specify an array of filenames or patterns to exclude files from compilation. */
 }

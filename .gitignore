@@ -2,6 +2,5 @@ node_modules
 .vercel
 app_dist
 server_dist
-./lib
-./lib/bs
+lib/bs/*
 elm-stuff

@@ -1,10 +1,9 @@
 import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import './spinner.css';
-import { createRoot } from 'react-dom/client';
-import React from 'react';
 import App from './App';
+import { render } from 'preact';
 
 const container = document.getElementById('root');
-const root = createRoot(container!);
-root.render(<App />);
+if (!(container instanceof HTMLElement)) throw 'No root';
+render(<App />, container);
