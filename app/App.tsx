@@ -1,246 +1,86 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-
 import * as api from './lib/api';
 
-function getLocalStorageValue<T>(key: string) {
-  const existingValue = localStorage.getItem(key);
-  if (existingValue) {
-    try {
-      return JSON.parse(existingValue) as T;
-    } catch (e) {
-      localStorage.removeItem(key);
-      return null;
-    }
-  }
-  return null;
-}
+import Auth from './components/Auth';
 
-function useStateLocalStorage<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => getLocalStorageValue<T>(key) || initialValue);
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
-  return [value, setValue] as [T, React.Dispatch<React.SetStateAction<T>>];
-}
-
-function useAuth() {
-  const [token, setToken] = useStateLocalStorage('_auth_token_', '');
-  let data = null;
-  if (token) {
-    try {
-      data = JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-      setToken('');
-    }
-  }
-  return { token, data, setToken };
-}
+type Member = {
+  id: number;
+  email: string;
+  full_name: string;
+  is_admin: boolean;
+  active: boolean;
+  created_at: string;
+};
 
 const App = () => {
-  const { token, data: tokenMember, setToken } = useAuth();
+  const [membersStatus, setMembersStatus] = useState<'loading' | 'error' | 'loaded'>('loading');
+  const [members, setMembers] = useState<null | Member[]>(null);
+  const [error, setError] = useState<null | string>(null);
 
-  const [mode, setMode] = useState<'signUp' | 'signIn' | 'me' | 'changePass'>(
-    token ? 'me' : 'signUp',
-  );
+  const [showAuth, setShowAuth] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [passphrase, setPassphrase] = useState('');
-  const [formErrors, setFormErrors] = useState<null | string[]>(null);
-
-  const [member, setMember] = useState<null | { email: string; full_name: string }>();
-
-  const [showAccountCreated, setShowAccountCreated] = useState(false);
-
-  const [newPassphrase, setNewPassphrase] = useState('');
-  const [confirmNewPassphrase, setConfirmNewPassphrase] = useState('');
-
-  async function submitSignUp(ev: React.FormEvent) {
-    ev.preventDefault();
-    const res = await api.signUp({ email, passphrase, fullName });
-
-    if (res.status !== 201) {
-      const { error, errors } = await res.json();
-      setMember(null);
-      setToken('');
-      setFormErrors(errors || [error]);
-    } else {
-      const { member, token } = await res.json();
-      setPassphrase('');
-      setFullName('');
-      setMember(member);
-      setToken(token);
-      setMode('me');
-      setShowAccountCreated(true);
-      setTimeout(() => {
-        setShowAccountCreated(false);
-      }, 3000);
-    }
-  }
-
-  async function submitSignIn(ev: React.FormEvent) {
-    ev.preventDefault();
-    const res = await api.signIn({ email, passphrase });
-    if (res.status !== 200) {
-      const { error, errors } = await res.json();
-      setMember(null);
-      setToken('');
-      setFormErrors(errors || [error]);
-    } else {
-      const { member, token } = await res.json();
-      setPassphrase('');
-      setMember(member);
-      setToken(token);
-      setMode('me');
-    }
-  }
-
-  function handleSignOut() {
-    setMember(null);
-    setToken('');
-    setMode('signIn');
-  }
-
-  async function handleChangePass(ev: React.FormEvent) {
-    ev.preventDefault();
-    if (newPassphrase === confirmNewPassphrase) {
-      const res = await api.changePass({ oldPassphrase: passphrase, newPassphrase }, token);
+  useEffect(() => {
+    (async () => {
+      const res = await api.members({});
       if (res.status === 200) {
-        setPassphrase('');
-        setNewPassphrase('');
-        setConfirmNewPassphrase('');
-        setFormErrors([]);
-        setMode('me');
+        const { members } = await res.json();
+        setMembersStatus('loaded');
+        setMembers(members);
       } else {
-        const { error, errors } = await res.json();
-        setFormErrors(errors || [error]);
+        setMembersStatus('error');
+        setError('Could not load members list');
       }
-    } else {
-      setFormErrors(['Passphrases do not match']);
-    }
-  }
+    })();
+  }, []);
 
   return (
-    <div>
-      {!token ? (
-        <div>
-          <button
-            className={cx({ 'bg-red-400': mode === 'signUp' })}
-            onClick={() => setMode('signUp')}
-          >
-            Sign Up
-          </button>
-          <button
-            className={cx({ 'bg-red-400': mode === 'signIn' })}
-            onClick={() => setMode('signIn')}
-          >
-            Sign In
-          </button>
+    <div className="flex flex-col h-screen">
+      {showAuth ? (
+        <div className="fixed inset-0 p-4">
+          <div className="bg-white shadow-md rounded-md h-full p-2">
+            <Auth />
+          </div>
         </div>
       ) : null}
-      {(() => {
-        switch (mode) {
-          case 'signUp':
-            return (
-              <form onSubmit={submitSignUp}>
-                <div>
-                  <input
-                    value={email}
-                    placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <input
-                    value={fullName}
-                    placeholder="Full name"
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <input
-                    value={passphrase}
-                    type="password"
-                    placeholder="Password"
-                    onChange={(e) => setPassphrase(e.target.value)}
-                  />
-                </div>
-                {formErrors && formErrors.map((error) => <div>{error}</div>)}
-                <div>
-                  <button type="submit">Sign Up</button>
-                </div>
-              </form>
-            );
-          case 'signIn':
-            return (
-              <form onSubmit={submitSignIn}>
-                <div>
-                  <input
-                    value={email}
-                    placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <input
-                    value={passphrase}
-                    type="password"
-                    placeholder="Password"
-                    onChange={(e) => setPassphrase(e.target.value)}
-                  />
-                </div>
-                {formErrors && formErrors.map((error) => <div>{error}</div>)}
-                <div>
-                  <button type="submit">Sign In</button>
-                </div>
-              </form>
-            );
-          case 'me':
-            return (
-              <div>
-                <div>You are signed in</div>
-                {tokenMember ? JSON.stringify(tokenMember) : 'No token?'}
-                <div>
-                  <button onClick={handleSignOut}>Sign Out</button>
-                  <button onClick={() => setMode('changePass')}>Change passphrase</button>
-                </div>
-              </div>
-            );
-          case 'changePass':
-            return (
-              <form onSubmit={handleChangePass}>
-                <div>Change passphrase</div>
-                <div>
-                  <input
-                    value={passphrase}
-                    type="password"
-                    onChange={(e) => setPassphrase(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <input
-                    value={newPassphrase}
-                    type="password"
-                    onChange={(e) => setNewPassphrase(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <input
-                    value={confirmNewPassphrase}
-                    type="password"
-                    onChange={(e) => setConfirmNewPassphrase(e.target.value)}
-                  />
-                </div>
-                <div>{formErrors && formErrors.map((error) => <div>{error}</div>)}</div>
-                <div>
-                  <button onClick={() => setMode('me')}>Back</button>
-                  <button type="submit">Change</button>
-                </div>
-              </form>
-            );
-        }
-      })()}
+      <div className="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
+        <div className="flex-grow">A Web Club</div>
+        <button
+          className="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm"
+          onClick={() => setShowAuth(true)}
+        >
+          Access
+        </button>
+      </div>
+      <div className="flex-grow">
+        {membersStatus === 'loading' ? (
+          'Loading...'
+        ) : membersStatus === 'error' ? (
+          error
+        ) : membersStatus === 'loaded' && members ? (
+          <Members members={members} />
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+const Members = ({ members }: { members: Member[] }) => {
+  return (
+    <div className="flex-grow p-4">
+      <div className="grid grid-cols-1 gap-2">
+        {members.map((m) => (
+          <div
+            key={m.id}
+            className={cx('bg-white p-2 rounded', {
+              'bg-gray-200': !m.active,
+            })}
+          >
+            <div>{m.full_name}</div>
+            <div>{m.email}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

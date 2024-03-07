@@ -31,3 +31,4 @@ export const signUp = api('auth/signUp', 'POST');
 export const signIn = api('auth/signIn', 'POST');
 export const me = api('auth/me', 'GET');
 export const changePass = api('auth/changePass', 'POST');
+export const members = api('/members', 'GET');
