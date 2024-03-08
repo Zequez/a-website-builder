@@ -4,9 +4,9 @@ import { forwardRef } from 'preact/compat';
 import { MemberAuthContext } from './Context';
 import cx from 'classnames';
 
-import * as api from '../../lib/api';
+export type FC<T> = (props: { children?: JSX.Element | string } & T) => JSX.Element;
 
-type FC<T> = (props: { children?: JSX.Element | string } & T) => JSX.Element;
+import * as api from '../../lib/api';
 
 const Auth = () => {
   const { memberAuth, setToken } = useContext(MemberAuthContext);

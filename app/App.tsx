@@ -40,17 +40,17 @@ const App = () => {
       {showAuth ? <AuthModal onClose={() => setShowAuth(false)} /> : null}
       <div className="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
         <div className="flex-grow">A Web Club</div>
-        <div>
+        <div class="flex space-x-4">
           {memberAuth ? (
             <button
-              class="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm mr-4"
+              class="block text-base px-4 py-2 rounded-md bg-red-400 text-white uppercase tracking-wider"
               onClick={signOut}
             >
               Logout
             </button>
           ) : null}
           <button
-            className="bg-green-300 active:bg-green-200 text-white  px-2 py-1 rounded-md shadow-sm"
+            className="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
             onClick={() => setShowAuth(true)}
           >
             {memberAuth ? 'Account' : 'Access'}
