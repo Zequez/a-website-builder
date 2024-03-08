@@ -63,26 +63,47 @@ const App = () => {
         ) : membersStatus === 'error' ? (
           error
         ) : membersStatus === 'loaded' && members ? (
-          <Members members={members} />
+          <Members members={members} isAuthenticated={!!memberAuth} />
         ) : null}
+        <div class="flex justify-center pb-4">
+          <button
+            onClick={() => setShowAuth(true)}
+            class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
+          >
+            Register
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-const Members = ({ members }: { members: Member[] }) => {
+const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthenticated: boolean }) => {
+  const sortedMembers = [...members].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  );
   return (
     <div className="flex-grow p-4">
-      <div className="grid grid-cols-1 gap-2">
-        {members.map((m) => (
+      <h1 class="text-center text-3xl mb-4 text-gray-700 font-light">Members</h1>
+      <div className="grid grid-cols-1 gap-2 max-w-lg mx-auto">
+        {sortedMembers.map((m) => (
           <div
             key={m.id}
-            className={cx('bg-white p-2 rounded', {
+            className={cx('bg-white p-2 rounded border-2 border-solid', {
               'bg-gray-200': !m.active,
+              'border-transparent': !m.is_admin,
+              'border-blue-400': m.is_admin,
             })}
           >
-            <div>{m.full_name}</div>
-            <div>{m.email}</div>
+            <div>
+              {m.is_admin ? (
+                <span class="bg-blue-400 text-white rounded-md uppercase text-xs font-bold mr-2 px-1 py-0.5">
+                  Server Admin
+                </span>
+              ) : null}
+              {m.full_name}
+            </div>
+            {isAuthenticated ? <div>{m.email}</div> : null}
           </div>
         ))}
       </div>
