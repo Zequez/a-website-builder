@@ -1,5 +1,3 @@
-import Auth from './Auth';
-
-export { useAuth } from './Context';
-
-export default Auth;
+export { default as Auth } from './Auth';
+export { useAuth, AuthWrapper } from './Context';
+export { default as AuthModal } from './AuthModal';

@@ -2,7 +2,7 @@ import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import './spinner.css';
 import App from './App';
-import { AuthWrapper } from './components/Auth/Auth';
+import { AuthWrapper } from './components/Auth';
 import { render } from 'preact';
 
 const container = document.getElementById('root');

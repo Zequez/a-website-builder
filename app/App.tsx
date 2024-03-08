@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import cx from 'classnames';
 import * as api from './lib/api';
 
-import Auth, { useAuth } from './components/Auth/Auth';
+import { useAuth, AuthModal } from './components/Auth';
 
 type Member = {
   id: number;
@@ -37,13 +37,7 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {showAuth ? (
-        <div className="fixed inset-0 p-4">
-          <div className="bg-white shadow-md rounded-md h-full p-2">
-            <Auth />
-          </div>
-        </div>
-      ) : null}
+      {showAuth ? <AuthModal onClose={() => setShowAuth(false)} /> : null}
       <div className="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
         <div className="flex-grow">A Web Club</div>
         <div>
