@@ -68,12 +68,13 @@ export function useFilesystem() {
     setLSBucket(bucket, initFrom);
   }
 
-  function renameBucket(newName: string) {
+  async function renameBucket(newName: string) {
     if (newName !== bucket) {
       setBucket(newName);
       setLSBucket(newName, files);
       removeLSBucket(bucket);
     }
+    return Promise.resolve(true);
   }
 
   function deleteBucket(bucketName: string) {
