@@ -1,77 +1,14 @@
 import { useState, useEffect } from 'preact/hooks';
-import { parse } from 'node-html-parser';
+import cx from 'classnames';
 
-type EditorFile = {
-  name: string;
-  content: string;
-};
-
-const TEMPLATE: EditorFile[] = [
-  {
-    name: 'index.html',
-    content: `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your website</title>
-    <link rel="icon" type="image/png" href="./favicon.png" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    Hello world
-    <script type="module" src="./script.js"></script>
-  </body>
-</html>`,
-  },
-  {
-    name: 'style.css',
-    content: `body { background: red; }`,
-  },
-  {
-    name: 'script.js',
-    content: `console.log("Test");`,
-  },
-];
-
-const filesByName = TEMPLATE.reduce<Record<string, EditorFile>>((acc, file) => {
-  acc[file.name] = file;
-  return acc;
-}, {});
-
-function contentToDataUrl(mime: string, content: string) {
-  return `data:${mime};base64,${btoa(content)}`;
-}
-
-function generateIframeEncodedUrl(files: { [key: string]: EditorFile }) {
-  const indexContent = files['index.html'].content;
-  const root = parse(indexContent);
-  root.querySelectorAll('link[rel="stylesheet"]').map((el) => {
-    const href = el.getAttribute('href');
-    if (href?.startsWith('./')) {
-      const fileName = href.slice(2);
-      if (files[fileName]) {
-        el.setAttribute('href', contentToDataUrl('text/css', files[fileName].content));
-      }
-    }
-  });
-
-  root.querySelectorAll('script[type="module"]').map((el) => {
-    const src = el.getAttribute('src');
-    if (src?.startsWith('./')) {
-      const fileName = src.slice(2);
-      if (files[fileName]) {
-        el.setAttribute('src', contentToDataUrl('text/javascript', files[fileName].content));
-      }
-    }
-  });
-
-  return contentToDataUrl('text/html', root.innerHTML);
-}
+import { EditorFile } from './types';
+import { filesByName as template } from './template';
+import { useFilesystem } from './filesystem';
+import { generateIframeEncodedUrl } from './lib/iframeTools';
 
 const Editor = ({ onExit }: { onExit: () => void }) => {
-  const [files, setFiles] = useState<{ [key: string]: EditorFile }>(filesByName);
-  const [openFileName, setOpenFileName] = useState<string>('index.html');
+  const { files, writeFile, initialize } = useFilesystem('default');
+  const [openFileName, setOpenFileName] = useState<string | null>(Object.keys(files)[0] || null);
   const [iframeRatio, setIframeRatio] = useState(16 / 9);
   const [iframeWidth, setIframeWidth] = useState(360);
 
@@ -82,15 +19,24 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (Object.keys(files).length === 0) {
+      initialize(template);
+      setOpenFileName(Object.keys(template)[0] || null);
+    }
+  }, []);
+
   const onFileClick = (fileName: string) => {
     setOpenFileName(fileName);
   };
 
   const onEditorContentChanges = (content: string) => {
-    setFiles({ ...files, [openFileName]: { ...files[openFileName], content } });
+    if (openFileName) {
+      writeFile(openFileName, content);
+    }
   };
 
-  const openFile = files[openFileName];
+  const openFile = openFileName ? files[openFileName] : null;
 
   const iframeEncodedUrl = generateIframeEncodedUrl(files);
 
@@ -100,7 +46,9 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
         <div class="flex flex-col flex-grow">
           {Object.values(files).map(({ name }) => (
             <button
-              class="block px-2 py-1 border-b border-b-black/20 bg-gray-200"
+              class={cx('block px-2 py-1 border-b border-b-black/20 bg-gray-200', {
+                'bg-gray-300': name === openFileName,
+              })}
               onClick={() => onFileClick(name)}
             >
               {name}
@@ -111,11 +59,17 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
           Exit
         </button>
       </div>
-      <textarea
-        class="flex-grow p-4 bg-gray-700 text-white font-mono"
-        value={openFile.content}
-        onChange={({ currentTarget }) => onEditorContentChanges(currentTarget.value)}
-      ></textarea>
+      {openFile ? (
+        <textarea
+          class="flex-grow p-4 bg-gray-700 text-white font-mono"
+          value={openFile.content}
+          onChange={({ currentTarget }) => onEditorContentChanges(currentTarget.value)}
+        ></textarea>
+      ) : (
+        <div class="flex flex-grow items-center justify-center text-2xl text-black opacity-50">
+          No file open
+        </div>
+      )}
       <div class="fixed bottom-2 right-2 bg-gray-200 rounded-t-md" style={{ width: iframeWidth }}>
         <div class="px-2 py-1 flex text-gray-500">
           <div class="flex-grow">Preview</div>
