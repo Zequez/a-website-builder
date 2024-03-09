@@ -3,6 +3,7 @@ import cx from 'classnames';
 import * as api from './lib/api';
 
 import { useAuth, AuthModal } from './components/Auth';
+import Editor from './components/Editor';
 
 type Member = {
   id: number;
@@ -20,6 +21,33 @@ const App = () => {
   const [error, setError] = useState<null | string>(null);
 
   const [showAuth, setShowAuth] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+
+  function goTo(place: 'editor' | 'auth' | 'home') {
+    if (place === 'editor') {
+      window.location.hash = 'editor';
+      setShowEditor(true);
+      setShowAuth(false);
+    } else if (place === 'auth') {
+      window.location.hash = 'auth';
+      setShowAuth(true);
+      setShowEditor(false);
+    } else {
+      window.location.hash = '';
+      setShowAuth(false);
+      setShowEditor(false);
+    }
+  }
+
+  useEffect(() => {
+    // Read hash path from URL
+    const hash = window.location.hash.slice(1);
+    if (hash === 'auth') {
+      setShowAuth(true);
+    } else if (hash === 'editor') {
+      setShowEditor(true);
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -36,10 +64,11 @@ const App = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen">
-      {showAuth ? <AuthModal onClose={() => setShowAuth(false)} /> : null}
-      <div className="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
-        <div className="flex-grow">A Web Club</div>
+    <div class="flex flex-col h-screen">
+      {showAuth ? <AuthModal onClose={() => goTo('home')} /> : null}
+      {showEditor ? <Editor onExit={() => goTo('home')} /> : null}
+      <div class="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
+        <div class="flex-grow">A Web Club</div>
         <div class="flex space-x-4">
           {memberAuth ? (
             <button
@@ -50,14 +79,22 @@ const App = () => {
             </button>
           ) : null}
           <button
-            className="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
-            onClick={() => setShowAuth(true)}
+            class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
+            onClick={() => goTo('auth')}
           >
             {memberAuth ? 'Account' : 'Access'}
           </button>
+          {memberAuth ? (
+            <button
+              class="block text-base px-4 py-2 rounded-md bg-emerald-400 text-white uppercase tracking-wider"
+              onClick={() => goTo('editor')}
+            >
+              Editor
+            </button>
+          ) : null}
         </div>
       </div>
-      <div className="flex-grow">
+      <div class="flex-grow">
         {membersStatus === 'loading' ? (
           'Loading...'
         ) : membersStatus === 'error' ? (
@@ -67,7 +104,7 @@ const App = () => {
         ) : null}
         <div class="flex justify-center pb-4">
           <button
-            onClick={() => setShowAuth(true)}
+            onClick={() => goTo('auth')}
             class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
           >
             Register
@@ -83,13 +120,13 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
   return (
-    <div className="flex-grow p-4">
+    <div class="flex-grow p-4">
       <h1 class="text-center text-3xl mb-4 text-gray-700 font-light">Members</h1>
-      <div className="grid grid-cols-1 gap-2 max-w-lg mx-auto">
+      <div class="grid grid-cols-1 gap-2 max-w-lg mx-auto">
         {sortedMembers.map((m) => (
           <div
             key={m.id}
-            className={cx('bg-white p-2 rounded border-2 border-solid', {
+            class={cx('bg-white p-2 rounded border-2 border-solid', {
               'bg-gray-200': !m.active,
               'border-transparent': !m.is_admin,
               'border-blue-400': m.is_admin,

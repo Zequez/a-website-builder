@@ -21,6 +21,7 @@ specifiers:
   express: ^4.18.3
   jsonwebtoken: ^9.0.2
   mime: ^4.0.1
+  node-html-parser: ^6.1.12
   pg: ^8.11.3
   preact: ^10.19.6
   tsx: ^4.7.1
@@ -51,6 +52,7 @@ dependencies:
   express: 4.18.3
   jsonwebtoken: 9.0.2
   mime: 4.0.1
+  node-html-parser: 6.1.12
   pg: 8.11.3
   preact: 10.19.6
   tsx: 4.7.1
