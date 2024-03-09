@@ -26,13 +26,27 @@ function removeLSBucket(bucketName: string) {
 function getAllBuckets() {
   return Object.keys(localStorage)
     .filter((key) => key.startsWith(BUCKETS_PREFIX))
-    .map((key) => key.slice(BUCKETS_PREFIX.length));
+    .map((key) => key.slice(BUCKETS_PREFIX.length))
+    .sort((a, b) => a.localeCompare(b));
 }
 
-export function useFilesystem(initialBucket: string) {
-  const [bucket, setBucket] = useState(initialBucket);
+function generateRandomAlphaNumericString() {
+  return Math.random().toString(36).slice(2);
+}
+
+export function useFilesystem() {
+  const bucketsNames = getAllBuckets();
+
+  const [bucket, setBucket] = useState(() => bucketsNames[0] || generateRandomAlphaNumericString());
 
   const [files, setFiles] = useState<EditorFiles>(() => getLSBucket(bucket));
+
+  function createBucket() {
+    const newBucket = generateRandomAlphaNumericString();
+    setBucket(newBucket);
+    setLSBucket(newBucket, {});
+    setFiles({});
+  }
 
   function selectBucket(newBucket: string) {
     setBucket(newBucket);
@@ -55,18 +69,26 @@ export function useFilesystem(initialBucket: string) {
   }
 
   function renameBucket(newName: string) {
-    setBucket(newName);
-    setLSBucket(newName, files);
-    removeLSBucket(bucket);
+    if (newName !== bucket) {
+      setBucket(newName);
+      setLSBucket(newName, files);
+      removeLSBucket(bucket);
+    }
   }
 
   function deleteBucket(bucketName: string) {
-    removeLSBucket(bucketName);
+    if (bucketsNames.length > 1) {
+      removeLSBucket(bucketName);
+      if (bucketName === bucket) {
+        const filteredBucketsNames = bucketsNames.filter((bn) => bn !== bucketName);
+        const nextBucket = filteredBucketsNames[0];
+        selectBucket(nextBucket);
+      }
+    }
   }
 
-  const bucketsNames = getAllBuckets();
-
   return {
+    bucket,
     writeFile,
     readFile,
     initialize,
@@ -75,5 +97,6 @@ export function useFilesystem(initialBucket: string) {
     bucketsNames,
     renameBucket,
     deleteBucket,
+    createBucket,
   };
 }

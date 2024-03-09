@@ -10,7 +10,10 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "lib": ["DOM"]
+    "lib": ["DOM"],
+    "types": [
+      "./node_modules/unplugin-icons/types/preact.d.ts"
+    ],
   },
   "include": ["api/**/*", "server/db/**/*", "lib/**/*", "types/**/*", "app/**/*"],              /* Specify an array of filenames or patterns to include files for compilation. */
   "exclude": ["node_modules"]           /* Specify an array of filenames or patterns to exclude files from compilation. */
