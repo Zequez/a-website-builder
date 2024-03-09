@@ -8,3 +8,11 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module '*.elm' {
+  export const Elm: {
+    [key: string]: {
+      init: (config: { node: HTMLElement; flags: Record<string, unknown> }) => void;
+    };
+  };
+}
