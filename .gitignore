@@ -4,3 +4,4 @@ app_dist
 server_dist
 lib/bs/*
 elm-stuff
+.env
