@@ -53,7 +53,7 @@ const App = () => {
     (async () => {
       const res = await api.members({});
       if (res.status === 200) {
-        const { members } = await res.json();
+        const { data: members } = await res.json();
         setMembersStatus('loaded');
         setMembers(members);
       } else {

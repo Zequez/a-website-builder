@@ -23,7 +23,7 @@ export type File_ = {
   name: string;
   data: Buffer;
   data_type: string;
-  data_size: number;
+  data_size: string;
   data_cdn_url: string;
   created_at: string;
 };

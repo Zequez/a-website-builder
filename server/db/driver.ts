@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { isTest, SILENCE_SQL_LOGS } from '../config.js';
-import { colorConsole } from '../lib/utils.js';
+import { colorConsole, groupByKey } from '../lib/utils.js';
 import { Member, Site, File_ } from './types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -129,8 +129,25 @@ const members = select<Member>('members');
 const sites = select<Site>('sites');
 const files = select<File_>('files');
 
+type SiteWithFiles = Site & { files: File_[] };
+
+const extendedMembers = {
+  ...members,
+  withSitesAndFiles: async (id: string) => {
+    const member = await T.members.get(id);
+    if (!member) return null;
+    const sites = await T.sites.where({ member_id: member.id }).all();
+    const sitesIds = sites.map((s) => s.id);
+    const files = (await query(`SELECT * FROM files WHERE site_id IN (${sitesIds})`)) as File_[];
+    files.forEach((file) => (file.data = Buffer.from(file.data).toString('base64') as any));
+    const filesBySiteId = groupByKey(files, 'site_id');
+    (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id]));
+    return { ...member, sites };
+  },
+};
+
 export const T = {
-  members,
+  members: extendedMembers,
   sites,
   files,
 };

@@ -123,3 +123,11 @@ export async function tokenFromMember(member: Member) {
 export function randomEmail() {
   return `${Math.random().toString(36).substring(2, 15)}@example.com`;
 }
+
+export function groupByKey(arr: Record<string, any>[], key: string) {
+  return arr.reduce((acc, obj) => {
+    const val = obj[key];
+    acc[val] = (acc[val] || []).concat(obj);
+    return acc;
+  }, {});
+}
