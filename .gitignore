@@ -1,9 +1,10 @@
 node_modules
 .vercel
-app_dist
-server_dist
+dist/server
+dist/app
 lib/bs/*
 elm-stuff
 .env
 .DS_Store
 .vscode/*
+.vercel

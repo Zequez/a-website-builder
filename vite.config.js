@@ -10,7 +10,7 @@ export default defineConfig({
   root: resolve(__dirname, 'app'),
   base: './',
   build: {
-    outDir: resolve(__dirname, 'app_dist'),
+    outDir: resolve(__dirname, 'dist', 'app'),
     emptyOutDir: true,
     rollupOptions: {
       input: {
