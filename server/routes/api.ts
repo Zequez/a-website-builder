@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { Member, T } from './db/driver.js';
+import { Member, T } from '../db/driver.js';
 import {
   generateToken,
   hashCompare,
@@ -8,7 +8,7 @@ import {
   removeKeys,
   validateEmail,
   tokenData,
-} from './utils';
+} from '../lib/utils.js';
 
 const jsonParser = bodyParser.json();
 

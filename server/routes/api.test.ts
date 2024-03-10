@@ -1,10 +1,10 @@
+import { endpoint } from '../server';
+import { API_PATH } from '../config';
 import { describe, it, expect } from 'vitest';
-import { T } from './db/driver';
-import { verifyToken, tokenData, generateToken, hashCompare } from './utils';
+import { T } from '../db/driver';
+import { verifyToken, tokenData, generateToken, hashCompare } from '../lib/utils';
 
-const devServer = 'http://localhost:3000';
-
-const apiUrl = `${devServer}/_api_/`;
+const apiUrl = `${endpoint}/${API_PATH}/`;
 
 function fetchApi(apiPath: string, req?: RequestInit) {
   return fetch(`${apiUrl}${apiPath}`, req);
@@ -198,7 +198,7 @@ describe('Current user', () => {
   it('should return unauthorized with an expired token', async () => {
     const expiredToken = await generateToken(
       {
-        memberId: 123,
+        id: 123,
         email: 'a@b.com',
         fullName: 'a',
       },

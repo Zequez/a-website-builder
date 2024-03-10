@@ -5,3 +5,5 @@ server_dist
 lib/bs/*
 elm-stuff
 .env
+.DS_Store
+.vscode/*

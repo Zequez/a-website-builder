@@ -1,35 +1,47 @@
-import 'dotenv/config';
+import { env, isTest, SILENCE_SQL_LOGS } from '../config.js';
 import pg from 'pg';
 const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { colorConsole } from '../utils.js';
+import { colorConsole } from '../lib/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-if (!process.env.DATABASE_URL) throw 'DATABASE_URL environment variable not set';
+const databaseUrl = isTest ? process.env.TEST_DATABASE_URL : process.env.DATABASE_URL;
+
+if (!databaseUrl) throw '(TEST_)DATABASE_URL environment variable not set';
 
 const DATABASE_SCHEMA = fs.readFileSync(path.resolve(__dirname, './schema.sql'), 'utf8');
 const DATABASE_SEEDS = fs.readFileSync(path.resolve(__dirname, './seeds.sql'), 'utf8');
+const DATABASE_DROP = fs.readFileSync(path.resolve(__dirname, './drop.sql'), 'utf8');
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Connection string for your PostgreSQL database
+  connectionString: databaseUrl, // Connection string for your PostgreSQL database
   ssl: false,
 });
 
-export async function runSchema() {
+function sqlLog(queryStr: string, values: any[] = []) {
+  if (!SILENCE_SQL_LOGS)
+    values.length ? colorConsole.green(queryStr, values) : colorConsole.green(queryStr);
+}
+
+export async function runSchema(drop: boolean = false) {
   const client = await pool.connect();
   try {
+    colorConsole.greenBg('Dropping existing DB tables');
+    sqlLog(DATABASE_DROP);
+    await client.query(DATABASE_DROP);
+
     colorConsole.greenBg('Running schema');
-    colorConsole.green(DATABASE_SCHEMA);
+    sqlLog(DATABASE_SCHEMA);
     await client.query(DATABASE_SCHEMA);
 
     console.log('');
 
     colorConsole.greenBg('Seeding database');
-    colorConsole.green(DATABASE_SEEDS);
+    sqlLog(DATABASE_SEEDS);
     await client.query(DATABASE_SEEDS);
 
     console.log('\nSchema ran successfully');
@@ -43,10 +55,14 @@ export async function runSchema() {
 export async function query(queryStr: string, values: any[] = []) {
   const client = await pool.connect();
   try {
-    colorConsole.green(queryStr, values);
+    sqlLog(queryStr, values);
 
     const { rows } = await client.query(queryStr, values);
     return rows;
+  } catch (e) {
+    console.error('[SQL Error]', e, queryStr);
+    if (SILENCE_SQL_LOGS) colorConsole.red(queryStr);
+    throw e;
   } finally {
     client.release();
   }

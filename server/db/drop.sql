@@ -1,0 +1,7 @@
+BEGIN transaction;
+
+DROP TABLE IF EXISTS files;
+DROP TABLE IF EXISTS sites;
+DROP TABLE IF EXISTS members CASCADE;
+
+COMMIT;
