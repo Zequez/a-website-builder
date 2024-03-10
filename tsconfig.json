@@ -14,7 +14,17 @@
     "types": [
       "./node_modules/unplugin-icons/types/preact.d.ts"
     ],
+    "paths": {
+      "@db": ["./server/db/index.ts"],
+      "@server/*": ["./server/*"],
+      "@app/*": ["./app/*"]
+    }
   },
-  "include": ["api/**/*", "server/db/**/*", "lib/**/*", "types/**/*", "app/**/*", "vitest.setup.ts"],              /* Specify an array of filenames or patterns to include files for compilation. */
+  "include": [
+    "server/**/*",
+    "app/**/*",
+    "vitest.setup.ts",
+    "scripts/**/*"
+  ],
   "exclude": ["node_modules"]           /* Specify an array of filenames or patterns to exclude files from compilation. */
 }

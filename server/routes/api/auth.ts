@@ -1,29 +1,25 @@
-import express from 'express';
+import { Router } from 'express';
 import bodyParser from 'body-parser';
-import { Member, T } from '../db/driver.js';
+import { T } from '@db';
 import {
-  generateToken,
   hashCompare,
   hashPass,
-  removeKeys,
   validateEmail,
   tokenData,
-} from '../lib/utils.js';
+  sanitizeMember,
+  tokenFromMember,
+} from '@server/lib/utils';
 
 const jsonParser = bodyParser.json();
 
-const api = express.Router();
-
-api.get('/', (req, res) => {
-  res.status(200).json({ api: 'Yesss' });
-});
+const router = Router();
 
 type SignUpQuery = {
   email: string;
   passphrase: string;
   fullName: string;
 };
-api.post('/auth/signUp', jsonParser, async (req, res) => {
+router.post('/signUp', jsonParser, async (req, res) => {
   const { email, passphrase, fullName } = req.body as SignUpQuery;
 
   if (!email || !passphrase || !fullName) {
@@ -55,7 +51,7 @@ api.post('/auth/signUp', jsonParser, async (req, res) => {
   });
 });
 
-api.post('/auth/signIn', jsonParser, async (req, res) => {
+router.post('/signIn', jsonParser, async (req, res) => {
   const { email, passphrase } = req.body;
 
   const member = await T.members.where({ email }).one();
@@ -72,7 +68,7 @@ api.post('/auth/signIn', jsonParser, async (req, res) => {
     .json({ member: sanitizeMember(member), token: await tokenFromMember(member) });
 });
 
-api.get('/auth/me', async (req, res) => {
+router.get('/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   const { id: memberId, exp } = tokenData(token);
@@ -86,7 +82,7 @@ api.get('/auth/me', async (req, res) => {
   return res.status(200).json({ member: sanitizeMember(member) });
 });
 
-api.post('/auth/changePass', jsonParser, async (req, res) => {
+router.post('/changePass', jsonParser, async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Need a token' });
   const { id: memberId } = tokenData(token);
@@ -117,25 +113,4 @@ api.post('/auth/changePass', jsonParser, async (req, res) => {
   res.status(200).json({});
 });
 
-api.get('/members', async (req, res) => {
-  const members = await T.members.all();
-  return res.status(200).json({ members: members.map(sanitizeMember) });
-});
-
-api.all('*', (req, res) => {
-  res.status(404).json({ error: 'Not found' });
-});
-
-export default api;
-
-async function tokenFromMember(member: Member) {
-  return await generateToken({
-    id: member.id,
-    email: member.email,
-    fullName: member.full_name,
-  });
-}
-
-function sanitizeMember(member: Member) {
-  return removeKeys(member, ['passphrase']);
-}
+export default router;

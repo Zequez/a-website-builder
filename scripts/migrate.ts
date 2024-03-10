@@ -1,4 +1,4 @@
-import { runSchema } from './driver';
+import { runSchema } from '@db';
 
 (async () => {
   await runSchema();

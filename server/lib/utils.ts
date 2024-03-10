@@ -2,6 +2,7 @@ import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mime from 'mime';
+import { Member } from '@db';
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),
@@ -105,4 +106,20 @@ export function getSubdomain(url: URL) {
   const subdomain = url.hostname.replace(new RegExp(`\\.${process.env.BASE_HOSTNAME}$`), '');
   if (subdomain === url.hostname) return null;
   return subdomain;
+}
+
+export function sanitizeMember(member: Member) {
+  return removeKeys(member, ['passphrase']);
+}
+
+export async function tokenFromMember(member: Member) {
+  return await generateToken({
+    id: member.id,
+    email: member.email,
+    fullName: member.full_name,
+  });
+}
+
+export function randomEmail() {
+  return `${Math.random().toString(36).substring(2, 15)}@example.com`;
 }

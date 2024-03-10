@@ -3,8 +3,8 @@ import { env, isDev, API_PATH, APP_STATIC_PATH } from './config';
 import express from 'express';
 import cors from 'cors';
 
-import { T } from './db/driver.js';
-import api from './routes/api.js';
+import { T } from '@db';
+import api from './routes/api';
 import logger from './lib/logger.js';
 import { parseUrlFile, getSubdomain } from './lib/utils.js';
 

@@ -1,26 +1,9 @@
-import { endpoint } from '../server';
-import { API_PATH } from '../config';
 import { describe, it, expect } from 'vitest';
-import { T } from '../db/driver';
-import { verifyToken, tokenData, generateToken, hashCompare } from '../lib/utils';
+import { T } from '@db';
+import { verifyToken, randomEmail, generateToken, hashCompare } from '@server/lib/utils';
+import { fetchApi, signUpWith, signInWith } from './testUtils';
 
-const apiUrl = `${endpoint}/${API_PATH}/`;
-
-function fetchApi(apiPath: string, req?: RequestInit) {
-  return fetch(`${apiUrl}${apiPath}`, req);
-}
-
-async function signUpWith(body: any) {
-  return await fetchApi('auth/signUp', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-}
-
-describe('Sign up user', () => {
+describe('/signUp', () => {
   it('should create new user', async () => {
     const membersBefore = await T.members.all();
 
@@ -92,17 +75,7 @@ describe('Sign up user', () => {
   });
 });
 
-async function signInWith(body: any) {
-  return await fetchApi('auth/signIn', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-}
-
-describe('Sign in user', () => {
+describe('/signIn', () => {
   it('should return a JWT token and member data with correct credentials', async () => {
     const email = randomEmail();
     const res1 = await signUpWith({
@@ -141,7 +114,7 @@ describe('Sign in user', () => {
   });
 });
 
-describe('Current user', () => {
+describe('/me', () => {
   it('should return the current user', async () => {
     const email = randomEmail();
     const res1 = await signUpWith({
@@ -212,12 +185,11 @@ describe('Current user', () => {
         Authorization: `Bearer ${expiredToken}`,
       },
     });
-    console.log(await res.json());
     expect(res.status).toBe(401);
   });
 });
 
-describe('Change password', () => {
+describe('/changePass', () => {
   it('should change password if correct credentials', async () => {
     const email = randomEmail();
     const res1 = await signUpWith({
@@ -266,7 +238,3 @@ describe('Change password', () => {
     expect(res2.status).toBe(400);
   });
 });
-
-function randomEmail() {
-  return `${Math.random().toString(36).substring(2, 15)}@example.com`;
-}

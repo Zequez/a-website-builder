@@ -1,10 +1,13 @@
-import { env, isTest, SILENCE_SQL_LOGS } from '../config.js';
+import '../config';
 import pg from 'pg';
 const { Pool } = pg;
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+import { isTest, SILENCE_SQL_LOGS } from '../config.js';
 import { colorConsole } from '../lib/utils.js';
+import { Member, Site, File_ } from './types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,21 +30,31 @@ function sqlLog(queryStr: string, values: any[] = []) {
     values.length ? colorConsole.green(queryStr, values) : colorConsole.green(queryStr);
 }
 
-export async function runSchema(drop: boolean = false) {
+export async function runSchema(config?: { drop: boolean; silent: boolean }) {
+  const { drop = false, silent = false } = config || {};
+
   const client = await pool.connect();
   try {
-    colorConsole.greenBg('Dropping existing DB tables');
-    sqlLog(DATABASE_DROP);
-    await client.query(DATABASE_DROP);
+    if (drop) {
+      if (!silent) {
+        colorConsole.greenBg('Dropping existing DB tables');
+        sqlLog(DATABASE_DROP);
+      }
+      await client.query(DATABASE_DROP);
+    }
 
-    colorConsole.greenBg('Running schema');
-    sqlLog(DATABASE_SCHEMA);
+    if (!silent) {
+      colorConsole.greenBg('Running schema');
+      sqlLog(DATABASE_SCHEMA);
+    }
     await client.query(DATABASE_SCHEMA);
 
-    console.log('');
+    if (!silent) console.log('');
 
-    colorConsole.greenBg('Seeding database');
-    sqlLog(DATABASE_SEEDS);
+    if (!silent) {
+      colorConsole.greenBg('Seeding database');
+      sqlLog(DATABASE_SEEDS);
+    }
     await client.query(DATABASE_SEEDS);
 
     console.log('\nSchema ran successfully');
@@ -67,43 +80,6 @@ export async function query(queryStr: string, values: any[] = []) {
     client.release();
   }
 }
-
-export type Member = {
-  id: number;
-  email: string;
-  full_name: string;
-  is_admin: string;
-  active: boolean;
-  passphrase: string;
-  created_at: string;
-};
-
-export type Site = {
-  id: number;
-  name: string;
-  local_name: string;
-  domain_name: string;
-  member_id: number;
-  created_at: string;
-};
-
-export type File_ = {
-  id: string;
-  site_id: number;
-  name: string;
-  data: Buffer;
-  data_type: string;
-  data_size: number;
-  data_cdn_url: string;
-  created_at: string;
-};
-
-export type MembersSession = {
-  id: string;
-  member_id: number;
-  token: string;
-  created_at: string;
-};
 
 function select<T>(table: string) {
   const q = `SELECT * FROM ${table}`;
@@ -149,13 +125,11 @@ async function insertQuery<T>(table: string, keyValues: Record<string, any>) {
   )) as T[];
 }
 
-const membersSessions = select<MembersSession>('members_sessions');
 const members = select<Member>('members');
 const sites = select<Site>('sites');
 const files = select<File_>('files');
 
 export const T = {
-  membersSessions,
   members,
   sites,
   files,

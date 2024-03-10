@@ -1,12 +1,11 @@
-import { afterAll, beforeAll } from 'vitest';
-import { start, restart, close } from './server/server';
-import { runSchema } from './server/db/driver';
+import { restart, close } from '@server/server';
+import { runSchema } from '@db';
 
-beforeAll(async () => {
-  await runSchema();
-  restart();
-});
+export async function setup() {
+  await runSchema({ drop: true, silent: true });
+  await restart();
+}
 
-afterAll(() => {
-  close();
-});
+export async function tearDown() {
+  await close();
+}
