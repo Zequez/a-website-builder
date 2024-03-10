@@ -53,7 +53,7 @@ const App = () => {
     (async () => {
       const res = await api.members({});
       if (res.status === 200) {
-        const { data: members } = await res.json();
+        const members = await res.json();
         setMembersStatus('loaded');
         setMembers(members);
       } else {
@@ -67,7 +67,7 @@ const App = () => {
     <div class="flex flex-col h-screen">
       {showAuth ? <AuthModal onClose={() => goTo('home')} /> : null}
       {showEditor ? <Editor onExit={() => goTo('home')} /> : null}
-      <div class="h-16 bg-blue-300 text-white text-2xl flex items-center px-4 flex-shrink-0">
+      <div class="h-16 bg-emerald-500 text-white text-2xl flex items-center px-4 flex-shrink-0">
         <div class="flex-grow">A Web Club</div>
         <div class="flex space-x-4">
           {memberAuth ? (
@@ -102,7 +102,7 @@ const App = () => {
         ) : membersStatus === 'loaded' && members ? (
           <Members members={members} isAuthenticated={!!memberAuth} />
         ) : null}
-        <div class="flex justify-center pb-4">
+        <div class="flex justify-center pb-4 pt-4">
           <button
             onClick={() => goTo('auth')}
             class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
@@ -120,8 +120,8 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
   return (
-    <div class="flex-grow p-4">
-      <h1 class="text-center text-3xl mb-4 text-gray-700 font-light">Members</h1>
+    <div class="flex-grow">
+      <h1 class="text-center text-3xl py-4 text-gray-700 font-light">Members</h1>
       <div class="grid grid-cols-1 gap-2 max-w-lg mx-auto">
         {sortedMembers.map((m) => (
           <div
