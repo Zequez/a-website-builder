@@ -1,6 +1,9 @@
 export type Site = {
-  storage: 'local' | 'remote';
-  files: { [key: string]: EditorFile };
+  id: string | null;
+  localId: string;
+  name: string;
+  localName: string;
+  files: EditorFiles;
 };
 
 export type EditorFile = {

@@ -1,27 +1,21 @@
-import { useState, useEffect, useCallback } from 'preact/hooks';
+import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
 import cx from 'classnames';
-import EditIcon from '~icons/fa/edit';
 import CheckIcon from '~icons/fa/check';
 import PlusIcon from '~icons/fa/plus';
+import MenuEllipsis from '~icons/fa/ellipsis-v';
 
-import { EditorFile, EditorFiles } from './types';
+import FloatingMenu from '../FloatingMenu';
+
+import { EditorFiles, Site } from './types';
 import { filesByName as template } from './template';
-import { useFilesystem } from './filesystem';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
+import useSites from './lib/useSites';
 
 const Editor = ({ onExit }: { onExit: () => void }) => {
-  const {
-    files,
-    writeFile,
-    initialize,
-    bucket,
-    bucketsNames,
-    selectBucket,
-    renameBucket,
-    createBucket,
-    deleteBucket,
-  } = useFilesystem();
-  const [openFileName, setOpenFileName] = useState<string | null>(Object.keys(files)[0] || null);
+  const S = useSites();
+  const [selectedSiteLocalId, setSelectedSiteLocalId] = useState<string | null>(null);
+  const [openFileName, setOpenFileName] = useState<string | null>(null);
   const [iframeRatio, setIframeRatio] = useState(16 / 9);
   const [iframeWidth, setIframeWidth] = useState(360);
 
@@ -32,74 +26,85 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (Object.keys(files).length === 0) {
-      initialize(template);
-      setOpenFileName(Object.keys(template)[0] || null);
-    }
-  }, []);
-
-  const onFileClick = (fileName: string) => {
+  const handleFileClick = (fileName: string) => {
     setOpenFileName(fileName);
   };
 
   const onEditorContentChanges = (content: string) => {
-    if (openFileName) {
-      writeFile(openFileName, content);
+    if (selectedSiteLocalId && openFileName) {
+      S.writeFile(selectedSiteLocalId, openFileName, content);
     }
   };
 
-  const openFile = openFileName ? files[openFileName] : null;
+  const handleSelectSite = (localId: string) => {
+    setSelectedSiteLocalId(localId);
+    const newSelectedSite = S.byLocalId(localId);
+    const firstFile = Object.keys(newSelectedSite.files)[0];
+    setOpenFileName(firstFile || null);
+  };
+
+  const handleDeleteSite = (localId: string) => {
+    S.deleteSite(localId);
+    if (localId === selectedSiteLocalId) {
+      setSelectedSiteLocalId(null);
+      setOpenFileName(null);
+    }
+  };
+
+  const selectedSite = selectedSiteLocalId && S.byLocalId(selectedSiteLocalId);
+  const openFile = openFileName && selectedSite ? selectedSite.files[openFileName] : null;
 
   return (
-    <div class="fixed h-full w-full bg-emerald-100 flex">
-      <div class="w-40 bg-gray-500 flex flex-col">
+    <div class="fixed h-full w-full bg-gray-700 flex">
+      <div class="w-44 bg-gray-500 flex flex-col">
+        {/* SITES #################################################################### */}
         <div class="flex flex-col">
           <div class="text-white text-center text-lg my-2">Sites</div>
-          <BucketsList
-            bucket={bucket}
-            bucketsNames={bucketsNames}
-            onSelectBucket={selectBucket}
-            onAddBucket={createBucket}
-            onBucketNameChangeAttempt={renameBucket}
+          <SitesList
+            sites={S.sites}
+            selectedSiteLocalId={selectedSiteLocalId}
+            onSelect={handleSelectSite}
+            onAdd={() => S.addSite()}
+            onDelete={(localId) => handleDeleteSite(localId)}
+            onLocalNameChangeAttempt={S.setLocalName}
+            onNameChange={S.setName}
           />
         </div>
+
+        {/* FILES #################################################################### */}
         <div class="flex flex-col flex-grow">
           <div class="text-white text-center text-lg my-2">Files</div>
-          {Object.values(files).map(({ name }) => (
-            <button
-              class={cx('block px-2 py-1 border-b border-b-black/20 bg-gray-200', {
-                'bg-gray-300 border-r-8 border-solid border-r-emerald-500': name === openFileName,
-              })}
-              onClick={() => onFileClick(name)}
-            >
-              {name}
-            </button>
-          ))}
+          {selectedSite &&
+            Object.values(selectedSite.files).map(({ name }) => (
+              <button
+                class={cx('block px-2 py-1 border-b border-b-black/20 bg-gray-200', {
+                  'bg-gray-300 border-r-8 border-solid border-r-emerald-500': name === openFileName,
+                })}
+                onClick={() => handleFileClick(name)}
+              >
+                {name}
+              </button>
+            ))}
 
-          {Object.keys(files).length === 0 ? (
+          {selectedSite && Object.keys(selectedSite.files).length === 0 ? (
             <div class="flex items-center justify-center">
               <button
                 class="bg-emerald-500 px-2 py-1 text-white rounded-md uppercase tracking-wider"
-                onClick={() => initialize(template)}
+                onClick={() => S.applyTemplate(selectedSite.localId, template)}
               >
                 Use template
               </button>
             </div>
           ) : null}
         </div>
-        {bucketsNames.length > 1 ? (
-          <button
-            class="bg-orange-500 text-white py-2 uppercase"
-            onClick={() => deleteBucket(bucket)}
-          >
-            Delete site
-          </button>
-        ) : null}
+
+        {/* BOTOM BUTTONS #################################################################### */}
         <button class="bg-red-500 text-white py-1 uppercase" onClick={onExit}>
           Exit
         </button>
       </div>
+
+      {/* CODE EDITOR #################################################################### */}
       {openFile ? (
         <textarea
           class="flex-grow p-4 bg-gray-700 text-white font-mono"
@@ -107,92 +112,169 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
           onChange={({ currentTarget }) => onEditorContentChanges(currentTarget.value)}
         ></textarea>
       ) : (
-        <div class="flex flex-grow items-center justify-center text-2xl text-black opacity-50">
-          No file open
+        <div class="flex flex-grow items-center justify-center text-2xl text-gray-200 opacity-50">
+          {selectedSiteLocalId ? 'No file open' : 'No site selected'}
         </div>
       )}
-      <FloatingPreview
-        files={files}
-        title={`${bucket}.aweb.club`}
-        width={iframeWidth}
-        ratio={iframeRatio}
-      />
+
+      {/* FLOATING PREVIEW #################################################################### */}
+      {selectedSite ? (
+        <FloatingPreview
+          files={selectedSite.files}
+          title={`${selectedSite.localName}.aweb.club`}
+          width={iframeWidth}
+          ratio={iframeRatio}
+        />
+      ) : null}
     </div>
   );
 };
 
-function BucketsList({
-  bucket,
-  bucketsNames,
-  onBucketNameChangeAttempt,
-  onSelectBucket,
-  onAddBucket,
+function SitesList({
+  sites,
+  selectedSiteLocalId,
+  onLocalNameChangeAttempt,
+  onNameChange,
+  onSelect,
+  onDelete,
+  onAdd,
 }: {
-  bucketsNames: string[];
-  bucket: string;
-  onBucketNameChangeAttempt: (newName: string) => Promise<boolean>;
-  onSelectBucket: (name: string) => void;
-  onAddBucket: () => void;
+  sites: Site[];
+  selectedSiteLocalId: string | null;
+  onLocalNameChangeAttempt: (localId: string, newName: string) => Promise<boolean>;
+  onNameChange: (localId: string, newName: string) => void;
+  onSelect: (localId: string) => void;
+  onDelete: (localId: string) => void;
+  onAdd: () => void;
 }) {
-  const [newBucketName, setNewBucketName] = useState<string | null>(null);
-
-  async function handleApplyBucketNameChange() {
-    if (newBucketName) {
-      if (await onBucketNameChangeAttempt(newBucketName)) {
-        setNewBucketName(null);
-      }
-    }
-  }
-
   return (
     <>
-      {bucketsNames.map((b) => (
-        <div class="flex border-b border-b-black/20">
-          {newBucketName !== null && b === bucket ? (
-            <input
-              class="block flex-grow px-2 py-1 bg-white min-w-0"
-              type="text"
-              value={newBucketName}
-              onKeyUp={({ key }) => key === 'Enter' && handleApplyBucketNameChange()}
-              onChange={({ currentTarget }) => setNewBucketName(currentTarget.value)}
-              ref={(el) => el?.focus()}
-            />
-          ) : (
-            <button
-              onClick={() => onSelectBucket(b)}
-              class={cx('flex-grow block px-2 py-1', {
-                'bg-gray-300': b === bucket,
-                'bg-gray-200': b !== bucket,
-              })}
-            >
-              {b}
-            </button>
-          )}
-          {b === bucket ? (
-            newBucketName !== null ? (
-              <button
-                class="bg-emerald-400 flex items-center px-1 hover:bg-emerald-300 text-white"
-                onClick={handleApplyBucketNameChange}
-              >
-                <CheckIcon />
-              </button>
-            ) : (
-              <button
-                class="bg-gray-300 flex items-center px-1 hover:bg-gray-400 hover:text-white"
-                onClick={() => setNewBucketName(b)}
-              >
-                <EditIcon />
-              </button>
-            )
-          ) : null}
-        </div>
+      {sites.map((site) => (
+        <SiteButton
+          site={site}
+          isSelected={selectedSiteLocalId === site.localId}
+          onNameChange={(newVal) => onNameChange(site.localId, newVal)}
+          onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.localId, newVal)}
+          onDelete={() => onDelete(site.localId)}
+          onOpen={() => onSelect(site.localId)}
+        />
       ))}
-      <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAddBucket}>
+      <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
         <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 w-8 h-8 text-xs rounded-full">
           <PlusIcon />
         </span>
       </button>
     </>
+  );
+}
+
+function SiteButton({
+  site,
+  isSelected,
+  onLocalNameChangeAttempt,
+  onNameChange,
+  onDelete,
+  onOpen,
+}: {
+  site: { name: string; localName: string };
+  isSelected: boolean;
+  onLocalNameChangeAttempt: (val: string) => Promise<boolean>;
+  onNameChange: (val: string) => void;
+  onDelete: () => void;
+  onOpen: () => void;
+}) {
+  const [mode, setMode] = useState<'view' | 'editName' | 'editLocalName'>('view');
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const [newValue, setNewValue] = useState<string>('');
+  const elRef = useRef<HTMLDivElement>(null);
+
+  function handleOpenMenu() {
+    setMenuIsOpen(true);
+  }
+
+  function onStartEditName() {
+    setNewValue(site.name);
+    setMode('editName');
+  }
+
+  function onStartEditLocalName() {
+    setNewValue(site.localName);
+    setMode('editLocalName');
+  }
+
+  async function handleApplyNameChange() {
+    if (mode === 'editName') {
+      onNameChange(newValue);
+      setMode('view');
+      setNewValue('');
+    } else if (mode === 'editLocalName') {
+      if (await onLocalNameChangeAttempt(newValue)) {
+        console.log('Name change successful!');
+        setMode('view');
+        setNewValue('');
+      } else {
+        console.log('Name not available');
+      }
+    }
+  }
+
+  return (
+    <div
+      class={cx('relative flex border-b border-b-black/20 h-12', {
+        'bg-gray-200': !isSelected,
+        'bg-gray-300': isSelected,
+      })}
+      ref={elRef}
+    >
+      {mode === 'editName' || mode === 'editLocalName' ? (
+        <input
+          class="block flex-grow px-2 py-1 bg-white min-w-0"
+          type="text"
+          value={newValue}
+          onKeyUp={({ key }) => key === 'Enter' && handleApplyNameChange()}
+          onChange={({ currentTarget }) => setNewValue(currentTarget.value)}
+          ref={(el) => el?.focus()}
+        />
+      ) : (
+        <button
+          onClick={() => !isSelected && onOpen()}
+          class={cx('flex-grow block px-2 py-1 text-left hover:bg-gray-400')}
+        >
+          <span class="block" onDblClick={onStartEditName}>
+            {site.name}
+          </span>
+          <span class="block text-xs opacity-50 -mt-1" onDblClick={onStartEditLocalName}>
+            {site.localName}
+          </span>
+        </button>
+      )}
+      {mode === 'view' ? (
+        <button
+          class="flex items-center px-1 hover:bg-gray-400 text-gray-400 hover:text-white"
+          onClick={handleOpenMenu}
+        >
+          <MenuEllipsis />
+        </button>
+      ) : (
+        <button
+          class="bg-emerald-400 flex items-center px-1 hover:bg-emerald-300 text-white"
+          onClick={handleApplyNameChange}
+        >
+          <CheckIcon />
+        </button>
+      )}
+      {menuIsOpen ? (
+        <FloatingMenu
+          target={elRef.current!}
+          items={{
+            'Edit name': onStartEditName,
+            'Edit domain name': onStartEditLocalName,
+            Delete: onDelete,
+          }}
+          onClose={() => setMenuIsOpen(false)}
+        />
+      ) : null}
+    </div>
   );
 }
 
