@@ -4,7 +4,12 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    setupFiles: [],
+    setupFiles: ['./vitest.hooks.ts'],
     globalSetup: ['./vitest.setup.ts'],
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
 });

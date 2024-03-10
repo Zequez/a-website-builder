@@ -12,4 +12,9 @@ router.get('/members', async (req, res) => {
   return res.status(200).json({ members: members.map(sanitizeMember) });
 });
 
+router.get('/sit', async (req, res) => {
+  const sites = await T.sites.all();
+  return res.status(200).json({ sites });
+});
+
 export default router;

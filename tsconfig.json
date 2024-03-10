@@ -24,6 +24,7 @@
     "server/**/*",
     "app/**/*",
     "vitest.setup.ts",
+    "vitest.hooks.ts",
     "scripts/**/*"
   ],
   "exclude": ["node_modules"]           /* Specify an array of filenames or patterns to exclude files from compilation. */
