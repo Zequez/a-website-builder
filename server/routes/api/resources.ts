@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { T, query, Member, Site, File_ } from '@db';
-import { sanitizeMember } from '@server/lib/utils';
+import { sanitizeMember, tokenData, tokenFromHeader } from '@server/lib/utils';
 
 const jsonParser = bodyParser.json();
 
@@ -21,8 +21,14 @@ router.get('/members/:id', async (req, res) => {
 });
 
 router.post('/files/:id', jsonParser, async (req, res) => {
+  const token = tokenFromHeader(req.headers);
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
   const file = await T.files.get(req.params.id);
   if (!file) return res.status(404).json({ error: 'File not found' });
+  const { id } = tokenData(token);
+  const site = await T.sites.get(file.site_id);
+  const member = await T.members.get(site.member_id);
+  if (id !== member.id) return res.status(401).json({ error: 'Unauthorized' });
   const { data, name } = req.body;
   const bufferData = Buffer.from(data, 'base64');
   await T.files.update(file.id, { data: bufferData, data_size: bufferData.length, name });

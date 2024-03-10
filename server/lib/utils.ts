@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mime from 'mime';
 import { Member } from '@db';
+import { IncomingHttpHeaders } from 'http';
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),
@@ -130,4 +131,8 @@ export function groupByKey(arr: Record<string, any>[], key: string) {
     acc[val] = (acc[val] || []).concat(obj);
     return acc;
   }, {});
+}
+
+export function tokenFromHeader(reqHeaders: IncomingHttpHeaders) {
+  return reqHeaders.authorization?.replace('Bearer ', '') || null;
 }

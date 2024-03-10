@@ -99,8 +99,6 @@ router.post('/changePass', jsonParser, async (req, res) => {
     return res.status(400).json({ error: 'Old passphrase is required' });
   }
 
-  console.log('PASS', member.passphrase);
-
   if (
     (member.passphrase && !(await hashCompare(oldPassphrase, member.passphrase))) ||
     (!member.passphrase && !!oldPassphrase)
