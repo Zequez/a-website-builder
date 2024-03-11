@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 export const API_PATH = '_api_';
-export const APP_STATIC_PATH = 'app_dist';
+export const APP_STATIC_PATH = 'dist/app';
 export const env = process.env;
 export const isDev = process.env.NODE_ENV === 'development';
 export const isProd = process.env.NODE_ENV === 'production';

@@ -1,2 +1,2 @@
 export { T, runSchema, query } from './driver';
-export * from './types.d';
+export type * from './types.d';

@@ -2,6 +2,8 @@ import './config';
 import { env, isDev, API_PATH, APP_STATIC_PATH } from './config';
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { T } from '@db';
 import api from './routes/api';
@@ -17,7 +19,17 @@ if (isDev) {
 app.use(logger(API_PATH));
 app.use(`/${API_PATH}`, api);
 
+// __filename
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// const staticAppPath = path.join(__dirname, '../dist/app');
+
+// console.log(staticAppPath);
+
 const appDist = express.static(APP_STATIC_PATH);
+
+// console.log(`APP DIST`, APP_STATIC_PATH);
 
 app.all('*', async (req, res, next) => {
   if (!req.headers.host) throw 'No host?';
@@ -45,6 +57,7 @@ app.all('*', async (req, res, next) => {
 });
 
 app.all('*', (req, res) => {
+  console.log(req);
   res.status(404).json({ error: 'Not found' });
 });
 

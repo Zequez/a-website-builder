@@ -16,9 +16,9 @@ const databaseUrl = isTest ? process.env.TEST_DATABASE_URL : process.env.DATABAS
 
 if (!databaseUrl) throw '(TEST_)DATABASE_URL environment variable not set';
 
-const DATABASE_SCHEMA = fs.readFileSync(path.resolve(__dirname, './schema.sql'), 'utf8');
-const DATABASE_SEEDS = fs.readFileSync(path.resolve(__dirname, './seeds.sql'), 'utf8');
-const DATABASE_DROP = fs.readFileSync(path.resolve(__dirname, './drop.sql'), 'utf8');
+const DATABASE_SCHEMA = fs.readFileSync(path.join(__dirname, './schema.sql'), 'utf8');
+const DATABASE_SEEDS = fs.readFileSync(path.join(__dirname, './seeds.sql'), 'utf8');
+const DATABASE_DROP = fs.readFileSync(path.join(__dirname, './drop.sql'), 'utf8');
 
 export const pool = new Pool({
   connectionString: databaseUrl, // Connection string for your PostgreSQL database

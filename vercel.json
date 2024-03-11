@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "routes": [
+  "rewrite": [
     {
-      "src": "/(.*)",
-      "dest": "dist/server/index.js"
+      "source": "/(.*)",
+      "dest": "dist/ts/server/index.js"
     }
   ]
 }

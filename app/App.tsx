@@ -1,3 +1,4 @@
+import { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import cx from 'classnames';
 import * as api from './lib/api';
@@ -147,5 +148,21 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
     </div>
   );
 };
+
+const HeaderButton = ({ onClick, tw = 'bg-blue-400' }: { onClick: () => void; tw: string }) => (
+  <button
+    class={cx('block text-base px-4 py-2 rounded-md text-white uppercase tracking-wider', tw)}
+    onClick={onClick}
+  >
+    Logout
+  </button>
+);
+
+const Box = ({
+  children,
+}: {
+  children: JSX.Element | string;
+  tw: (string | Record<string, string>)[] | string | Record<string, string>;
+}) => <div class={cx()}></div>;
 
 export default App;
