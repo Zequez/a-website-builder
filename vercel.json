@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "rewrite": [
+  "rewrites": [
     {
       "source": "/(.*)",
-      "dest": "dist/ts/server/index.js"
+      "destination": "dist/ts/server/index.js"
     }
   ]
 }
