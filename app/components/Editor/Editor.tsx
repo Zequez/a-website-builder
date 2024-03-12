@@ -55,7 +55,7 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
   const openFile = openFileName && selectedSite ? selectedSite.files[openFileName] : null;
 
   return (
-    <div class="fixed h-full w-full bg-gray-700 flex">
+    <div class="fixed h-full w-full bg-gray-700 flex z-20">
       <div class="w-44 bg-gray-500 flex flex-col">
         {/* SITES #################################################################### */}
         <div class="flex flex-col">

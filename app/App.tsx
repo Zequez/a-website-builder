@@ -5,6 +5,7 @@ import * as api from './lib/api';
 
 import { useAuth, AuthModal } from './components/Auth';
 import Editor from './components/Editor';
+import { gravatarUrl } from './lib/utils';
 
 type Member = {
   id: number;
@@ -65,33 +66,29 @@ const App = () => {
   }, []);
 
   return (
-    <div class="flex flex-col h-screen">
+    <div class="flex flex-col bg-gray-100 text-black/80">
       {showAuth ? <AuthModal onClose={() => goTo('home')} /> : null}
       {showEditor ? <Editor onExit={() => goTo('home')} /> : null}
-      <div class="h-16 bg-emerald-500 text-white text-2xl flex items-center px-4 flex-shrink-0">
-        <div class="flex-grow">A Web Club</div>
-        <div class="flex space-x-4">
+      <div class="relative z-0 h-12 bg-lime-600/80 flex items-center px-4 flex-shrink-0">
+        <div class="flex-grow flex items-center">
+          <span class="rounded-md bg-white/90 shadow-sm text-lime-600 text-2xl font-semibold tracking-widest font-serif px-2 py-0.5 text-shadow-inner-1">
+            HOJAWEB.XYZ
+          </span>
+          <div class="ml-2 text-white font-semibold">Web Building Club</div>
+        </div>
+        <div class="flex space-x-2">
           {memberAuth ? (
-            <button
-              class="block text-base px-4 py-2 rounded-md bg-red-400 text-white uppercase tracking-wider"
-              onClick={signOut}
-            >
+            <Button _class="bg-red-400" onClick={signOut}>
               Logout
-            </button>
+            </Button>
           ) : null}
-          <button
-            class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
-            onClick={() => goTo('auth')}
-          >
+          <Button _class="bg-blue-400 " onClick={() => goTo('auth')}>
             {memberAuth ? 'Account' : 'Access'}
-          </button>
+          </Button>
           {memberAuth ? (
-            <button
-              class="block text-base px-4 py-2 rounded-md bg-emerald-400 text-white uppercase tracking-wider"
-              onClick={() => goTo('editor')}
-            >
+            <Button _class="bg-emerald-400" onClick={() => goTo('editor')}>
               Editor
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -104,12 +101,9 @@ const App = () => {
           <Members members={members} isAuthenticated={!!memberAuth} />
         ) : null}
         <div class="flex justify-center pb-4 pt-4">
-          <button
-            onClick={() => goTo('auth')}
-            class="block text-base px-4 py-2 rounded-md bg-blue-400 text-white uppercase tracking-wider"
-          >
+          <Button size="lg" onClick={() => goTo('auth')}>
             Register
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -122,26 +116,31 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
   );
   return (
     <div class="flex-grow">
-      <h1 class="text-center text-3xl py-4 text-gray-700 font-light">Members</h1>
-      <div class="grid grid-cols-1 gap-2 max-w-lg mx-auto">
+      <h1 class="text-center text-3xl py-4 text-black/30 font-semibold tracking-wider">Members</h1>
+      <div class="grid grid-cols-1 max-w-lg mx-auto border border-solid border-black/10 rounded-md">
         {sortedMembers.map((m) => (
           <div
-            key={m.id}
-            class={cx('bg-white p-2 rounded border-2 border-solid', {
-              'bg-gray-200': !m.active,
-              'border-transparent': !m.is_admin,
-              'border-blue-400': m.is_admin,
-            })}
+            class={cx(
+              'flex bg-white p-2 first:rounded-t-md last:rounded-b-md border-b border-black/5',
+            )}
           >
-            <div>
-              {m.is_admin ? (
-                <span class="bg-blue-400 text-white rounded-md uppercase text-xs font-bold mr-2 px-1 py-0.5">
-                  Server Admin
-                </span>
-              ) : null}
-              {m.full_name}
+            <div class="w-14 h-14 mr-2">
+              <img
+                src={gravatarUrl(m.email)}
+                class="w-full h-full rounded-full border-1 border-t-0.5 border-b-3 border-solid border-black/80"
+              />
             </div>
-            {isAuthenticated ? <div>{m.email}</div> : null}
+            <div key={m.id} class="">
+              <div>
+                {m.is_admin ? (
+                  <span class="bg-blue-400 text-white rounded-md uppercase text-xs font-bold mr-2 px-1 py-0.5">
+                    Server Admin
+                  </span>
+                ) : null}
+                {m.full_name}
+              </div>
+              {isAuthenticated ? <div class="text-black/40">{m.email}</div> : null}
+            </div>
           </div>
         ))}
       </div>
@@ -149,20 +148,38 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
   );
 };
 
-const HeaderButton = ({ onClick, tw = 'bg-blue-400' }: { onClick: () => void; tw: string }) => (
+// const HeaderButton: FC<{ onClick: () => void; _class: string }> = ({
+//   onClick,
+//   _class,
+//   children,
+// }) => {
+//   <Button onClick={onClick} _class={`${_class} `}>
+//     {children}
+//   </Button>;
+// };
+
+const Button: FC<{ onClick?: () => void; _class?: string; size?: 'md' | 'lg' }> = ({
+  onClick,
+  _class = 'bg-blue-400',
+  children,
+  size = 'md',
+}) => (
   <button
-    class={cx('block text-base px-4 py-2 rounded-md text-white uppercase tracking-wider', tw)}
+    class={[
+      'relative group block rounded-md border-1 border-solid border-white/10 text-white/85 uppercase tracking-[1px] font-semibold text-shadow-1',
+      _class,
+      {
+        'px-2 py-1.5 text-xs': size === 'md',
+        'px-3 py-2 text-base': size === 'lg',
+      },
+    ]}
     onClick={onClick}
   >
-    Logout
+    {children}
+    <div class="absolute inset-0 rounded-md hidden bg-white/10 group-hover:block"></div>
   </button>
 );
 
-const Box = ({
-  children,
-}: {
-  children: JSX.Element | string;
-  tw: (string | Record<string, string>)[] | string | Record<string, string>;
-}) => <div class={cx()}></div>;
+type FC<T> = (props: { children?: JSX.Element | string } & T) => JSX.Element;
 
 export default App;

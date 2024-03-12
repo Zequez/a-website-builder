@@ -24,11 +24,12 @@ specifiers:
   dotenv: ^16.4.5
   elm: 0.19.1-6
   express: ^4.18.3
+  js-sha256: ^0.11.0
   jsonwebtoken: ^9.0.2
   mime: ^4.0.1
   node-html-parser: ^6.1.12
   pg: ^8.11.3
-  preact: ^10.19.6
+  preact: github:zequez/preact#main
   tsc-alias: ^1.8.8
   tsx: ^4.7.1
   typescript: ^5.4.2
@@ -64,11 +65,12 @@ dependencies:
   dotenv: 16.4.5
   elm: 0.19.1-6
   express: 4.18.3
+  js-sha256: 0.11.0
   jsonwebtoken: 9.0.2
   mime: 4.0.1
   node-html-parser: 6.1.12
   pg: 8.11.3
-  preact: 10.19.6
+  preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
   tsc-alias: 1.8.8
   tsx: 4.7.1
   typescript: 5.4.2
@@ -924,7 +926,7 @@ packages:
     peerDependencies:
       preact: ^10.0.0
     dependencies:
-      preact: 10.19.6
+      preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
     dev: false
 
   /@prefresh/utils/1.2.0:
@@ -942,7 +944,7 @@ packages:
       '@prefresh/core': 1.5.2_preact@10.19.6
       '@prefresh/utils': 1.2.0
       '@rollup/pluginutils': 4.2.1
-      preact: 10.19.6
+      preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
       vite: 5.1.4_@types+node@20.11.21
     transitivePeerDependencies:
       - supports-color
@@ -3469,6 +3471,10 @@ packages:
     hasBin: true
     dev: false
 
+  /js-sha256/0.11.0:
+    resolution: {integrity: sha512-6xNlKayMZvds9h1Y1VWc0fQHQ82BxTXizWPEtEeGvmOUYpBRy4gbWroHLpzowe6xiQhHpelCQiE7HEdznyBL9Q==}
+    dev: false
+
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
     dev: false
@@ -4349,10 +4355,6 @@ packages:
 
   /postgres-range/1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
-    dev: false
-
-  /preact/10.19.6:
-    resolution: {integrity: sha512-gympg+T2Z1fG1unB8NH29yHJwnEaCH37Z32diPDku316OTnRPeMbiRV9kTrfZpocXjdfnWuFUl/Mj4BHaf6gnw==}
     dev: false
 
   /pretty-format/29.7.0:
@@ -5560,4 +5562,12 @@ packages:
   /yocto-queue/1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
+    dev: false
+
+  github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82:
+    resolution: {tarball: https://codeload.github.com/zequez/preact/tar.gz/c5f048366a8a02417125eb17829f472122938b82}
+    name: preact
+    version: 10.19.6
+    prepare: true
+    requiresBuild: true
     dev: false
