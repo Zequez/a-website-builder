@@ -16,6 +16,8 @@ type Member = {
   created_at: string;
 };
 
+type Place = 'editor' | 'auth' | 'home';
+
 const App = () => {
   const { memberAuth, signOut } = useAuth();
   const [membersStatus, setMembersStatus] = useState<'loading' | 'error' | 'loaded'>('loading');
@@ -25,7 +27,7 @@ const App = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
 
-  function goTo(place: 'editor' | 'auth' | 'home') {
+  function goTo(place: Place) {
     if (place === 'editor') {
       window.location.hash = 'editor';
       setShowEditor(true);
@@ -69,29 +71,7 @@ const App = () => {
     <div class="flex flex-col bg-gray-100 text-black/80">
       {showAuth ? <AuthModal onClose={() => goTo('home')} /> : null}
       {showEditor ? <Editor onExit={() => goTo('home')} /> : null}
-      <div class="relative z-0 h-12 bg-lime-600/80 flex items-center px-4 flex-shrink-0">
-        <div class="flex-grow flex items-center">
-          <span class="rounded-md bg-white/90 shadow-sm text-lime-600 text-2xl font-semibold tracking-widest font-serif px-2 py-0.5 text-shadow-inner-1">
-            HOJAWEB.XYZ
-          </span>
-          <div class="ml-2 text-white font-semibold">Web Building Club</div>
-        </div>
-        <div class="flex space-x-2">
-          {memberAuth ? (
-            <Button _class="bg-red-400" onClick={signOut}>
-              Logout
-            </Button>
-          ) : null}
-          <Button _class="bg-blue-400 " onClick={() => goTo('auth')}>
-            {memberAuth ? 'Account' : 'Access'}
-          </Button>
-          {memberAuth ? (
-            <Button _class="bg-emerald-400" onClick={() => goTo('editor')}>
-              Editor
-            </Button>
-          ) : null}
-        </div>
-      </div>
+      <Header goTo={goTo} isAuth={!!memberAuth} signOut={signOut} />
       <div class="flex-grow">
         {membersStatus === 'loading' ? (
           'Loading...'
@@ -117,13 +97,9 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
   return (
     <div class="flex-grow">
       <h1 class="text-center text-3xl py-4 text-black/30 font-semibold tracking-wider">Members</h1>
-      <div class="grid grid-cols-1 max-w-lg mx-auto border border-solid border-black/10 rounded-md">
+      <div class="grid grid-cols-1 max-w-screen-sm mx-auto border border-solid border-black/10 sm:rounded-md">
         {sortedMembers.map((m) => (
-          <div
-            class={cx(
-              'flex bg-white p-2 first:rounded-t-md last:rounded-b-md border-b border-black/5',
-            )}
-          >
+          <div class="flex bg-white p-2 sm:first:rounded-t-md sm:last:rounded-b-md border-b border-black/5">
             <div class="w-14 h-14 mr-2">
               <img
                 src={gravatarUrl(m.email)}
@@ -148,15 +124,41 @@ const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthentica
   );
 };
 
-// const HeaderButton: FC<{ onClick: () => void; _class: string }> = ({
-//   onClick,
-//   _class,
-//   children,
-// }) => {
-//   <Button onClick={onClick} _class={`${_class} `}>
-//     {children}
-//   </Button>;
-// };
+const Header = ({
+  isAuth,
+  goTo,
+  signOut,
+}: {
+  isAuth: boolean;
+  signOut: () => void;
+  goTo: (val: Place) => void;
+}) => {
+  return (
+    <div class="relative z-0 bg-lime-600/80 flex flex-wrap items-center px-4 flex-shrink-0 pt-2">
+      <div class="flex-grow flex items-center justify-center h-10 mb-2">
+        <span class="rounded-md bg-white/90 shadow-sm text-lime-600 text-xl md:text-2xl font-semibold tracking-widest font-serif px-2 py-0.5 text-shadow-inner-1">
+          HOJAWEB.XYZ
+        </span>
+        <div class="ml-2 text-white font-semibold">Web Building Club</div>
+      </div>
+      <div class="flex space-x-2 justify-center  items-center flex-grow h-10 mb-2">
+        {isAuth ? (
+          <Button _class="bg-red-400" onClick={signOut}>
+            Logout
+          </Button>
+        ) : null}
+        <Button _class="bg-blue-400 " onClick={() => goTo('auth')}>
+          {isAuth ? 'Account' : 'Access'}
+        </Button>
+        {isAuth ? (
+          <Button _class="bg-emerald-400" onClick={() => goTo('editor')}>
+            Editor
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+};
 
 const Button: FC<{ onClick?: () => void; _class?: string; size?: 'md' | 'lg' }> = ({
   onClick,
