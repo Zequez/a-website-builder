@@ -15,7 +15,7 @@ type Member = {
   full_name: string;
 };
 
-type MemberAuth = {
+export type MemberAuth = {
   token: string;
   member: Member;
   expiresAt: Date;

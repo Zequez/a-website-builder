@@ -11,8 +11,10 @@ import { EditorFiles, Site } from './types';
 import { filesByName as template } from './template';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
 import useSites from './lib/useSites';
+import { useAuth } from '../Auth';
 
-const Editor = ({ onExit }: { onExit: () => void }) => {
+const Editor = () => {
+  const { memberAuth } = useAuth();
   const S = useSites();
   const [selectedSiteLocalId, setSelectedSiteLocalId] = useState<string | null>(null);
   const [openFileName, setOpenFileName] = useState<string | null>(null);
@@ -99,15 +101,15 @@ const Editor = ({ onExit }: { onExit: () => void }) => {
         </div>
 
         {/* BOTOM BUTTONS #################################################################### */}
-        <button class="bg-red-500 text-white py-1 uppercase" onClick={onExit}>
+        <a class="block bg-red-500 text-white py-1 uppercase text-center" href="/">
           Exit
-        </button>
+        </a>
       </div>
 
       {/* CODE EDITOR #################################################################### */}
       {openFile ? (
         <textarea
-          class="flex-grow p-4 bg-gray-700 text-white font-mono"
+          class={'flex-grow p-4 bg-gray-700 text-white font-mono'}
           value={openFile.content}
           onChange={({ currentTarget }) => onEditorContentChanges(currentTarget.value)}
         ></textarea>

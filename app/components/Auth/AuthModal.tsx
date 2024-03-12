@@ -14,7 +14,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div class="fixed inset-0 sm:p-8">
+    <div class="fixed inset-0 sm:p-8 z-50">
       <div class="relative z-20 bg-gray-100 shadow-md sm:rounded-md p-4 max-w-2xl mx-auto overflow-hidden">
         <Auth />
         <button

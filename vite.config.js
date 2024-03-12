@@ -4,9 +4,10 @@ import UnoCSS from 'unocss/vite';
 import elmPlugin from 'vite-plugin-elm';
 import preact from '@preact/preset-vite';
 import Icons from 'unplugin-icons/vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [preact(), elmPlugin(), UnoCSS(), Icons({ compiler: 'jsx' })],
+  plugins: [preact(), elmPlugin(), UnoCSS(), Icons({ compiler: 'jsx' }), tsconfigPaths()],
   root: resolve(__dirname, 'app'),
   base: './',
   build: {

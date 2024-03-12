@@ -19,17 +19,7 @@ if (isDev) {
 app.use(logger(API_PATH));
 app.use(`/${API_PATH}`, api);
 
-// __filename
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-// const staticAppPath = path.join(__dirname, '../dist/app');
-
-// console.log(staticAppPath);
-
 const appDist = express.static(APP_STATIC_PATH);
-
-// console.log(`APP DIST`, APP_STATIC_PATH);
 
 app.all('*', async (req, res, next) => {
   if (!req.headers.host) throw 'No host?';
@@ -41,6 +31,10 @@ app.all('*', async (req, res, next) => {
 
   if (!subdomain) {
     // Serve static app
+    if (req.url === '/editor') {
+      return res.sendFile(path.resolve(path.join(APP_STATIC_PATH, 'index.html')));
+    }
+
     return appDist(req, res, next);
   } else {
     const site = await T.sites.where({ local_name: subdomain }).one();
