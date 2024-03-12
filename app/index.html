@@ -4,7 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>An open website creation system</title>
-    <link rel="icon" type="image/png" href="./favicon.png" />
+    <link rel="icon" type="image/png" href="/favicons/americas.png" />
+    <script>
+      const icons = ['americas', 'asiaoceania', 'europeafrica'];
+      const icon = icons[(Math.random() * icons.length) | 0];
+      document.querySelector('link[rel="icon"]').setAttribute('href', `/favicons/${icon}.png`);
+    </script>
   </head>
   <body class="m-0">
     <div id="root"></div>
