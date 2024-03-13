@@ -26,3 +26,19 @@ export async function signInWith(body: any) {
     body: JSON.stringify(body),
   });
 }
+
+export const get = (apiPath: string, token?: string) => {
+  const headers: Record<string, string> = {};
+  if (token !== undefined) headers.Authorization = `Bearer ${token}`;
+  return fetchApi(apiPath, { headers });
+};
+
+export const post = (apiPath: string, body: Record<string, any>, token?: string) => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token !== undefined) headers.Authorization = `Bearer ${token}`;
+  return fetchApi(apiPath, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+};

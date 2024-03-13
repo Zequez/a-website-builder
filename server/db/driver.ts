@@ -152,7 +152,7 @@ const extendedMembers = {
       return editedFile;
     });
     const filesBySiteId = groupBy(editedFiles, 'site_id');
-    (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id]));
+    (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id] || []));
     return { ...member, sites };
   },
 };

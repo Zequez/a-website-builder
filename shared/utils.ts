@@ -30,3 +30,7 @@ type TokenMember = {
 export function tokenData(token: string): TokenMember & { exp: number; iat: number } {
   return JSON.parse(atob(token.split('.')[1]));
 }
+
+export function randomAlphaNumericString() {
+  return Math.random().toString(36).slice(2);
+}

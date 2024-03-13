@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 
 import { T } from '@db';
 import api from './routes/api';
-import logger from './lib/logger.js';
+import { logger } from './lib/middlewares.js';
 import { parseUrlFile, getSubdomain } from './lib/utils.js';
 
 const app = express();
@@ -15,6 +15,12 @@ const app = express();
 if (isDev) {
   app.use(cors());
 }
+
+function logErrors(err: any, req: any, res: any, next: any) {
+  console.error(err.stack);
+  next(err);
+}
+app.use(logErrors);
 
 app.use(logger(API_PATH));
 app.use(`/${API_PATH}`, api);

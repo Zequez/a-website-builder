@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { T } from '@db';
 import { verifyToken, randomEmail, generateToken, hashCompare } from '@server/lib/utils';
-import { fetchApi, signUpWith, signInWith } from './testUtils';
+import { fetchApi, signUpWith, signInWith } from '@server/test/utils';
 
 describe('/signUp', () => {
   it('should create new user', async () => {

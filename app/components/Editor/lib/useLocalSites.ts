@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'preact/hooks';
 import { Site } from '../types';
-import { randomAlphaNumericString } from './utils';
+import { randomAlphaNumericString } from '@shared/utils';
 
-export default class SitesLocalStorage {
+export class SitesLocalStorage {
   LS_PREFIX: string;
   _byLocalId: Record<string, Site> = {};
   onChange: () => void = () => {};
@@ -77,6 +77,16 @@ export default class SitesLocalStorage {
     this.set(site);
   }
 
+  makeRemote(localId: string, id: string) {
+    const site = this.byLocalId(localId);
+    const updatedSite = { ...site, localId: id, id };
+    this.setItem(updatedSite.localId, JSON.stringify(updatedSite));
+    this._byLocalId[updatedSite.localId] = updatedSite;
+    this.deleteItem(localId);
+    delete this._byLocalId[localId];
+    this.onChange();
+  }
+
   findByLocalName(localName: string) {
     return this.all.find((site) => site.localName === localName) || null;
   }
@@ -121,10 +131,12 @@ export default class SitesLocalStorage {
   }
 }
 
-export function useSitesStorage(prefix: string) {
+export default function useLocalSites(prefix: string) {
   const [storage, setStorage] = useState(() => new SitesLocalStorage(prefix));
 
   useEffect(() => {
+    // @ts-ignore
+    window.localSites = storage;
     storage.onChange = () => {
       setStorage((latestStorage) => latestStorage.clone());
     };

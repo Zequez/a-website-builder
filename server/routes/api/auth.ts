@@ -14,17 +14,17 @@ const jsonParser = bodyParser.json();
 
 const router = Router();
 
-export type ResponseAuthSignUp = {
+export type RoutePostAuthSignUp = {
   member: Omit<Member, 'passphrase'>;
   token: string;
 };
-type SignUpQuery = {
+type RoutePostAuthSignUpQuery = {
   email: string;
   passphrase: string;
   fullName: string;
 };
 router.post('/signUp', jsonParser, async (req, res) => {
-  const { email, passphrase, fullName } = req.body as SignUpQuery;
+  const { email, passphrase, fullName } = req.body as RoutePostAuthSignUpQuery;
 
   if (!email || !passphrase || !fullName) {
     return res.status(400).json({ error: 'Bad request' });
@@ -55,7 +55,11 @@ router.post('/signUp', jsonParser, async (req, res) => {
   });
 });
 
-export type ResponseAuthSignIn = {
+export type RoutePostAuthSignInQuery = {
+  email: string;
+  passphrase: string;
+};
+export type RoutePostAuthSignIn = {
   member: Omit<Member, 'passphrase'>;
   token: string;
 };
@@ -76,7 +80,8 @@ router.post('/signIn', jsonParser, async (req, res) => {
     .json({ member: sanitizeMember(member), token: await tokenFromMember(member) });
 });
 
-export type ResponseAuthMe = {
+export type RouteGetAuthMeQuery = Record<PropertyKey, never>;
+export type RouteGetAuthMe = {
   member: Omit<Member, 'passphrase'>;
 };
 router.get('/me', async (req, res) => {
@@ -93,7 +98,11 @@ router.get('/me', async (req, res) => {
   return res.status(200).json({ member: sanitizeMember(member) });
 });
 
-export type ResponseAuthChangePass = Record<PropertyKey, never>;
+export type RoutePostAuthChangePassQuery = {
+  oldPassphrase: string;
+  newPassphrase: string;
+};
+export type RoutePostAuthChangePass = Record<PropertyKey, never>;
 router.post('/changePass', jsonParser, async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Need a token' });

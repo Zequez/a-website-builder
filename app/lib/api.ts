@@ -1,23 +1,19 @@
 import type {
   RouteResourceMembersId,
-  RouteResourcePostFileIdQuery,
-  RouteResourcePostFileId,
   RouteResourceMembers,
-} from '@server/routes/api/resources';
-import type {
-  ResponseAuthSignIn,
-  ResponseAuthSignUp,
-  ResponseAuthMe,
-  ResponseAuthChangePass,
-} from '@server/routes/api/auth';
+  RoutePostFilesIdQuery,
+  RoutePostFilesId,
+  RoutePostSitesQuery,
+  RoutePostSites,
+  RoutePostAuthSignIn,
+  RoutePostAuthSignUp,
+  RouteGetAuthMe,
+  RoutePostAuthChangePass,
+} from '@server/routes/api/types';
+
 import { MemberAuth } from '@app/components/Auth';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
-
-// let token: string | null = null;
-// export function setToken(newToken: string) {
-//   token = newToken;
-// }
 
 function api<T>(path: string, method: 'GET' | 'POST') {
   return (data: Record<string, any> = {}, authorization: string = '') => {
@@ -66,47 +62,7 @@ async function typedSimplifiedResponse<T>(resPromise: Promise<Response>) {
       error: string | string[];
     };
   }
-  // return {status: res.status, data}
-  // return {
-  //   status: res.status,
-  //   json: async () => await res.json(),
-  //   errors: async () => await res.json(),
-  // } as { status: number; json: () => Promise<T>; errors: () => Promise<{ errors: string[] }> };
 }
-
-export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedResponse<T>>;
-
-export const signUp = api<ResponseAuthSignUp>('auth/signUp', 'POST');
-export const signIn = api<ResponseAuthSignIn>('auth/signIn', 'POST');
-export const me = api<ResponseAuthMe>('auth/me', 'GET');
-export const changePass = api<ResponseAuthChangePass>('auth/changePass', 'POST');
-export const members = api<RouteResourceMembers>('members', 'GET');
-export const member = async (id: number, auth: string) =>
-  await api<RouteResourceMembersId>(`members/${id}`, 'GET')({}, auth);
-// export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
-
-export const postFile = async (params: RouteResourcePostFileIdQuery, auth: string) =>
-  await api<RouteResourcePostFileId>(`files/${params.id}`, 'POST')(params, auth);
-
-// type EndpointConfig<K, T> = {
-//   params: K;
-//   path: string | ((params: K) => string);
-//   reqBody: (params: K) => Record<string, any>;
-//   resBody: T;
-//   method: 'GET' | 'POST';
-//   authProtected: boolean;
-// };
-
-// export function endpoint<K, T>(config: EndpointConfig<K, T>) {
-//   return async (params: K) => {
-//     const path = typeof config.path === 'string' ? config.path : config.path(params);
-//     return api<T>(path, config.method)(config.reqBody(params))();
-//   };
-// }
-
-// export function useApi() {
-
-// }
 
 export function useRemoteResource<T, K>(
   apiEndpoint: (params: T, auth: string) => TypedSimplifiedResponse<K>,
@@ -133,3 +89,27 @@ export function useRemoteResource<T, K>(
     ? { data: remoteResource, error: null }
     : { data: null, error: fetchError };
 }
+
+export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedResponse<T>>;
+
+// Auth
+export const signUp = api<RoutePostAuthSignUp>('auth/signUp', 'POST');
+export const signIn = api<RoutePostAuthSignIn>('auth/signIn', 'POST');
+export const me = api<RouteGetAuthMe>('auth/me', 'GET');
+export const changePass = api<RoutePostAuthChangePass>('auth/changePass', 'POST');
+
+// Members
+export const members = api<RouteResourceMembers>('members', 'GET');
+export const member = async (id: number, auth: string) =>
+  await api<RouteResourceMembersId>(`members/${id}`, 'GET')({}, auth);
+// export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
+
+// Files
+export const postFile = async (params: RoutePostFilesIdQuery, auth: string) =>
+  await api<RoutePostFilesId>(`files/${params.id}`, 'POST')(params, auth);
+
+// Sites
+export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
+  await api<RoutePostSites>('sites', 'POST')(params, auth);
+
+// Hooks
