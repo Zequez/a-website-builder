@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'preact/hooks';
-import { Site, EditorFiles } from '../types';
+import { Site, EditorFiles, EditorFile } from '../types';
 import { useSitesStorage } from './SitesLocalStorage';
+import { keyBy } from '@shared/utils';
+import { SiteWithFiles } from '@db';
+import { FileB64 } from '@server/db/driver';
 
 export default function useSites() {
   const storage = useSitesStorage('__SITES__');
@@ -47,6 +50,18 @@ export default function useSites() {
     storage.update(localId, { files: { ...site.files, ...files } });
   }
 
+  function loadFromRemoteSites(remoteSites: SiteWithFiles[]) {
+    for (const site of remoteSites) {
+      storage.addRemote({
+        id: site.id.toString(),
+        localId: site.id.toString(),
+        name: site.name,
+        localName: site.local_name,
+        files: keyBy(site.files.map(remoteFileToLocalFile), 'name'),
+      });
+    }
+  }
+
   return {
     byLocalId: (localId: string) => storage.byLocalId(localId),
     sites: storage.all,
@@ -57,5 +72,14 @@ export default function useSites() {
     addSite,
     deleteSite,
     applyTemplate,
+    loadFromRemoteSites,
+  };
+}
+
+function remoteFileToLocalFile(fileB64: FileB64): EditorFile {
+  return {
+    id: fileB64.id,
+    name: fileB64.name,
+    content: atob(fileB64.data),
   };
 }

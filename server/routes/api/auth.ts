@@ -1,19 +1,23 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import { T } from '@db';
+import { Member, T } from '@db';
 import {
   hashCompare,
   hashPass,
-  validateEmail,
   tokenData,
   sanitizeMember,
   tokenFromMember,
 } from '@server/lib/utils';
+import { validateEmail } from '@shared/utils';
 
 const jsonParser = bodyParser.json();
 
 const router = Router();
 
+export type ResponseAuthSignUp = {
+  member: Omit<Member, 'passphrase'>;
+  token: string;
+};
 type SignUpQuery = {
   email: string;
   passphrase: string;
@@ -37,7 +41,7 @@ router.post('/signUp', jsonParser, async (req, res) => {
   if (!validateEmail(email)) {
     errors.push('Invalid email');
   }
-  if (errors.length) return res.status(400).json({ errors });
+  if (errors.length) return res.status(400).json({ error: errors });
 
   const insertedMember = await T.members.insert({
     email,
@@ -51,6 +55,10 @@ router.post('/signUp', jsonParser, async (req, res) => {
   });
 });
 
+export type ResponseAuthSignIn = {
+  member: Omit<Member, 'passphrase'>;
+  token: string;
+};
 router.post('/signIn', jsonParser, async (req, res) => {
   const { email, passphrase } = req.body;
 
@@ -68,6 +76,9 @@ router.post('/signIn', jsonParser, async (req, res) => {
     .json({ member: sanitizeMember(member), token: await tokenFromMember(member) });
 });
 
+export type ResponseAuthMe = {
+  member: Omit<Member, 'passphrase'>;
+};
 router.get('/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -82,6 +93,7 @@ router.get('/me', async (req, res) => {
   return res.status(200).json({ member: sanitizeMember(member) });
 });
 
+export type ResponseAuthChangePass = Record<PropertyKey, never>;
 router.post('/changePass', jsonParser, async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Need a token' });

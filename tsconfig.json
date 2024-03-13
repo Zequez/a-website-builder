@@ -17,7 +17,8 @@
     "paths": {
       "@db": ["./server/db/index.ts"],
       "@server/*": ["./server/*"],
-      "@app/*": ["./app/*"]
+      "@app/*": ["./app/*"],
+      "@shared/*": ["./shared/*"]
     },
     "outDir": "./dist/ts"
   },
@@ -27,7 +28,7 @@
     "vitest.setup.ts",
     "vitest.hooks.ts",
     "scripts/**/*"
-  ],
+, "shared/jwt.ts"  ],
   "exclude": ["node_modules"],
   "tsc-alias": {
     "resolveFullPaths": true,

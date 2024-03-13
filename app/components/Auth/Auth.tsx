@@ -50,37 +50,33 @@ const Auth = () => {
 
   const submitSignUp: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
-    const res = await api.signUp({ email, passphrase, fullName });
+    const { data, error } = await api.signUp({ email, passphrase, fullName });
 
-    if (res.status !== 201) {
-      const { error, errors } = await res.json();
-      setToken(null);
-      setFormErrors(errors || [error]);
-    } else {
-      const { token } = await res.json();
+    if (data) {
       setPassphrase('');
       setFullName('');
-      setToken(token);
+      setToken(data.token);
       setMode('me');
       setShowAccountCreated(true);
       setTimeout(() => {
         setShowAccountCreated(false);
       }, 3000);
+    } else {
+      setToken(null);
+      setFormErrors(arrError(error));
     }
   };
 
   const submitSignIn: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
-    const res = await api.signIn({ email, passphrase });
-    if (res.status !== 200) {
-      const { error, errors } = await res.json();
-      setToken(null);
-      setFormErrors(errors || [error]);
-    } else {
-      const { member, token } = await res.json();
+    const { data, error } = await api.signIn({ email, passphrase });
+    if (data) {
       setPassphrase('');
-      setToken(token);
+      setToken(data.token);
       setMode('me');
+    } else {
+      setToken(null);
+      setFormErrors(arrError(error));
     }
   };
 
@@ -88,18 +84,17 @@ const Auth = () => {
     console.log('Submitting change pass', ev);
     ev.preventDefault();
     if (newPassphrase.length >= 6) {
-      const res = await api.changePass(
+      const { data, error } = await api.changePass(
         { oldPassphrase: passphrase, newPassphrase },
         memberAuth!.token,
       );
-      if (res.status === 200) {
+      if (data) {
         setPassphrase('');
         setNewPassphrase('');
         setFormErrors([]);
         setMode('me');
       } else {
-        const { error, errors } = await res.json();
-        setFormErrors(errors || [error]);
+        setFormErrors(arrError(error));
       }
     } else {
       setFormErrors(['Password has to be at least 6 characters']);
@@ -310,5 +305,13 @@ const FormErrors = ({ errors }: { errors: string[] | null }) => {
     </div>
   ) : null;
 };
+
+function arrError(error: string | string[]) {
+  if (typeof error === 'string') {
+    return [error];
+  } else {
+    return error;
+  }
+}
 
 export default Auth;

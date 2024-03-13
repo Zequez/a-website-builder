@@ -5,8 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { groupBy } from '@shared/utils';
+
 import { isTest, SILENCE_SQL_LOGS } from '../config.js';
-import { colorConsole, groupByKey } from '../lib/utils.js';
+import { colorConsole } from '../lib/utils.js';
 import { Member, Site, File_ } from './types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -129,7 +131,11 @@ const members = select<Member>('members');
 const sites = select<Site>('sites');
 const files = select<File_>('files');
 
-type SiteWithFiles = Site & { files: File_[] };
+export type FileB64 = Omit<File_, 'data' | 'data_size'> & {
+  data: string;
+  data_size: number;
+};
+export type SiteWithFiles = Site & { files: FileB64[] };
 
 const extendedMembers = {
   ...members,
@@ -139,8 +145,13 @@ const extendedMembers = {
     const sites = await T.sites.where({ member_id: member.id }).all();
     const sitesIds = sites.map((s) => s.id);
     const files = (await query(`SELECT * FROM files WHERE site_id IN (${sitesIds})`)) as File_[];
-    files.forEach((file) => (file.data = Buffer.from(file.data).toString('base64') as any));
-    const filesBySiteId = groupByKey(files, 'site_id');
+    const editedFiles = files.map((file) => {
+      let editedFile = file as unknown as FileB64;
+      editedFile.data = Buffer.from(file.data).toString('base64') as any;
+      editedFile.data_size = parseInt(file.data_size);
+      return editedFile;
+    });
+    const filesBySiteId = groupBy(editedFiles, 'site_id');
     (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id]));
     return { ...member, sites };
   },

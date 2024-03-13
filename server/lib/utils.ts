@@ -11,49 +11,6 @@ export const colorConsole = {
   red: (text: string) => console.log('\x1b[31m%s\x1b[0m', text),
 };
 
-export function removeKeys(obj: Record<string, any>, excluded: string[] = []) {
-  const newObj = { ...obj };
-  for (const column of excluded) {
-    delete newObj[column];
-  }
-  return newObj;
-}
-
-export function rowsToJson(rows: Record<string, any>[], excludeColumns: string[] = []) {
-  return rows.map((row) => {
-    const json: Record<string, any> = { ...row };
-    for (const column of excludeColumns) {
-      delete json[column];
-    }
-    return json;
-  });
-}
-
-export function getMime(ext: string) {
-  switch (ext) {
-    case '.html':
-      return 'text/html';
-    case '.css':
-      return 'text/css';
-    case '.js':
-      return 'application/javascript';
-    case '.png':
-      return 'image/png';
-    case '.ico':
-      return 'image/x-icon';
-    case '':
-      return 'text/plain';
-    default:
-      return 'application/octet-stream';
-  }
-}
-
-export function validateEmail(email: string) {
-  const re =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-}
-
 export async function hashPass(passphrase: string): Promise<string> {
   const saltRounds = 10;
   return new Promise((resolve) => {
@@ -109,6 +66,14 @@ export function getSubdomain(url: URL) {
   return subdomain;
 }
 
+export function removeKeys(obj: Record<string, any>, excluded: string[] = []) {
+  const newObj = { ...obj };
+  for (const column of excluded) {
+    delete newObj[column];
+  }
+  return newObj;
+}
+
 export function sanitizeMember(member: Member) {
   return removeKeys(member, ['passphrase']);
 }
@@ -123,14 +88,6 @@ export async function tokenFromMember(member: Member) {
 
 export function randomEmail() {
   return `${Math.random().toString(36).substring(2, 15)}@example.com`;
-}
-
-export function groupByKey(arr: Record<string, any>[], key: string) {
-  return arr.reduce((acc, obj) => {
-    const val = obj[key];
-    acc[val] = (acc[val] || []).concat(obj);
-    return acc;
-  }, {});
 }
 
 export function tokenFromHeader(reqHeaders: IncomingHttpHeaders) {

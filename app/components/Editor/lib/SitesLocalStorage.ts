@@ -73,6 +73,10 @@ export default class SitesLocalStorage {
     this.set({ ...site, localId: newLocalId, localName: newLocalId });
   }
 
+  addRemote(site: Site) {
+    this.set(site);
+  }
+
   findByLocalName(localName: string) {
     return this.all.find((site) => site.localName === localName) || null;
   }

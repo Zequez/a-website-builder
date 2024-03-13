@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import { T, query, Member, Site, File_ } from '@db';
 import { sanitizeMember, tokenData, tokenFromHeader } from '@server/lib/utils';
 
+import type { SiteWithFiles } from '@db';
+
 const jsonParser = bodyParser.json();
 
 const router = express.Router();
@@ -12,14 +14,19 @@ router.get('/members', async (req, res) => {
   return res.status(200).json(members.map(sanitizeMember));
 });
 
+export type RouteResourceMembersId = Omit<Member, 'passphrase'> & { sites: SiteWithFiles[] };
 router.get('/members/:id', async (req, res) => {
   const member = await T.members.withSitesAndFiles(req.params.id);
   if (!member) return res.status(404).json({ error: 'Member not found' });
   return res.status(200).json({
     ...sanitizeMember(member),
-  });
+  } as RouteResourceMembersId);
 });
 
+export type RouteResourceFileId = Omit<File_, 'data' | 'data_size'> & {
+  data: string;
+  data_size: number;
+};
 router.post('/files/:id', jsonParser, async (req, res) => {
   const token = tokenFromHeader(req.headers);
   if (!token) return res.status(401).json({ error: 'Unauthorized' });

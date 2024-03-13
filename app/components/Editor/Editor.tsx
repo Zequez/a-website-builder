@@ -12,10 +12,12 @@ import { filesByName as template } from './template';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
 import useSites from './lib/useSites';
 import { useAuth } from '../Auth';
+import useRemoteSites from './lib/useRemoteSites';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
   const S = useSites();
+  const { sites: remoteSites } = useRemoteSites(memberAuth);
   const [selectedSiteLocalId, setSelectedSiteLocalId] = useState<string | null>(null);
   const [openFileName, setOpenFileName] = useState<string | null>(null);
   const [iframeRatio, setIframeRatio] = useState(16 / 9);
@@ -27,6 +29,12 @@ const Editor = () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, []);
+
+  useEffect(() => {
+    if (remoteSites) {
+      S.loadFromRemoteSites(remoteSites);
+    }
+  }, [remoteSites]);
 
   const handleFileClick = (fileName: string) => {
     setOpenFileName(fileName);
@@ -55,6 +63,8 @@ const Editor = () => {
 
   const selectedSite = selectedSiteLocalId && S.byLocalId(selectedSiteLocalId);
   const openFile = openFileName && selectedSite ? selectedSite.files[openFileName] : null;
+
+  console.log(remoteSites);
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">

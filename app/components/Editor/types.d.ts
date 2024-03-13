@@ -10,11 +10,11 @@ export type EditorFile = {
   id: string | null;
   name: string;
   content: string;
-  unsavedContent: string;
-  remote?: {
-    name: string;
-    content: string;
-  };
+  // unsavedContent: string;
+  // remote?: {
+  //   name: string;
+  //   content: string;
+  // };
 };
 
 export type EditorFiles = { [key: string]: EditorFile };
