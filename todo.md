@@ -1,0 +1,2 @@
+- Editor
+  - [] Make sure site localname is checked for availability on the remote server

@@ -1,4 +1,9 @@
-import type { RouteResourceMembersId, RouteResourceFileId } from '@server/routes/api/resources';
+import type {
+  RouteResourceMembersId,
+  RouteResourcePostFileIdQuery,
+  RouteResourcePostFileId,
+  RouteResourceMembers,
+} from '@server/routes/api/resources';
 import type {
   ResponseAuthSignIn,
   ResponseAuthSignUp,
@@ -75,10 +80,13 @@ export const signUp = api<ResponseAuthSignUp>('auth/signUp', 'POST');
 export const signIn = api<ResponseAuthSignIn>('auth/signIn', 'POST');
 export const me = api<ResponseAuthMe>('auth/me', 'GET');
 export const changePass = api<ResponseAuthChangePass>('auth/changePass', 'POST');
-export const members = api('members', 'GET');
+export const members = api<RouteResourceMembers>('members', 'GET');
 export const member = async (id: number, auth: string) =>
   await api<RouteResourceMembersId>(`members/${id}`, 'GET')({}, auth);
-export const file = async (id: string) => await api<RouteResourceFileId>(`files/${id}`, 'GET')({});
+// export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
+
+export const postFile = async (params: RouteResourcePostFileIdQuery, auth: string) =>
+  await api<RouteResourcePostFileId>(`files/${params.id}`, 'POST')(params, auth);
 
 // type EndpointConfig<K, T> = {
 //   params: K;

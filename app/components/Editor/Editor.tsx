@@ -4,6 +4,8 @@ import cx from 'classnames';
 import CheckIcon from '~icons/fa/check';
 import PlusIcon from '~icons/fa/plus';
 import MenuEllipsis from '~icons/fa/ellipsis-v';
+import CloudIcon from '~icons/fa/cloud';
+import OutLink from '~icons/fa/external-link';
 
 import FloatingMenu from '../FloatingMenu';
 
@@ -16,8 +18,8 @@ import useRemoteSites from './lib/useRemoteSites';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
-  const S = useSites();
-  const { sites: remoteSites } = useRemoteSites(memberAuth);
+  const S = useSites(memberAuth);
+  useRemoteSites(memberAuth);
   const [selectedSiteLocalId, setSelectedSiteLocalId] = useState<string | null>(null);
   const [openFileName, setOpenFileName] = useState<string | null>(null);
   const [iframeRatio, setIframeRatio] = useState(16 / 9);
@@ -29,12 +31,6 @@ const Editor = () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, []);
-
-  useEffect(() => {
-    if (remoteSites) {
-      S.loadFromRemoteSites(remoteSites);
-    }
-  }, [remoteSites]);
 
   const handleFileClick = (fileName: string) => {
     setOpenFileName(fileName);
@@ -61,10 +57,8 @@ const Editor = () => {
     }
   };
 
-  const selectedSite = selectedSiteLocalId && S.byLocalId(selectedSiteLocalId);
+  const selectedSite = selectedSiteLocalId ? S.byLocalId(selectedSiteLocalId) : null;
   const openFile = openFileName && selectedSite ? selectedSite.files[openFileName] : null;
-
-  console.log(remoteSites);
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
@@ -110,10 +104,7 @@ const Editor = () => {
           ) : null}
         </div>
 
-        {/* BOTOM BUTTONS #################################################################### */}
-        <a class="block bg-red-500 text-white py-1 uppercase text-center" href="/">
-          Exit
-        </a>
+        <BottomButtons selectedSite={selectedSite} />
       </div>
 
       {/* CODE EDITOR #################################################################### */}
@@ -141,6 +132,43 @@ const Editor = () => {
     </div>
   );
 };
+
+const bottomButtonStyle = (c: string) =>
+  cx('block text-white py-1 uppercase text-center tracking-wider', c);
+
+function BottomButtons({ selectedSite }: { selectedSite: Site | null }) {
+  const currentHost = window.location.host;
+  const currentProtocol = window.location.protocol;
+  const siteUrl = selectedSite
+    ? `${currentProtocol}//${selectedSite.localName}.${currentHost}`
+    : null;
+
+  return (
+    <>
+      {selectedSite ? (
+        !selectedSite.id ? (
+          <button class={bottomButtonStyle('bg-orange-400')}>
+            Publish <CloudIcon class="inline-block -mt-1" />
+          </button>
+        ) : (
+          <a class={bottomButtonStyle('bg-lime-600')} href={siteUrl!} target="_blank">
+            Live site <OutLink class="inline-block ml-1 -mt-1" />
+          </a>
+        )
+      ) : null}
+      <a class={bottomButtonStyle('bg-red-500')} href="/">
+        Exit
+      </a>
+    </>
+  );
+}
+
+// ███████╗██╗████████╗███████╗███████╗
+// ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
+// ███████╗██║   ██║   █████╗  ███████╗
+// ╚════██║██║   ██║   ██╔══╝  ╚════██║
+// ███████║██║   ██║   ███████╗███████║
+// ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
 function SitesList({
   sites,
@@ -188,7 +216,7 @@ function SiteButton({
   onDelete,
   onOpen,
 }: {
-  site: { name: string; localName: string };
+  site: { name: string; localName: string; id: string | null };
   isSelected: boolean;
   onLocalNameChangeAttempt: (val: string) => Promise<boolean>;
   onNameChange: (val: string) => void;
@@ -248,17 +276,32 @@ function SiteButton({
           ref={(el) => el?.focus()}
         />
       ) : (
-        <button
-          onClick={() => !isSelected && onOpen()}
-          class={cx('flex-grow block px-2 py-1 text-left hover:bg-gray-400')}
-        >
-          <span class="block" onDblClick={onStartEditName}>
-            {site.name}
-          </span>
-          <span class="block text-xs opacity-50 -mt-1" onDblClick={onStartEditLocalName}>
-            {site.localName}
-          </span>
-        </button>
+        <>
+          <button
+            onClick={() => !isSelected && onOpen()}
+            class={cx('flex px-2 py-1 text-left hover:bg-gray-400 flex-grow overflow-hidden')}
+          >
+            <div class="flex-grow overflow-hidden">
+              <span
+                class="block whitespace-nowrap overflow-hidden text-ellipsis"
+                onDblClick={onStartEditName}
+              >
+                {site.name}
+              </span>
+              <span
+                class="block text-xs opacity-50 -mt-1 whitespace-nowrap"
+                onDblClick={onStartEditLocalName}
+              >
+                {site.localName}
+              </span>
+            </div>
+            {site.id ? (
+              <div class="h-full flex justify-center text-blue-500/70" title="Site is online">
+                <CloudIcon class="w-4 -mt-1 -mr-1" />
+              </div>
+            ) : null}
+          </button>
+        </>
       )}
       {mode === 'view' ? (
         <button
@@ -290,7 +333,12 @@ function SiteButton({
   );
 }
 
-function FilesList() {}
+// ██████╗ ██████╗ ███████╗██╗   ██╗██╗███████╗██╗    ██╗
+// ██╔══██╗██╔══██╗██╔════╝██║   ██║██║██╔════╝██║    ██║
+// ██████╔╝██████╔╝█████╗  ██║   ██║██║█████╗  ██║ █╗ ██║
+// ██╔═══╝ ██╔══██╗██╔══╝  ╚██╗ ██╔╝██║██╔══╝  ██║███╗██║
+// ██║     ██║  ██║███████╗ ╚████╔╝ ██║███████╗╚███╔███╔╝
+// ╚═╝     ╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝╚══════╝ ╚══╝╚══╝
 
 function FloatingPreview({
   files,

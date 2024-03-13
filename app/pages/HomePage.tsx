@@ -1,24 +1,23 @@
 import { useState, useEffect } from 'preact/hooks';
 import ErrorIcon from '~icons/fa/times-circle';
 
+import { SanitizedMember } from '@db';
 import { gravatarUrl } from '@app/lib/utils';
 import * as api from '@app/lib/api';
 import Button from '@app/components/Button';
 import { useAuth } from '@app/components/Auth';
-import { Member } from '@app/types';
 import Spinner from '@app/components/Spinner';
 
 const HomePage = () => {
   const { memberAuth, signOut } = useAuth();
   const [membersStatus, setMembersStatus] = useState<'loading' | 'error' | 'loaded'>('loading');
-  const [members, setMembers] = useState<null | Member[]>(null);
+  const [members, setMembers] = useState<null | SanitizedMember[]>(null);
   const [error, setError] = useState<null | string>(null);
 
   useEffect(() => {
     (async () => {
-      const res = await api.members({});
-      if (res.status === 200) {
-        const members = await res.json();
+      const { data: members, error } = await api.members({});
+      if (members) {
         setMembersStatus('loaded');
         setMembers(members);
       } else {
@@ -58,7 +57,13 @@ const HomePage = () => {
   );
 };
 
-const Members = ({ members, isAuthenticated }: { members: Member[]; isAuthenticated: boolean }) => {
+const Members = ({
+  members,
+  isAuthenticated,
+}: {
+  members: SanitizedMember[];
+  isAuthenticated: boolean;
+}) => {
   const sortedMembers = [...members].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );

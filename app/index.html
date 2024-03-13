@@ -9,7 +9,6 @@
       import americas from './favicons/americas.png';
       import asiaoceania from './favicons/asiaoceania.png';
       import europeafrica from './favicons/europeafrica.png';
-      console.log(americas, asiaoceania, europeafrica);
       const icons = [americas, asiaoceania, europeafrica];
       const icon = icons[(Math.random() * icons.length) | 0];
       document.querySelector('link[rel="icon"]').setAttribute('href', icon);

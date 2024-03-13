@@ -4,9 +4,18 @@ import { useSitesStorage } from './SitesLocalStorage';
 import { keyBy } from '@shared/utils';
 import { SiteWithFiles } from '@db';
 import { FileB64 } from '@server/db/driver';
+import { MemberAuth } from '@app/components/Auth';
+import useRemoteSites from './useRemoteSites';
 
-export default function useSites() {
+export default function useSites(memberAuth: MemberAuth | null) {
   const storage = useSitesStorage('__SITES__');
+  const { sites: remoteSites, writeFile: writeRemoteFile } = useRemoteSites(memberAuth);
+
+  useEffect(() => {
+    if (remoteSites) {
+      loadFromRemoteSites(remoteSites);
+    }
+  }, [remoteSites]);
 
   function setName(localId: string, newName: string) {
     storage.update(localId, { name: newName });
@@ -27,6 +36,13 @@ export default function useSites() {
 
   function writeFile(localId: string, fileName: string, content: string) {
     storage.writeFile(localId, fileName, content);
+    (async () => {
+      const file = storage.byLocalId(localId).files[fileName];
+      const { error } = await writeRemoteFile(file);
+      if (error) {
+        console.error('Error writing remote file', error);
+      }
+    })();
   }
 
   function renameFile(localId: string, fileName: string, newFileName: string) {
@@ -72,7 +88,6 @@ export default function useSites() {
     addSite,
     deleteSite,
     applyTemplate,
-    loadFromRemoteSites,
   };
 }
 

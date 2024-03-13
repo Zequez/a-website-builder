@@ -27,3 +27,5 @@ export type File_ = {
   data_cdn_url: string;
   created_at: string;
 };
+
+export type SanitizedMember = Omit<Member, 'passphrase'>;

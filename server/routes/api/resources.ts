@@ -9,6 +9,7 @@ const jsonParser = bodyParser.json();
 
 const router = express.Router();
 
+export type RouteResourceMembers = Omit<Member, 'passphrase'>[];
 router.get('/members', async (req, res) => {
   const members = await T.members.all();
   return res.status(200).json(members.map(sanitizeMember));
@@ -23,10 +24,12 @@ router.get('/members/:id', async (req, res) => {
   } as RouteResourceMembersId);
 });
 
-export type RouteResourceFileId = Omit<File_, 'data' | 'data_size'> & {
+export type RouteResourcePostFileIdQuery = {
+  id: string;
   data: string;
-  data_size: number;
+  name: string;
 };
+export type RouteResourcePostFileId = Record<PropertyKey, never>;
 router.post('/files/:id', jsonParser, async (req, res) => {
   const token = tokenFromHeader(req.headers);
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
