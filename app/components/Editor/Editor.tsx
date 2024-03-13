@@ -18,8 +18,6 @@ const Editor = () => {
   const S = useSites(memberAuth);
   const site = S.selectedSite;
   const [openFileName, setOpenFileName] = useState<string | null>(null);
-  const [iframeRatio, setIframeRatio] = useState(16 / 9);
-  const [iframeWidth, setIframeWidth] = useState(360);
 
   useEffect(() => {
     document.body.classList.add('overflow-hidden');
@@ -116,14 +114,7 @@ const Editor = () => {
       )}
 
       {/* FLOATING PREVIEW #################################################################### */}
-      {site ? (
-        <Preview
-          files={site.files}
-          title={`${site.localName}.aweb.club`}
-          width={iframeWidth}
-          ratio={iframeRatio}
-        />
-      ) : null}
+      {site ? <Preview files={site.files} title={`${site.localName}.aweb.club`} /> : null}
     </div>
   );
 };

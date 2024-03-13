@@ -1,17 +1,10 @@
+import { useState } from 'preact/hooks';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
 import { EditorFiles } from './types';
 
-export default function Preview({
-  files,
-  title,
-  width,
-  ratio,
-}: {
-  files: EditorFiles;
-  title: string;
-  width: number;
-  ratio: number;
-}) {
+export default function Preview({ files, title }: { files: EditorFiles; title: string }) {
+  const [ratio, setRatio] = useState(16 / 9);
+  const [width, setWidth] = useState(360);
   const bucketHasIndex = !!files['index.html'];
   const iframeEncodedUrl = bucketHasIndex ? generateIframeEncodedUrl(files) : '';
 
