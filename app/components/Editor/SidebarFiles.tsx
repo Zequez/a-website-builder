@@ -40,6 +40,11 @@ export default function SidebarFiles({
     setRenameFileName(null);
   }
 
+  function handleCancelRenameFile() {
+    setRenameFile(null);
+    setRenameFileName(null);
+  }
+
   function handleAddFileStart() {
     setNewFileName('');
   }
@@ -47,6 +52,10 @@ export default function SidebarFiles({
   function handleAddFileApply() {
     if (!newFileName) return;
     onAddFile(newFileName);
+    setNewFileName(null);
+  }
+
+  function handleCancelNewFile() {
     setNewFileName(null);
   }
 
@@ -70,6 +79,7 @@ export default function SidebarFiles({
             onChange={setRenameFileName}
             isValid={renameFileNameIsValid}
             onApply={handleRenameFileApply}
+            onCancel={handleCancelRenameFile}
           />
         ) : (
           <button
@@ -90,6 +100,7 @@ export default function SidebarFiles({
           onChange={setNewFileName}
           isValid={newFileNameIsValid}
           onApply={handleAddFileApply}
+          onCancel={handleCancelNewFile}
         />
       ) : null}
 
@@ -117,11 +128,13 @@ function FileNamer({
   onChange,
   isValid,
   onApply,
+  onCancel,
 }: {
   name: string;
   onChange: (val: string) => void;
   isValid: boolean;
   onApply: () => void;
+  onCancel: () => void;
 }) {
   return (
     <div class="flex">
@@ -130,7 +143,9 @@ function FileNamer({
         placeholder="Name your file"
         value={name}
         onChange={({ currentTarget }) => onChange(currentTarget.value)}
-        onKeyDown={({ key }) => (key === 'Enter' && isValid ? onApply() : null)}
+        onKeyDown={({ key }) =>
+          key === 'Enter' && isValid ? onApply() : key === 'Escape' ? onCancel() : null
+        }
         ref={(el) => el?.focus()}
       />
       {isValid ? (
@@ -141,9 +156,12 @@ function FileNamer({
           <CheckIcon />
         </button>
       ) : (
-        <div class="bg-red-400 flex items-center px-1 text-white">
+        <button
+          class="bg-red-400 hover:bg-red-300 flex items-center px-1 text-white"
+          onClick={onCancel}
+        >
           <TimesIcon />
-        </div>
+        </button>
       )}
     </div>
   );
