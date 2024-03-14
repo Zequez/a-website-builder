@@ -104,6 +104,10 @@ export default function useSites(memberAuth: MemberAuth | null) {
     })();
   }
 
+  function addFile(localId: string, fileName: string, content: string) {
+    storage.writeFile(localId, fileName, content);
+  }
+
   function renameFile(localId: string, fileName: string, newFileName: string) {
     storage.renameFile(localId, fileName, newFileName);
   }
@@ -118,15 +122,17 @@ export default function useSites(memberAuth: MemberAuth | null) {
     sites: storage.all,
     setName,
     setLocalName,
-    writeFile,
-    renameFile,
     addSite,
     deleteSite,
-    applyTemplate,
     publishSite,
     selectedLocalId,
     setSelected,
     selectedSite: selectedLocalId ? storage.byLocalId(selectedLocalId) : null,
+
+    addFile,
+    renameFile,
+    writeFile,
+    applyTemplate,
   };
 }
 

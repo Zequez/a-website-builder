@@ -32,26 +32,6 @@ export class SitesLocalStorage {
     this.onChange();
   }
 
-  renameFile(localId: string, oldFileName: string, newFileName: string) {
-    const site = this.byLocalId(localId);
-    const file = site.files[oldFileName];
-    if (!file) throw `No file name ${oldFileName} in site ${site.localName}`;
-    const newFiles = { ...site.files, [newFileName]: { ...file, name: newFileName } };
-    delete newFiles[oldFileName];
-    this.set({ ...site, files: newFiles });
-  }
-
-  writeFile(localId: string, fileName: string, content: string) {
-    const site = this.byLocalId(localId);
-    const file = site.files[fileName];
-    if (!file) throw `No file name ${fileName} in site ${site.localName}`;
-    const newFiles = {
-      ...site.files,
-      [fileName]: { ...file, content },
-    };
-    this.set({ ...site, files: newFiles });
-  }
-
   get all(): Site[] {
     return Object.values(this._byLocalId);
   }
@@ -90,6 +70,40 @@ export class SitesLocalStorage {
   findByLocalName(localName: string) {
     return this.all.find((site) => site.localName === localName) || null;
   }
+
+  // ███████╗██╗██╗     ███████╗███████╗
+  // ██╔════╝██║██║     ██╔════╝██╔════╝
+  // █████╗  ██║██║     █████╗  ███████╗
+  // ██╔══╝  ██║██║     ██╔══╝  ╚════██║
+  // ██║     ██║███████╗███████╗███████║
+  // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝
+
+  renameFile(localId: string, oldFileName: string, newFileName: string) {
+    const site = this.byLocalId(localId);
+    const file = site.files[oldFileName];
+    if (!file) throw `No file name ${oldFileName} in site ${site.localName}`;
+    const newFiles = { ...site.files, [newFileName]: { ...file, name: newFileName } };
+    delete newFiles[oldFileName];
+    this.set({ ...site, files: newFiles });
+  }
+
+  writeFile(localId: string, name: string, content: string) {
+    const site = this.byLocalId(localId);
+    const existingFile = site.files[name];
+    const file = existingFile ? { ...existingFile, content } : { id: null, name, content };
+    const newFiles = {
+      ...site.files,
+      [name]: { ...file, content },
+    };
+    this.set({ ...site, files: newFiles });
+  }
+
+  // ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗
+  // ██╔══██╗██╔══██╗██║██║   ██║██╔══██╗╚══██╔══╝██╔════╝
+  // ██████╔╝██████╔╝██║██║   ██║███████║   ██║   █████╗
+  // ██╔═══╝ ██╔══██╗██║╚██╗ ██╔╝██╔══██║   ██║   ██╔══╝
+  // ██║     ██║  ██║██║ ╚████╔╝ ██║  ██║   ██║   ███████╗
+  // ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═╝  ╚═╝   ╚═╝   ╚══════╝
 
   private loadAllSites() {
     return Object.keys(localStorage)

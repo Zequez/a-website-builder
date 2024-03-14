@@ -51,7 +51,11 @@ const Editor = () => {
     }
   };
 
-  const handleAddFile = () => {};
+  const handleAddFile = (newFileName: string) => {
+    if (site) {
+      S.addFile(site.localId, newFileName, '');
+    }
+  };
 
   const openFile = openFileName && site ? site.files[openFileName] : null;
 

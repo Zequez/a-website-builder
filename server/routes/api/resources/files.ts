@@ -4,6 +4,14 @@ import { T } from '@db';
 
 const router = Router();
 
+router.post('/files', jsonParser, authorize, async (req, res) => {
+  // const { id: memberId } = req.tokenMember!;
+  // const { name, data } = req.body;
+  // const site = await T.sites.where({ member_id: memberId }).one()
+  // const file = await T.files.insert({ name, data, site_id: site.id });
+  // return res.status(201).json(file);
+});
+
 export type RoutePostFilesIdQuery = {
   id: string;
   data: string;
