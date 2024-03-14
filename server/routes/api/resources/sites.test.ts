@@ -14,7 +14,7 @@ describe('GET /sites', () => {
   });
 });
 
-describe.only('POST /sites', () => {
+describe('POST /sites', () => {
   it('should create a new site for the current member', async () => {
     const member = (await T.members.all())[0];
     const token = await tokenFromMember(member);

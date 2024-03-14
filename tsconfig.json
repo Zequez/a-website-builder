@@ -15,7 +15,8 @@
       "./node_modules/unplugin-icons/types/preact.d.ts"
     ],
     "paths": {
-      "@db": ["./server/db/index.ts"],
+      "@db": ["./server/db"],
+      "@db/*": ["./server/db/*"],
       "@server/*": ["./server/*"],
       "@app/*": ["./app/*"],
       "@shared/*": ["./shared/*"]

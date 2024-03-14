@@ -3,6 +3,7 @@ import { PORT } from './config';
 import app from './app';
 
 let server: ReturnType<typeof app.listen>;
+// let database
 
 export function start() {
   server = app.listen(PORT, () => console.log(`Server ready on port ${PORT}.`));

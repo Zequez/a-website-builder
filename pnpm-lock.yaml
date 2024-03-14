@@ -32,6 +32,7 @@ specifiers:
   node-html-parser: ^6.1.12
   pg: ^8.11.3
   preact: github:zequez/preact#main
+  squid: ^0.5.2
   tsc-alias: ^1.8.8
   tsx: ^4.7.1
   typescript: ^5.4.2
@@ -76,6 +77,7 @@ dependencies:
   node-html-parser: 6.1.12
   pg: 8.11.3
   preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
+  squid: 0.5.2
   tsc-alias: 1.8.8
   tsx: 4.7.1
   typescript: 5.4.2
@@ -1350,6 +1352,14 @@ packages:
     resolution: {integrity: sha512-/ySDLGscFPNasfqStUuWWPfL78jompfIoVzLJPVVAHBh6rpG68+pI2Gk+fNLeI8/f1yPYL4s46EleVIc20F1Ow==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/pg/7.14.11:
+    resolution: {integrity: sha512-EnZkZ1OMw9DvNfQkn2MTJrwKmhJYDEs5ujWrPfvseWNoI95N8B4HzU/Ltrq5ZfYxDX/Zg8mTzwr6UAyTjjFvXA==}
+    dependencies:
+      '@types/node': 20.11.21
+      pg-protocol: 1.6.0
+      pg-types: 2.2.0
+    dev: false
 
   /@types/pg/8.11.2:
     resolution: {integrity: sha512-G2Mjygf2jFMU/9hCaTYxJrwdObdcnuQde1gndooZSOHsNSaCehAuwc7EIuSA34Do8Jx2yZ19KtvW8P0j4EuUXw==}
@@ -4750,6 +4760,15 @@ packages:
   /split2/4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+    dev: false
+
+  /squid/0.5.2:
+    resolution: {integrity: sha512-cw0jVGdNMAdC+7YpISD7qSFJTWSdnkuPHnBZ8v0hgIOef2OoB2l7lWZCiHOhI+ZzWgJ0bvwsjjSX81iMtCTOAQ==}
+    dependencies:
+      '@types/pg': 7.14.11
+      debug: 4.3.4
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /stackback/0.0.2:

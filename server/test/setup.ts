@@ -1,7 +1,9 @@
-import { runSchema } from '@db';
+import { migrate, rollback } from '@db/migration';
 
 export async function setup() {
-  await runSchema({ drop: true, silent: true });
+  await migrate();
 }
 
-export async function tearDown() {}
+export async function tearDown() {
+  await rollback();
+}

@@ -212,7 +212,7 @@ describe('/changePass', () => {
     });
     expect(res2.status).toBe(200);
     const updatedMember = await T.members.get(member.id);
-    expect(await hashCompare('1234567', updatedMember.passphrase)).toBeTruthy();
+    expect(await hashCompare('1234567', updatedMember!.passphrase)).toBeTruthy();
   });
 
   it('should not change password if incorrect correct credentials', async () => {
