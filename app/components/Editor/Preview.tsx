@@ -1,5 +1,5 @@
 import { createPortal } from 'preact/compat';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import MobileIcon from '~icons/fa/mobile';
 import DesktopIcon from '~icons/fa/desktop';
 import FullScreenIcon from '~icons/fa/expand';
@@ -10,7 +10,14 @@ import { FC } from '../FC';
 
 const FULLSCREEN_PORTAL_EL = document.getElementById('fullscreen-preview');
 
-export default function Preview({ site }: { site: Site; onSwitchPosition: () => void }) {
+export default function Preview({
+  site,
+  currentFileName,
+}: {
+  currentFileName: string | null;
+  site: Site;
+  onSwitchPosition: () => void;
+}) {
   const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
     'preferred_preview_mode',
     'desktop',
@@ -20,8 +27,10 @@ export default function Preview({ site }: { site: Site; onSwitchPosition: () => 
   const [desktopScale, setDesktopScale] = useState(1);
   const [mobileScale, setMobileScale] = useState(1);
   const [fullscreenScale, setFullscreenScale] = useState(1);
+  const [lastEntrypointUsed, setLastEntrypointUsed] = useState<string | null>(null);
 
   const files = site.files;
+  const currentFile = currentFileName ? files[currentFileName] : null;
 
   const mobileAspectRatio = 9 / 16;
   const mobileWidth = 360;
@@ -37,7 +46,29 @@ export default function Preview({ site }: { site: Site; onSwitchPosition: () => 
     setMobileScale(Math.min(scaleToAdjustWidth, scaleToAdjustHeight));
   }
 
-  const iframeEncodedUrl = files['index.html'] ? generateIframeEncodedUrl(files) : null;
+  const getEntrypointFileName = useCallback(
+    function () {
+      if (currentFile && currentFile.name.endsWith('.html')) {
+        return currentFile.name;
+      } else if (lastEntrypointUsed && site.files[lastEntrypointUsed]) {
+        return lastEntrypointUsed;
+      } else if (site.files['index.html']) {
+        return 'index.html';
+      } else {
+        return null;
+      }
+    },
+    [currentFile, lastEntrypointUsed, site],
+  );
+
+  useEffect(() => {
+    setLastEntrypointUsed(getEntrypointFileName());
+  }, [currentFile]);
+
+  const recommendedEntrypoint = getEntrypointFileName();
+  const iframeEncodedUrl = recommendedEntrypoint
+    ? generateIframeEncodedUrl(files, recommendedEntrypoint)
+    : null;
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -66,8 +97,6 @@ export default function Preview({ site }: { site: Site; onSwitchPosition: () => 
   const fullScreenPortalEl =
     mode === 'fullscreen' ? document.getElementById('fullscreen-preview') : null;
 
-  const entrypoint = files['index.html'];
-
   const componentRender = (
     <div
       class={cx('flex flex-col items-center justify-center w-full h-full bg-gray-700', {
@@ -76,7 +105,7 @@ export default function Preview({ site }: { site: Site; onSwitchPosition: () => 
     >
       <div class="h-8 flex items-center text-gray-500 bg-white/80 w-full flex-shrink-0">
         <div class="px-2">Preview</div>
-        <div class="px-2 text-center flex-grow">{entrypoint.name}</div>
+        <div class="px-2 text-center flex-grow">{recommendedEntrypoint}</div>
         <div class="flex items-center h-full">
           <ViewModeButton isActive={mode === 'mobile'} onClick={() => setMode('mobile')}>
             <MobileIcon />

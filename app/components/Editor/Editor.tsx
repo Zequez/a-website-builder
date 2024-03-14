@@ -100,7 +100,13 @@ const Editor = () => {
         <CodePanel site={site} file={openFile} onChange={onEditorContentChanges} />
         <div class="h-2 bg-white/20 hover:cursor-ns-resize"></div>
         <div class="flex-shrink-0 h-1/2">
-          {site ? <Preview site={site} onSwitchPosition={() => null} /> : null}
+          {site ? (
+            <Preview
+              site={site}
+              currentFileName={openFileName || null}
+              onSwitchPosition={() => null}
+            />
+          ) : null}
         </div>
       </div>
     </div>
