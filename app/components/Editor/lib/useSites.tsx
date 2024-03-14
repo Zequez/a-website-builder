@@ -72,11 +72,15 @@ export default function useSites(memberAuth: MemberAuth | null) {
     const site = storage.byLocalId(localId);
     if (site.id === null) {
       (async () => {
-        const { data, error } = await remote.publishSite(site);
+        const { data: createdSite, error } = await remote.publishSite(site);
 
-        if (data) {
-          setSelected(data.id.toString());
-          storage.makeRemote(localId, data.id.toString());
+        if (createdSite) {
+          setSelected(createdSite.id.toString());
+          storage.makeRemote(localId, createdSite.id.toString());
+          for (let fileName in site.files) {
+            const file = site.files[fileName];
+            await remote.postFile(createdSite.id, file);
+          }
         } else {
           console.error('Error publishing site', error);
         }
