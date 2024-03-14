@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export function groupBy<T extends { [key: string]: any }>(arr: T[], key: string) {
   return arr.reduce((acc, obj) => {
     const val = obj[key];
@@ -34,3 +36,5 @@ export function tokenData(token: string): TokenMember & { exp: number; iat: numb
 export function randomAlphaNumericString() {
   return Math.random().toString(36).slice(2);
 }
+
+export const uuid = uuidv4;

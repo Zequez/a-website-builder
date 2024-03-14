@@ -86,6 +86,7 @@ const Editor = () => {
             onAddFile={handleAddFile}
             onRenameFile={handleRenameFile}
             onApplyTemplate={(template) => S.applyTemplate(site.localId, template)}
+            onDeleteFile={(fileName) => S.deleteFile(site.localId, fileName)}
           />
         ) : (
           <div class="flex-grow"></div>

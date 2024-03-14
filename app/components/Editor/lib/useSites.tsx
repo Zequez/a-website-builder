@@ -139,6 +139,17 @@ export default function useSites(memberAuth: MemberAuth | null) {
     })();
   }
 
+  function deleteFile(localId: string, fileName: string) {
+    const site = storage.byLocalId(localId);
+    const file = site.files[fileName];
+    storage.deleteFile(localId, fileName);
+    (async () => {
+      if (site.id && file.id) {
+        await remote.deleteFile(file.id);
+      }
+    })();
+  }
+
   function applyTemplate(localId: string, files: EditorFiles) {
     const site = storage.byLocalId(localId);
     storage.update(localId, { files: { ...site.files, ...files } });
@@ -159,6 +170,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     createFile,
     renameFile,
     writeFile,
+    deleteFile,
     applyTemplate,
   };
 }

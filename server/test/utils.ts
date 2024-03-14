@@ -34,7 +34,8 @@ export const get = (apiPath: string, token?: string) => {
 };
 
 export const genApiShortcut =
-  (method: 'POST' | 'PUT') => (apiPath: string, body: Record<string, any>, token?: string) => {
+  (method: 'POST' | 'PUT' | 'DELETE') =>
+  (apiPath: string, body: Record<string, any>, token?: string) => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token !== undefined) headers.Authorization = `Bearer ${token}`;
     return fetchApi(apiPath, {
@@ -46,3 +47,4 @@ export const genApiShortcut =
 
 export const post = genApiShortcut('POST');
 export const put = genApiShortcut('PUT');
+export const delete_ = genApiShortcut('DELETE');

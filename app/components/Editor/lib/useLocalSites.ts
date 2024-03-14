@@ -99,6 +99,13 @@ export class SitesLocalStorage {
     return file;
   }
 
+  deleteFile(localId: string, name: string) {
+    const site = this.byLocalId(localId);
+    const newFiles = { ...site.files };
+    delete newFiles[name];
+    this.set({ ...site, files: newFiles });
+  }
+
   // ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗
   // ██╔══██╗██╔══██╗██║██║   ██║██╔══██╗╚══██╔══╝██╔════╝
   // ██████╔╝██████╔╝██║██║   ██║███████║   ██║   █████╗

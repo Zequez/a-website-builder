@@ -5,6 +5,7 @@ import {
   member as apiMember,
   putFile as apiPutFile,
   postFile as apiPostFile,
+  deleteFile as apiDeleteFile,
   postSite,
 } from '@app/lib/api';
 import { SiteWithFiles } from '@db';
@@ -32,8 +33,7 @@ export default function useRemoteSites(auth: MemberAuth | null) {
   }
 
   async function publishSite(site: { name: string; localName: string }) {
-    if (!auth)
-      return Promise.resolve({ error: "You are not logged in, can't publish", data: null });
+    if (!auth) return noAuthPromise;
     return await postSite({ name: site.name, localName: site.localName }, auth.token);
   }
 
@@ -45,5 +45,10 @@ export default function useRemoteSites(auth: MemberAuth | null) {
     );
   }
 
-  return { sites: member?.sites || null, error, putFile, postFile, publishSite };
+  async function deleteFile(id: string) {
+    if (!auth) return noAuthPromise;
+    return await apiDeleteFile(id, auth.token);
+  }
+
+  return { sites: member?.sites || null, error, putFile, postFile, publishSite, deleteFile };
 }

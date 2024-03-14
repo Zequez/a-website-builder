@@ -1,10 +1,13 @@
 import PlusIcon from '~icons/fa/plus';
 import CheckIcon from '~icons/fa/check';
 import TimesIcon from '~icons/fa/times';
+import MenuEllipsis from '~icons/fa/ellipsis-v';
+
 import { cx } from '@app/lib/utils';
 import { filesByName as template } from './template';
 import { EditorFiles } from './types';
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
+import FloatingMenu from '../FloatingMenu';
 
 export default function SidebarFiles({
   files,
@@ -13,6 +16,7 @@ export default function SidebarFiles({
   onAddFile,
   onApplyTemplate,
   onRenameFile,
+  onDeleteFile,
 }: {
   files: EditorFiles;
   openedFileName: string | null;
@@ -20,6 +24,7 @@ export default function SidebarFiles({
   onAddFile: (fileName: string) => void;
   onApplyTemplate: (template: EditorFiles) => void;
   onRenameFile: (fileName: string, newFileName: string) => void;
+  onDeleteFile: (fileName: string) => void;
 }) {
   const [newFileName, setNewFileName] = useState<null | string>(null);
   const [renameFile, setRenameFile] = useState<null | string>(null);
@@ -59,6 +64,12 @@ export default function SidebarFiles({
     setNewFileName(null);
   }
 
+  function handleDeletePrompt(name: string) {
+    if (window.confirm('Are you sure you want to delete this file?')) {
+      onDeleteFile(name);
+    }
+  }
+
   const fileAlreadyExists = newFileName ? !!files[newFileName] : false;
   const newFileNameIsValid = !fileAlreadyExists && !!(newFileName && newFileName.length > 0);
 
@@ -82,16 +93,13 @@ export default function SidebarFiles({
             onCancel={handleCancelRenameFile}
           />
         ) : (
-          <button
-            class={cx('block px-2 py-1 border-b border-b-black/20', {
-              'bg-black/40 text-white/70 shadow-md shadow-inset': name === openedFileName,
-              'bg-white/80 text-black/80 hover:bg-white/90': name !== openedFileName,
-            })}
-            onClick={() => onOpenFile(name)}
-            onDblClick={() => handleRenameFileStart(name)}
-          >
-            {name}
-          </button>
+          <FileButton
+            name={name}
+            isSelected={name === openedFileName}
+            onSelect={() => onOpenFile(name)}
+            onRenameStart={() => handleRenameFileStart(name)}
+            onDelete={() => handleDeletePrompt(name)}
+          />
         ),
       )}
       {newFileName !== null ? (
@@ -119,6 +127,57 @@ export default function SidebarFiles({
           <PlusIcon />
         </span>
       </button>
+    </div>
+  );
+}
+
+function FileButton({
+  isSelected,
+  onSelect,
+  onRenameStart,
+  onDelete,
+  name,
+}: {
+  isSelected: boolean;
+  onSelect: () => void;
+  onRenameStart: () => void;
+  onDelete: () => void;
+  name: string;
+}) {
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const elRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div class="relative" ref={elRef}>
+      <button
+        class={cx('block px-2 py-1 border-b border-b-black/20 w-full', {
+          'bg-black/40 text-white/70 shadow-md shadow-inset': isSelected,
+          'bg-white/80 text-black/80 hover:bg-white/90': !isSelected,
+        })}
+        onClick={() => onSelect()}
+        onDblClick={() => onRenameStart()}
+      >
+        {name}
+      </button>
+      <button
+        class={cx('absolute inset-y-0 right-0 w-8 flex items-center justify-center', {
+          'hover:bg-white/20 text-white/60': isSelected,
+          'hover:bg-black/20 text-black/30': !isSelected,
+        })}
+        onClick={() => setMenuIsOpen(true)}
+      >
+        <MenuEllipsis />
+      </button>
+      {menuIsOpen ? (
+        <FloatingMenu
+          target={elRef.current!}
+          items={{
+            Rename: onRenameStart,
+            Delete: onDelete,
+          }}
+          onClose={() => setMenuIsOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

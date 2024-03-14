@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
 import { T } from '@db';
-import { randomAlphaNumericString } from '@shared/utils';
-import { post, put } from '@server/test/utils';
+import { randomAlphaNumericString, uuid } from '@shared/utils';
+import { post, put, delete_ } from '@server/test/utils';
 import { randomEmail, tokenFromMember } from '@server/lib/utils';
 
 describe('PUT /files/:id', () => {
@@ -241,5 +241,47 @@ describe('POST /files', () => {
       token,
     );
     expect(res2.status).toBe(409);
+  });
+});
+
+describe('DELETE /files', () => {
+  it('should delete a file', async () => {
+    const member = await T.members.one();
+    const token = await tokenFromMember(member!);
+    const site = await T.sites.where({ member_id: member!.id }).one();
+    const file = await T.files.insert({
+      site_id: site!.id,
+      name: randomAlphaNumericString(),
+      data: '',
+    });
+    const res = await delete_(`files/${file!.id}`, {}, token);
+    expect(res.status).toBe(204);
+    const nullFile = await T.files.get(file.id);
+    expect(nullFile).toBe(null);
+  });
+
+  it('should not delete a file owned by a different member', async () => {
+    const ownerMember = await T.members.one();
+    const newMember = await T.members.insert({
+      email: randomEmail(),
+      passphrase: randomAlphaNumericString(),
+      full_name: randomAlphaNumericString(),
+    });
+    const token = await tokenFromMember(newMember!);
+    const site = await T.sites.where({ member_id: ownerMember!.id }).one();
+    const file = await T.files.insert({
+      site_id: site!.id,
+      name: randomAlphaNumericString(),
+      data: '',
+    });
+    const res = await delete_(`files/${file!.id}`, {}, token);
+    expect(res.status).toBe(401);
+  });
+
+  it('should indicate that a file does not exist', async () => {
+    const member = await await T.members.one();
+    const token = await tokenFromMember(member!);
+    const res = await delete_(`files/${uuid()}`, {}, token);
+    expect(res.status).toBe(404);
   });
 });

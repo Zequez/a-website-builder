@@ -3,6 +3,7 @@ import { authorize, jsonParser } from '@server/lib/middlewares';
 import { T } from '@db';
 import { FileB64 } from '@server/db/driver';
 import { updateFileToB64 } from '@server/lib/utils';
+import { uuid } from '@shared/utils';
 
 const router = Router();
 
@@ -73,6 +74,19 @@ router.post('/files', jsonParser, authorize, async (req, res) => {
     site_id,
   });
   return res.status(201).json(updateFileToB64(file));
+});
+
+export type RouteDeleteFilesQuery = Record<PropertyKey, never>;
+export type RouteDeleteFiles = Record<PropertyKey, never>;
+router.delete('/files/:id', authorize, async (req, res) => {
+  const file = await T.files.get(req.params.id);
+  if (!file) return res.status(404).json({ error: 'File not found' });
+  const site = await T.sites.get(file!.site_id);
+  if (site!.member_id !== req.tokenMember!.id)
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  await T.files.delete(req.params.id);
+  return res.status(204).json({});
 });
 
 export default router;

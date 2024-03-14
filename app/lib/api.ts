@@ -5,6 +5,7 @@ import type {
   RoutePutFilesId,
   RoutePostFilesQuery,
   RoutePostFiles,
+  RouteDeleteFiles,
   RoutePostSitesQuery,
   RoutePostSites,
   RoutePostAuthSignIn,
@@ -17,7 +18,7 @@ import { MemberAuth } from '@app/components/Auth';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
-function api<T>(path: string, method: 'GET' | 'POST' | 'PUT') {
+function api<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
   return (data: Record<string, any> = {}, authorization: string = '') => {
     const authHeader: { Authorization: string } | {} = authorization
       ? { Authorization: `Bearer ${authorization}` }
@@ -112,6 +113,9 @@ export const putFile = async (params: RoutePutFilesIdQuery, auth: string) =>
 
 export const postFile = async (params: RoutePostFilesQuery, auth: string) =>
   await api<RoutePostFiles>('files', 'POST')(params, auth);
+
+export const deleteFile = async (id: string, auth: string) =>
+  await api<RouteDeleteFiles>(`files/${id}`, 'DELETE')({}, auth);
 
 // Sites
 export const postSite = async (params: RoutePostSitesQuery, auth: string) =>

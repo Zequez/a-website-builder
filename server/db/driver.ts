@@ -89,7 +89,7 @@ function select<T>(table: string) {
     one: async (): Promise<T | null> => (await query(`${q} LIMIT 1`))[0],
     all: async (): Promise<T[]> => await query(q),
     get: async (id: number | string): Promise<T | null> =>
-      (await query(`${q} WHERE id = $1 LIMIT 1`, [id]))[0],
+      (await query(`${q} WHERE id = $1 LIMIT 1`, [id]))[0] || null,
     insert: async (keyValues: Record<string, any>): Promise<T> =>
       (await insertQuery<T>(table, keyValues))[0],
     update: async (id: number | string, keyValues: Record<string, any>): Promise<T> => {
@@ -104,6 +104,7 @@ function select<T>(table: string) {
         )
       )[0];
     },
+    delete: async (id: number | string) => await query(`DELETE FROM ${table} WHERE id = $1`, [id]),
     where: (keyValues: Record<string, any>) => {
       const whereQ = Object.keys(keyValues)
         .map((k, i) => `${k} = $${i + 1}`)

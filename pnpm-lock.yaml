@@ -12,6 +12,7 @@ specifiers:
   '@types/jsonwebtoken': ^9.0.6
   '@types/node': ^20.11.21
   '@types/pg': ^8.11.2
+  '@types/uuid': ^9.0.8
   '@unocss/preset-uno': ^0.58.5
   '@unocss/reset': ^0.58.5
   '@vercel/node': ^3.0.20
@@ -35,6 +36,7 @@ specifiers:
   typescript: ^5.4.2
   unocss: ^0.58.5
   unplugin-icons: ^0.18.5
+  uuid: ^9.0.1
   vercel: ^33.5.2
   vite: ^5.1.4
   vite-plugin-elm: ^3.0.0
@@ -53,6 +55,7 @@ dependencies:
   '@types/jsonwebtoken': 9.0.6
   '@types/node': 20.11.21
   '@types/pg': 8.11.2
+  '@types/uuid': 9.0.8
   '@unocss/preset-uno': 0.58.5
   '@unocss/reset': 0.58.5
   '@vercel/node': 3.0.20
@@ -76,6 +79,7 @@ dependencies:
   typescript: 5.4.2
   unocss: 0.58.5_vite@5.1.4
   unplugin-icons: 0.18.5_@svgr+core@8.1.0
+  uuid: 9.0.1
   vercel: 33.5.2
   vite: 5.1.4_@types+node@20.11.21
   vite-plugin-elm: 3.0.0_vite@5.1.4
@@ -1382,6 +1386,10 @@ packages:
       '@types/http-errors': 2.0.4
       '@types/mime': 3.0.4
       '@types/node': 20.11.21
+    dev: false
+
+  /@types/uuid/9.0.8:
+    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
     dev: false
 
   /@unocss/astro/0.58.5_vite@5.1.4:
@@ -5203,6 +5211,11 @@ packages:
   /uuid/3.3.2:
     resolution: {integrity: sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    hasBin: true
+    dev: false
+
+  /uuid/9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
     dev: false
 
