@@ -1,25 +1,132 @@
-import { useState } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import MobileIcon from '~icons/fa/mobile';
+import DesktopIcon from '~icons/fa/desktop';
+import FullScreenIcon from '~icons/fa/expand';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
-import { EditorFiles } from './types';
+import { Site } from './types';
+import { cx, useLocalStorageState } from '@app/lib/utils';
+import { FC } from '../FC';
 
-export default function Preview({ files, title }: { files: EditorFiles; title: string }) {
-  const [ratio, setRatio] = useState(16 / 9);
-  const [width, setWidth] = useState(360);
-  const bucketHasIndex = !!files['index.html'];
-  const iframeEncodedUrl = bucketHasIndex ? generateIframeEncodedUrl(files) : '';
+const FULLSCREEN_PORTAL_EL = document.getElementById('fullscreen-preview');
 
-  return bucketHasIndex ? (
-    <div class="fixed bottom-2 right-2 bg-gray-200 rounded-t-md" style={{ width }}>
-      <div class="px-2 py-1 flex text-gray-500">
-        <div>Preview</div>
-        <div class="flex-grow text-center">{title}</div>
-        <div>100%</div>
+export default function Preview({ site }: { site: Site; onSwitchPosition: () => void }) {
+  const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
+    'preferred_preview_mode',
+    'desktop',
+  );
+  const previewSpaceRef = useRef<HTMLDivElement>(null);
+  const [previewAvailableSpace, setPreviewAvailableSpace] = useState([0, 0]);
+  const [desktopScale, setDesktopScale] = useState(1);
+  const [mobileScale, setMobileScale] = useState(1);
+  const [fullscreenScale, setFullscreenScale] = useState(1);
+
+  const files = site.files;
+
+  const mobileAspectRatio = 9 / 16;
+  const mobileWidth = 360;
+  const mobileHeight = mobileWidth / mobileAspectRatio;
+
+  function recalculateAutomaticScaling(el: HTMLDivElement) {
+    const { width, height } = el.getBoundingClientRect();
+    setPreviewAvailableSpace([width, height]);
+
+    const scaleToAdjustWidth = width < mobileWidth ? width / mobileWidth : 1;
+    const scaleToAdjustHeight = height < mobileHeight ? height / mobileHeight : 1;
+
+    setMobileScale(Math.min(scaleToAdjustWidth, scaleToAdjustHeight));
+  }
+
+  const iframeEncodedUrl = files['index.html'] ? generateIframeEncodedUrl(files) : null;
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        recalculateAutomaticScaling(entry.target as HTMLDivElement);
+      }
+    });
+
+    if (previewSpaceRef.current) {
+      resizeObserver.observe(previewSpaceRef.current);
+      recalculateAutomaticScaling(previewSpaceRef.current);
+    }
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [previewSpaceRef.current, site]);
+
+  const [availableX, availableY] = previewAvailableSpace;
+
+  const scale = {
+    mobile: mobileScale,
+    desktop: desktopScale,
+    fullscreen: fullscreenScale,
+  }[mode];
+
+  const fullScreenPortalEl =
+    mode === 'fullscreen' ? document.getElementById('fullscreen-preview') : null;
+
+  const entrypoint = files['index.html'];
+
+  const componentRender = (
+    <div
+      class={cx('flex flex-col items-center justify-center w-full h-full bg-gray-700', {
+        'fixed z-90': fullScreenPortalEl,
+      })}
+    >
+      <div class="h-8 flex items-center text-gray-500 bg-white/80 w-full flex-shrink-0">
+        <div class="px-2">Preview</div>
+        <div class="px-2 text-center flex-grow">{entrypoint.name}</div>
+        <div class="flex items-center h-full">
+          <ViewModeButton isActive={mode === 'mobile'} onClick={() => setMode('mobile')}>
+            <MobileIcon />
+          </ViewModeButton>
+          <ViewModeButton isActive={mode === 'desktop'} onClick={() => setMode('desktop')}>
+            <DesktopIcon />
+          </ViewModeButton>
+          <ViewModeButton isActive={mode === 'fullscreen'} onClick={() => setMode('fullscreen')}>
+            <FullScreenIcon />
+          </ViewModeButton>
+        </div>
+        <div class="px-2 text-sm w-14 text-center">{Math.round(scale * 100)}%</div>
       </div>
-      <iframe
-        class="bg-white"
-        src={iframeEncodedUrl}
-        style={{ width: '100%', height: width * ratio }}
-      ></iframe>
+      <div
+        class="flex items-center justify-center flex-grow w-full overflow-hidden"
+        ref={previewSpaceRef}
+      >
+        {availableX && availableY && iframeEncodedUrl ? (
+          <iframe
+            class="bg-white shadow-lg"
+            src={iframeEncodedUrl}
+            style={{
+              transform: `scale(${scale})`,
+              ...(mode === 'desktop' || mode === 'fullscreen'
+                ? { width: '100%', height: '100%' }
+                : { width: mobileWidth, height: mobileHeight }),
+            }}
+          ></iframe>
+        ) : null}
+      </div>
     </div>
-  ) : null;
+  );
+
+  return mode === 'fullscreen'
+    ? createPortal(componentRender, FULLSCREEN_PORTAL_EL!)
+    : componentRender;
 }
+
+const ViewModeButton: FC<{ isActive: boolean; onClick: () => void }> = ({
+  isActive,
+  onClick,
+  children,
+}) => (
+  <button
+    onClick={() => onClick()}
+    class={cx('h-full py-1 px-2', {
+      'bg-black/60 text-white/60': isActive,
+      'hover:bg-black/20': !isActive,
+    })}
+  >
+    {children}
+  </button>
+);

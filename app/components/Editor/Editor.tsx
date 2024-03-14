@@ -96,10 +96,12 @@ const Editor = () => {
         <BottomButtons selectedSite={site} onPublish={() => S.publishSite(site!.localId!)} />
       </div>
 
-      <div class="flex flex-grow">
+      <div class="flex flex-grow flex-col">
         <CodePanel site={site} file={openFile} onChange={onEditorContentChanges} />
-
-        {site ? <Preview files={site.files} title={`${site.localName}.aweb.club`} /> : null}
+        <div class="h-2 bg-white/20 hover:cursor-ns-resize"></div>
+        <div class="flex-shrink-0 h-1/2">
+          {site ? <Preview site={site} onSwitchPosition={() => null} /> : null}
+        </div>
       </div>
     </div>
   );
