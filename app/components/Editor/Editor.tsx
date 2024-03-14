@@ -12,6 +12,7 @@ import useSites from './lib/useSites';
 import SidebarSites from './SidebarSites';
 import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
+import CodePanel from './CodePanel';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
@@ -95,21 +96,11 @@ const Editor = () => {
         <BottomButtons selectedSite={site} onPublish={() => S.publishSite(site!.localId!)} />
       </div>
 
-      {/* CODE EDITOR #################################################################### */}
-      {openFile ? (
-        <textarea
-          class={'flex-grow p-4 bg-gray-700 text-white font-mono'}
-          value={openFile.content}
-          onChange={({ currentTarget }) => onEditorContentChanges(currentTarget.value)}
-        ></textarea>
-      ) : (
-        <div class="flex flex-grow items-center justify-center text-2xl text-gray-200 opacity-50">
-          {site ? 'No file open' : 'No site selected'}
-        </div>
-      )}
+      <div class="flex flex-grow">
+        <CodePanel site={site} file={openFile} onChange={onEditorContentChanges} />
 
-      {/* FLOATING PREVIEW #################################################################### */}
-      {site ? <Preview files={site.files} title={`${site.localName}.aweb.club`} /> : null}
+        {site ? <Preview files={site.files} title={`${site.localName}.aweb.club`} /> : null}
+      </div>
     </div>
   );
 };
