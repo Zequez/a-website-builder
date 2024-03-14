@@ -24,6 +24,13 @@ export default function useSites(memberAuth: MemberAuth | null) {
     storage.update(localId, { name: newName });
   }
 
+  // ███████╗██╗████████╗███████╗███████╗
+  // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
+  // ███████╗██║   ██║   █████╗  ███████╗
+  // ╚════██║██║   ██║   ██╔══╝  ╚════██║
+  // ███████║██║   ██║   ███████╗███████║
+  // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
+
   function setLocalName(localId: string, newLocalName: string): Promise<boolean> {
     if (!newLocalName) return Promise.resolve(false);
     const existingSite = storage.findByLocalName(newLocalName);
@@ -37,21 +44,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
     });
   }
 
-  function writeFile(localId: string, fileName: string, content: string) {
-    storage.writeFile(localId, fileName, content);
-    (async () => {
-      const file = storage.byLocalId(localId).files[fileName];
-      const { error } = await remote.writeFile(file);
-      if (error) {
-        console.error('Error writing remote file', error);
-      }
-    })();
-  }
-
-  function renameFile(localId: string, fileName: string, newFileName: string) {
-    storage.renameFile(localId, fileName, newFileName);
-  }
-
   function addSite(template: EditorFiles = {}) {
     storage.addLocal({
       id: null,
@@ -62,11 +54,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
   function deleteSite(localId: string) {
     storage.delete_(localId);
-  }
-
-  function applyTemplate(localId: string, files: EditorFiles) {
-    const site = storage.byLocalId(localId);
-    storage.update(localId, { files: { ...site.files, ...files } });
   }
 
   function loadFromRemoteSites(remoteSites: SiteWithFiles[]) {
@@ -97,6 +84,33 @@ export default function useSites(memberAuth: MemberAuth | null) {
     } else {
       // Site is already published, update it instead
     }
+  }
+
+  // ███████╗██╗██╗     ███████╗███████╗
+  // ██╔════╝██║██║     ██╔════╝██╔════╝
+  // █████╗  ██║██║     █████╗  ███████╗
+  // ██╔══╝  ██║██║     ██╔══╝  ╚════██║
+  // ██║     ██║███████╗███████╗███████║
+  // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝
+
+  function writeFile(localId: string, fileName: string, content: string) {
+    storage.writeFile(localId, fileName, content);
+    (async () => {
+      const file = storage.byLocalId(localId).files[fileName];
+      const { error } = await remote.writeFile(file);
+      if (error) {
+        console.error('Error writing remote file', error);
+      }
+    })();
+  }
+
+  function renameFile(localId: string, fileName: string, newFileName: string) {
+    storage.renameFile(localId, fileName, newFileName);
+  }
+
+  function applyTemplate(localId: string, files: EditorFiles) {
+    const site = storage.byLocalId(localId);
+    storage.update(localId, { files: { ...site.files, ...files } });
   }
 
   return {

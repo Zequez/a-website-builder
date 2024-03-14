@@ -27,7 +27,8 @@ export default function SidebarSites({
   onAdd: () => void;
 }) {
   return (
-    <>
+    <div class="flex flex-col">
+      <div class="text-white text-center text-lg my-2">Sites</div>
       {sites.map((site) => (
         <SiteButton
           site={site}
@@ -43,7 +44,7 @@ export default function SidebarSites({
           <PlusIcon />
         </span>
       </button>
-    </>
+    </div>
   );
 }
 

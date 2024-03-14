@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 
-import cx from 'classnames';
-
 import CloudIcon from '~icons/fa/cloud';
 import OutLink from '~icons/fa/external-link';
 
+import { cx } from '@app/lib/utils';
 import { Site } from './types';
-import { filesByName as template } from './template';
+
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
 
 import SidebarSites from './SidebarSites';
+import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 
 const Editor = () => {
@@ -51,51 +51,34 @@ const Editor = () => {
     }
   };
 
+  const handleAddFile = () => {};
+
   const openFile = openFileName && site ? site.files[openFileName] : null;
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       <div class="w-44 bg-gray-500 flex flex-col">
-        {/* SITES #################################################################### */}
-        <div class="flex flex-col">
-          <div class="text-white text-center text-lg my-2">Sites</div>
-          <SidebarSites
-            sites={S.sites}
-            selectedSiteLocalId={site?.localId || null}
-            onSelect={handleSelectSite}
-            onAdd={() => S.addSite()}
-            onDelete={(localId) => handleDeleteSite(localId)}
-            onLocalNameChangeAttempt={S.setLocalName}
-            onNameChange={S.setName}
+        <SidebarSites
+          sites={S.sites}
+          selectedSiteLocalId={site?.localId || null}
+          onSelect={handleSelectSite}
+          onAdd={() => S.addSite()}
+          onDelete={(localId) => handleDeleteSite(localId)}
+          onLocalNameChangeAttempt={S.setLocalName}
+          onNameChange={S.setName}
+        />
+
+        {site ? (
+          <SidebarFiles
+            files={site.files}
+            openedFileName={openFileName}
+            onOpenFile={handleFileClick}
+            onAddFile={handleAddFile}
+            onApplyTemplate={(template) => S.applyTemplate(site.localId, template)}
           />
-        </div>
-
-        {/* FILES #################################################################### */}
-        <div class="flex flex-col flex-grow">
-          <div class="text-white text-center text-lg my-2">Files</div>
-          {site &&
-            Object.values(site.files).map(({ name }) => (
-              <button
-                class={cx('block px-2 py-1 border-b border-b-black/20 bg-gray-200', {
-                  'bg-gray-300 border-r-8 border-solid border-r-emerald-500': name === openFileName,
-                })}
-                onClick={() => handleFileClick(name)}
-              >
-                {name}
-              </button>
-            ))}
-
-          {site && Object.keys(site.files).length === 0 ? (
-            <div class="flex items-center justify-center">
-              <button
-                class="bg-emerald-500 px-2 py-1 text-white rounded-md uppercase tracking-wider"
-                onClick={() => S.applyTemplate(site.localId, template)}
-              >
-                Use template
-              </button>
-            </div>
-          ) : null}
-        </div>
+        ) : (
+          <div class="flex-grow"></div>
+        )}
 
         <BottomButtons selectedSite={site} onPublish={() => S.publishSite(site!.localId!)} />
       </div>
