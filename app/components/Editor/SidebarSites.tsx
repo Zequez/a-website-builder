@@ -2,10 +2,10 @@ import { useState, useRef } from 'preact/hooks';
 import cx from 'classnames';
 
 import { Site } from './types';
-import CheckIcon from '~icons/fa/check';
-import PlusIcon from '~icons/fa/plus';
-import MenuEllipsis from '~icons/fa/ellipsis-v';
-import CloudIcon from '~icons/fa/cloud';
+import CheckIcon from '~icons/fa6-solid/check';
+import PlusIcon from '~icons/fa6-solid/plus';
+import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
+import CloudIcon from '~icons/fa6-solid/cloud';
 
 import FloatingMenu from '../FloatingMenu';
 

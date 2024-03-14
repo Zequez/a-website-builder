@@ -1,7 +1,7 @@
-import PlusIcon from '~icons/fa/plus';
-import CheckIcon from '~icons/fa/check';
-import TimesIcon from '~icons/fa/times';
-import MenuEllipsis from '~icons/fa/ellipsis-v';
+import PlusIcon from '~icons/fa6-solid/plus';
+import CheckIcon from '~icons/fa6-solid/check';
+import TimesIcon from '~icons/fa6-solid/xmark';
+import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
 
 import { cx } from '@app/lib/utils';
 import { filesByName as template } from './template';

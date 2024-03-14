@@ -12,9 +12,10 @@ export default function CodePanel({
   {
     return file ? (
       <textarea
-        class={'flex-grow p-4 bg-gray-700 text-white font-mono'}
+        class={'flex-grow p-4 bg-gray-700 text-white font-mono outline-none focus:bg-gray-600'}
         value={file.content}
         onChange={({ currentTarget }) => onChange(currentTarget.value)}
+        ref={(el) => el?.focus()}
       ></textarea>
     ) : (
       <div class="flex flex-grow items-center justify-center text-2xl text-gray-200 opacity-50">

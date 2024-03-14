@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import ErrorIcon from '~icons/fa/times-circle';
+import ErrorIcon from '~icons/fa6-solid/circle-xmark';
 
 import { SanitizedMember } from '@db';
 import { gravatarUrl } from '@app/lib/utils';

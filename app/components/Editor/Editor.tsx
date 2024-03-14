@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 
-import CloudIcon from '~icons/fa/cloud';
-import OutLink from '~icons/fa/external-link';
+import CloudIcon from '~icons/fa6-solid/cloud';
+import OutLink from '~icons/fa6-solid/up-right-from-square';
+import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
+import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 
 import { cx } from '@app/lib/utils';
 import { Site } from './types';
@@ -55,6 +57,7 @@ const Editor = () => {
   const handleAddFile = (newFileName: string) => {
     if (site) {
       S.createFile(site.localId, newFileName, '');
+      setOpenFileName(newFileName);
     }
   };
 
@@ -68,7 +71,7 @@ const Editor = () => {
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
-      <div class="w-44 bg-gray-500 flex flex-col">
+      <div class="w-44 bg-gray-500 flex flex-col overflow-auto">
         <SidebarSites
           sites={S.sites}
           selectedSiteLocalId={site?.localId || null}
@@ -98,7 +101,9 @@ const Editor = () => {
 
       <div class="flex flex-grow flex-col">
         <CodePanel site={site} file={openFile} onChange={onEditorContentChanges} />
-        <div class="h-2 bg-white/20 hover:cursor-ns-resize"></div>
+        <div class="h-2 bg-gray-500 hover:cursor-ns-resize text-white/80 flex justify-center">
+          <HGripLinesIcon class="h-3 -mt-0.5" />
+        </div>
         <div class="flex-shrink-0 h-1/2">
           {site ? (
             <Preview

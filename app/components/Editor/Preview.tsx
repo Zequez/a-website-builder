@@ -1,8 +1,8 @@
 import { createPortal } from 'preact/compat';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import MobileIcon from '~icons/fa/mobile';
-import DesktopIcon from '~icons/fa/desktop';
-import FullScreenIcon from '~icons/fa/expand';
+import MobileIcon from '~icons/fa6-solid/mobile';
+import DesktopIcon from '~icons/fa6-solid/desktop';
+import FullScreenIcon from '~icons/fa6-solid/expand';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
 import { Site } from './types';
 import { cx, useLocalStorageState } from '@app/lib/utils';
