@@ -57,6 +57,12 @@ const Editor = () => {
     }
   };
 
+  const handleRenameFile = (fileName: string, newFileName: string) => {
+    if (site) {
+      S.renameFile(site.localId, fileName, newFileName);
+    }
+  };
+
   const openFile = openFileName && site ? site.files[openFileName] : null;
 
   return (
@@ -78,6 +84,7 @@ const Editor = () => {
             openedFileName={openFileName}
             onOpenFile={handleFileClick}
             onAddFile={handleAddFile}
+            onRenameFile={handleRenameFile}
             onApplyTemplate={(template) => S.applyTemplate(site.localId, template)}
           />
         ) : (
