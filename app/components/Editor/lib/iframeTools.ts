@@ -15,7 +15,6 @@ export function generateIframeEncodedUrl(
   files: { [key: string]: EditorFile },
   entryPoint: string = 'index.html',
 ): string | null {
-  console.log('Converting index');
   const entrypointFile = files[entryPoint];
   if (!entrypointFile) return null;
   const content = entrypointFile.content;
@@ -41,8 +40,6 @@ export function generateIframeEncodedUrl(
       }
     }
   });
-
-  console.log('Finishing', root.innerHTML);
 
   return contentToDataUrl('text/html', root.innerHTML);
 }
