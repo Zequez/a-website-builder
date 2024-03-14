@@ -96,6 +96,7 @@ export class SitesLocalStorage {
       [name]: { ...file, content },
     };
     this.set({ ...site, files: newFiles });
+    return file;
   }
 
   // ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗

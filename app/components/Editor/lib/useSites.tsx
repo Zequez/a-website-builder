@@ -97,19 +97,42 @@ export default function useSites(memberAuth: MemberAuth | null) {
     storage.writeFile(localId, fileName, content);
     (async () => {
       const file = storage.byLocalId(localId).files[fileName];
-      const { error } = await remote.writeFile(file);
-      if (error) {
-        console.error('Error writing remote file', error);
+      if (file.id) {
+        const { error } = await remote.putFile({
+          id: file.id,
+          name: file.name,
+          content: file.content,
+        });
+        if (error) {
+          console.error('Error writing remote file', error);
+        }
       }
     })();
   }
 
-  function addFile(localId: string, fileName: string, content: string) {
-    storage.writeFile(localId, fileName, content);
+  function createFile(localId: string, name: string, content: string) {
+    storage.writeFile(localId, name, content);
+    (async () => {
+      const site = storage.byLocalId(localId);
+      if (site.id) {
+        await remote.postFile(parseInt(site.id), { name, content });
+      }
+    })();
   }
 
   function renameFile(localId: string, fileName: string, newFileName: string) {
     storage.renameFile(localId, fileName, newFileName);
+    (async () => {
+      const site = storage.byLocalId(localId);
+      const file = site.files[newFileName];
+      if (file.id) {
+        await remote.putFile({
+          id: file.id,
+          name: newFileName,
+          content: file.content,
+        });
+      }
+    })();
   }
 
   function applyTemplate(localId: string, files: EditorFiles) {
@@ -129,7 +152,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     setSelected,
     selectedSite: selectedLocalId ? storage.byLocalId(selectedLocalId) : null,
 
-    addFile,
+    createFile,
     renameFile,
     writeFile,
     applyTemplate,

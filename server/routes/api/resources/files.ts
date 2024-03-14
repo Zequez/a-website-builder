@@ -1,35 +1,78 @@
 import { Router } from 'express';
 import { authorize, jsonParser } from '@server/lib/middlewares';
 import { T } from '@db';
+import { FileB64 } from '@server/db/driver';
+import { updateFileToB64 } from '@server/lib/utils';
 
 const router = Router();
 
-router.post('/files', jsonParser, authorize, async (req, res) => {
-  // const { id: memberId } = req.tokenMember!;
-  // const { name, data } = req.body;
-  // const site = await T.sites.where({ member_id: memberId }).one()
-  // const file = await T.files.insert({ name, data, site_id: site.id });
-  // return res.status(201).json(file);
-});
-
-export type RoutePostFilesIdQuery = {
+export type RoutePutFilesIdQuery = {
   id: string;
   data: string;
   name: string;
 };
-export type RoutePostFilesId = Record<PropertyKey, never>;
-router.post('/files/:id', jsonParser, authorize, async (req, res) => {
+export type RoutePutFilesId = Record<PropertyKey, never>;
+router.put('/files/:id', jsonParser, authorize, async (req, res) => {
   const file = await T.files.get(req.params.id);
   if (!file) return res.status(404).json({ error: 'File not found' });
 
-  const { id } = req.tokenMember!;
-  const site = await T.sites.get(file.site_id);
-  const member = await T.members.get(site.member_id);
-  if (id !== member.id) return res.status(401).json({ error: 'Unauthorized' });
   const { data, name } = req.body;
+
+  const errors = [];
+  const site = await T.sites.get(file.site_id);
+  if (!name) errors.push('Name is required');
+  if (errors.length) {
+    return res.status(400).json({ error: errors });
+  }
+
+  if (site!.member_id !== req.tokenMember!.id)
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  const existingFile = await T.files.findExisting(site!.id, name);
+  if (existingFile && existingFile.id !== file.id) {
+    return res.status(409).json({ error: 'File already exists' });
+  }
+
   const bufferData = Buffer.from(data, 'base64');
   await T.files.update(file.id, { data: bufferData, data_size: bufferData.length, name });
   return res.status(200).json({});
+});
+
+export type RoutePostFilesQuery = {
+  site_id: number;
+  name: string;
+  data: string;
+};
+export type RoutePostFiles = FileB64;
+router.post('/files', jsonParser, authorize, async (req, res) => {
+  const { site_id, name, data } = req.body;
+
+  const errors: string[] = [];
+  if (!site_id) errors.push('Site ID is required');
+  const site = await T.sites.get(site_id);
+  if (!site) errors.push('Site does not exist');
+  if (!name) errors.push('Name is required');
+  if (errors.length) {
+    return res.status(400).json({ error: errors });
+  }
+
+  if (site!.member_id !== req.tokenMember!.id)
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  const existingFile = await T.files.findExisting(site_id, name);
+  if (existingFile) {
+    return res.status(409).json({ error: 'File already exists' });
+  }
+
+  const bufferData = Buffer.from(data || '', 'base64');
+
+  const file = await T.files.insert({
+    name,
+    data: bufferData,
+    data_size: bufferData.length,
+    site_id,
+  });
+  return res.status(201).json(updateFileToB64(file));
 });
 
 export default router;

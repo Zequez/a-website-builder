@@ -53,7 +53,7 @@ const Editor = () => {
 
   const handleAddFile = (newFileName: string) => {
     if (site) {
-      S.addFile(site.localId, newFileName, '');
+      S.createFile(site.localId, newFileName, '');
     }
   };
 

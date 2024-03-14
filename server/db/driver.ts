@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { groupBy } from '@shared/utils';
 
 import { isTest, SILENCE_SQL_LOGS } from '../config.js';
-import { colorConsole } from '../lib/utils.js';
+import { colorConsole, updateFileToB64 } from '../lib/utils.js';
 import { Member, Site, File_ } from './types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -86,8 +86,9 @@ export async function query(queryStr: string, values: any[] = []) {
 function select<T>(table: string) {
   const q = `SELECT * FROM ${table}`;
   return {
+    one: async (): Promise<T | null> => (await query(`${q} LIMIT 1`))[0],
     all: async (): Promise<T[]> => await query(q),
-    get: async (id: number | string): Promise<T> =>
+    get: async (id: number | string): Promise<T | null> =>
       (await query(`${q} WHERE id = $1 LIMIT 1`, [id]))[0],
     insert: async (keyValues: Record<string, any>): Promise<T> =>
       (await insertQuery<T>(table, keyValues))[0],
@@ -110,7 +111,7 @@ function select<T>(table: string) {
       const qq = `${q} WHERE ${whereQ}`;
       return {
         all: async (): Promise<T[]> => await query(qq, Object.values(keyValues)),
-        one: async (): Promise<T> =>
+        one: async (): Promise<T | null> =>
           (await query(`${qq} LIMIT 1`, Object.values(keyValues)))[0] || null,
       };
     },
@@ -145,20 +146,26 @@ const extendedMembers = {
     const sites = await T.sites.where({ member_id: member.id }).all();
     const sitesIds = sites.map((s) => s.id);
     const files = (await query(`SELECT * FROM files WHERE site_id IN (${sitesIds})`)) as File_[];
-    const editedFiles = files.map((file) => {
-      let editedFile = file as unknown as FileB64;
-      editedFile.data = Buffer.from(file.data).toString('base64') as any;
-      editedFile.data_size = parseInt(file.data_size);
-      return editedFile;
-    });
+    const editedFiles = files.map(updateFileToB64);
     const filesBySiteId = groupBy(editedFiles, 'site_id');
     (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id] || []));
     return { ...member, sites };
   },
 };
 
+const extendedFiles = {
+  ...files,
+  findExisting: async (siteId: string | number, name: string): Promise<File_ | null> => {
+    return (
+      (
+        await query(`SELECT * FROM files WHERE site_id = $1 AND name ILIKE $2`, [siteId, name])
+      )[0] || null
+    );
+  },
+};
+
 export const T = {
   members: extendedMembers,
   sites,
-  files,
+  files: extendedFiles,
 };

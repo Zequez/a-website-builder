@@ -2,8 +2,9 @@ import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mime from 'mime';
-import { Member } from '@db';
+import { File_, Member } from '@db';
 import { IncomingHttpHeaders } from 'http';
+import { FileB64 } from '@server/db/driver';
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),
@@ -58,6 +59,13 @@ export function sanitizeMember(member: Member) {
 
 export function randomEmail() {
   return `${Math.random().toString(36).substring(2, 15)}@example.com`;
+}
+
+export function updateFileToB64(file: File_): FileB64 {
+  let editedFile = file as unknown as FileB64;
+  editedFile.data = Buffer.from(file.data).toString('base64') as any;
+  editedFile.data_size = parseInt(file.data_size);
+  return editedFile;
 }
 
 // ████████╗ ██████╗ ██╗  ██╗███████╗███╗   ██╗    ███████╗████████╗██╗   ██╗███████╗███████╗

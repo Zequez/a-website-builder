@@ -1,8 +1,10 @@
 import type {
   RouteResourceMembersId,
   RouteResourceMembers,
-  RoutePostFilesIdQuery,
-  RoutePostFilesId,
+  RoutePutFilesIdQuery,
+  RoutePutFilesId,
+  RoutePostFilesQuery,
+  RoutePostFiles,
   RoutePostSitesQuery,
   RoutePostSites,
   RoutePostAuthSignIn,
@@ -15,7 +17,7 @@ import { MemberAuth } from '@app/components/Auth';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
-function api<T>(path: string, method: 'GET' | 'POST') {
+function api<T>(path: string, method: 'GET' | 'POST' | 'PUT') {
   return (data: Record<string, any> = {}, authorization: string = '') => {
     const authHeader: { Authorization: string } | {} = authorization
       ? { Authorization: `Bearer ${authorization}` }
@@ -105,8 +107,11 @@ export const member = async (id: number, auth: string) =>
 // export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
 
 // Files
-export const postFile = async (params: RoutePostFilesIdQuery, auth: string) =>
-  await api<RoutePostFilesId>(`files/${params.id}`, 'POST')(params, auth);
+export const putFile = async (params: RoutePutFilesIdQuery, auth: string) =>
+  await api<RoutePutFilesId>(`files/${params.id}`, 'PUT')(params, auth);
+
+export const postFile = async (params: RoutePostFilesQuery, auth: string) =>
+  await api<RoutePostFiles>('files', 'POST')(params, auth);
 
 // Sites
 export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
