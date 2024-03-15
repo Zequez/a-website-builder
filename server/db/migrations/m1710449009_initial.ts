@@ -1,7 +1,5 @@
-import { defineTable } from 'squid';
-import { sql, spreadInsert } from 'squid/pg';
+import { sql } from 'squid/pg';
 import { query } from '@db/pool';
-import { MemberRecord } from '../squidSchema';
 
 export async function up() {
   await query(sql`

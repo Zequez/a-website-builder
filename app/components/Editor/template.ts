@@ -2,6 +2,7 @@ import { EditorFile, EditorFiles } from './types';
 
 const template: EditorFile[] = [
   {
+    id: null,
     name: 'index.html',
     content: `<!DOCTYPE html>
 <html>
@@ -19,10 +20,12 @@ const template: EditorFile[] = [
 </html>`,
   },
   {
+    id: null,
     name: 'style.css',
     content: `body { background: red; }`,
   },
   {
+    id: null,
     name: 'script.js',
     content: `console.log("Test");`,
   },
