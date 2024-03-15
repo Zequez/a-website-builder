@@ -1,7 +1,6 @@
-import { API_PATH } from '@server/config';
-import { endpoint } from '@server/server';
+import { API_PATH, PORT } from '@server/config';
 
-const apiUrl = `${endpoint}/${API_PATH}/`;
+const apiUrl = `http://localhost:${PORT}/${API_PATH}/`;
 
 export function fetchApi(apiPath: string, req?: RequestInit) {
   return fetch(`${apiUrl}${apiPath}`, req);

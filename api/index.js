@@ -1,3 +1,6 @@
-import { start } from '../dist/ts/server/server.js';
+import { PORT } from '../dist/ts/server/config.js';
+import app from '../dist/ts/server/app.js';
 
-export default start();
+app.listen(PORT, () => console.log(`Server ready on port ${PORT}.`));
+
+export default app;

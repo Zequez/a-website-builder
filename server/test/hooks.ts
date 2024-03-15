@@ -1,6 +1,6 @@
 import { afterAll, beforeAll } from 'vitest';
 import waitPort from 'wait-port';
-import { PORT } from '@server/server';
+import { PORT } from '@server/config';
 import { apply } from './fixtures';
 
 beforeAll(async () => {

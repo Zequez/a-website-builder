@@ -1,3 +1,6 @@
-import { start } from './server';
+import { PORT } from './config';
+import app from './app';
 
-start();
+app.listen(PORT, () => console.log(`Server ready on port ${PORT}.`));
+
+export default app;
