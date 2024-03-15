@@ -1,6 +1,6 @@
 import '../config';
 import pg from 'pg';
-import { appEnv, SILENCE_SQL_LOGS } from '../config';
+import { appEnv, SILENCE_SQL_LOGS, isProd } from '../config';
 import { colorConsole } from '../lib/utils.js';
 
 const databaseUrl = {
@@ -20,7 +20,7 @@ if (!databaseUrl) throw '(DEV|TEST|PROD)_DATABASE_URL environment variable not s
 
 const pool = new pg.Pool({
   connectionString: databaseUrl, // Connection string for your PostgreSQL database
-  ssl: false,
+  ssl: isProd ? true : false,
 });
 
 export async function setGlobalClient() {

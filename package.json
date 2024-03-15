@@ -14,6 +14,7 @@
     "deploy:prod": "vercel deploy --prod",
     "db:createMigration": "tsx ./scripts/createMigration.ts",
     "db:migrate": "tsx ./scripts/migrate.ts",
+    "db:seeds": "tsx ./scripts/applySeeds.ts",
     "test": "concurrently pnpm:test:server pnpm:test:runner",
     "test:runner": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test tsx watch ./server/index.ts"

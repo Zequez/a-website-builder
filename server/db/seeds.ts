@@ -1,16 +1,20 @@
-import { sql } from 'squid/pg';
+import { T } from '@db';
+import { hashPass } from '@server/lib/utils';
 
-export default sql`
-  BEGIN transaction;
+export async function apply() {
+  const member = await T.members.where({ email: 'zequez@gmail.com' }).one();
 
-  INSERT INTO "members" (email, full_name, is_admin)
-  VALUES ('zequez@gmail.com', 'Ezequiel Schwartzman', TRUE);
-
-  INSERT INTO "sites" (name, local_name, domain_name, member_id)
-  VALUES ('Personal Website', 'ezequiel', 'ezequielschwartzman.org', 1);
-
-  INSERT INTO "files" (site_id, name, data, data_size)
-  VALUES (1, 'index.html', 'Hello World!', 11);
-
-  COMMIT;
-`;
+  if (!member) {
+    console.log('Adding first user');
+    const addedMember = await T.members.insert({
+      email: 'zequez@gmail.com',
+      full_name: 'Ezequiel Schwartzman',
+      is_admin: true,
+      active: true,
+      passphrase: await hashPass('123456'),
+    });
+    console.log(addedMember);
+  } else {
+    console.log('Already seeded');
+  }
+}
