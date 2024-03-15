@@ -20,4 +20,17 @@ router.post('/sites', jsonParser, authorize, async (req, res) => {
   return res.status(201).json(site);
 });
 
+export type RoutePutSitesIdQuery = { id: string; name: string; localName: string };
+export type RoutePutSitesId = Record<PropertyKey, never>;
+router.put(`/sites/:id`, jsonParser, authorize, async (req, res) => {
+  const site = await T.sites.get(req.params.id);
+  if (!site) return res.status(404).json({ error: 'Site not found' });
+  if (site.member_id !== req.tokenMember!.id) return res.status(403).json({ error: 'Forbidden' });
+  const { name, localName } = req.body;
+  if (!name || !localName)
+    return res.status(400).json({ error: 'Name and Local Name are required' });
+  await T.sites.update(site.id, { name, local_name: localName });
+  return res.status(200).json({});
+});
+
 export default router;

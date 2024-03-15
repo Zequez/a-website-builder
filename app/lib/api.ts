@@ -12,6 +12,8 @@ import type {
   RoutePostAuthSignUp,
   RouteGetAuthMe,
   RoutePostAuthChangePass,
+  RoutePutSitesIdQuery,
+  RoutePutSitesId,
 } from '@server/routes/api/types';
 
 import { MemberAuth } from '@app/components/Auth';
@@ -120,5 +122,8 @@ export const deleteFile = async (id: string, auth: string) =>
 // Sites
 export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
   await api<RoutePostSites>('sites', 'POST')(params, auth);
+
+export const putSite = async (params: RoutePutSitesIdQuery, auth: string) =>
+  await api<RoutePutSitesId>(`sites/${params.id}`, 'PUT')(params, auth);
 
 // Hooks

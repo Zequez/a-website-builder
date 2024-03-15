@@ -20,10 +20,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
     }
   }, [remote.sites]);
 
-  function setName(localId: string, newName: string) {
-    storage.update(localId, { name: newName });
-  }
-
   // ███████╗██╗████████╗███████╗███████╗
   // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
   // ███████╗██║   ██║   █████╗  ███████╗
@@ -31,14 +27,35 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ███████║██║   ██║   ███████╗███████║
   // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
+  function setName(localId: string, newName: string) {
+    storage.update(localId, { name: newName });
+    const site = storage.byLocalId(localId);
+    if (site.id) {
+      remote.putSite({
+        id: site.id,
+        name: site.name,
+        localName: site.localName,
+      });
+    }
+  }
+
   function setLocalName(localId: string, newLocalName: string): Promise<boolean> {
     if (!newLocalName) return Promise.resolve(false);
     const existingSite = storage.findByLocalName(newLocalName);
     return new Promise((resolve) => {
+      // TODO: Should also check the server
       if (existingSite) {
         resolve(existingSite.localId === localId);
       } else {
         storage.update(localId, { localName: newLocalName });
+        const site = storage.byLocalId(localId);
+        if (site.id) {
+          remote.putSite({
+            id: site.id,
+            name: site.name,
+            localName: site.localName,
+          });
+        }
         resolve(true);
       }
     });

@@ -12,9 +12,9 @@ export class SitesLocalStorage {
     this.loadAllSites();
   }
 
-  clone(): SitesLocalStorage {
+  asNewObject(): SitesLocalStorage {
     const cloned = Object.create(Object.getPrototypeOf(this));
-    cloned._byLocalId = { ...this._byLocalId };
+    cloned._byLocalId = this._byLocalId;
     cloned.onChange = this.onChange;
     cloned.LS_PREFIX = this.LS_PREFIX;
     // console.log(this, cloned);
@@ -54,6 +54,7 @@ export class SitesLocalStorage {
   }
 
   addRemote(site: Site) {
+    console.log('Adding remote site', site);
     this.set(site);
   }
 
@@ -131,6 +132,7 @@ export class SitesLocalStorage {
       throw `Invalid site on localstorage; removing`;
     }
 
+    console.log('Loading local site', site);
     this._byLocalId[localId] = site;
   }
 
@@ -156,11 +158,15 @@ export class SitesLocalStorage {
 export default function useLocalSites(prefix: string) {
   const [storage, setStorage] = useState(() => new SitesLocalStorage(prefix));
 
+  // useEffect(() => {
+  //   new MutationObserver
+  // }, [])
+
   useEffect(() => {
     // @ts-ignore
     window.localSites = storage;
     storage.onChange = () => {
-      setStorage((latestStorage) => latestStorage.clone());
+      setStorage(storage.asNewObject());
     };
   }, []);
 
