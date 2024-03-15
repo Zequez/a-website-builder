@@ -1,10 +1,11 @@
 import { query as Q } from './pool';
-import { sql, spreadUpdate, spreadAnd, spreadInsert } from 'squid/pg';
 import { groupBy } from '@shared/utils';
 
 import { updateFileToB64 } from '../lib/utils.js';
 import { Member, Site, File_ } from './types';
+import { sql, spreadAnd, spreadUpdate, spreadInsert } from './squid';
 
+export { sql, Q };
 export const query = Q;
 
 function select<T>(table: string) {

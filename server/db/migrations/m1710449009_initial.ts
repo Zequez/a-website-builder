@@ -1,8 +1,7 @@
-import { sql } from 'squid/pg';
-import { query } from '@db/pool';
+import { Q, sql } from '@db';
 
 export async function up() {
-  await query(sql`
+  await Q(sql`
     BEGIN transaction;
 
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

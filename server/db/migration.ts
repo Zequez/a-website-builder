@@ -1,14 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import { query } from './pool';
-import { sql } from 'squid/pg';
+import { sql, Q } from '@db';
 import * as migrations from './migrations';
 
 const MIGRATIONS_DIR = './server/db/migrations';
 
 async function addMigrationTable() {
-  return query(sql`
+  return Q(sql`
     CREATE TABLE IF NOT EXISTS migrations (
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL UNIQUE,
@@ -17,7 +16,7 @@ async function addMigrationTable() {
   `);
 }
 async function migrationRecords() {
-  return (await query(sql`SELECT * FROM migrations ORDER BY name ASC`)) as { name: string }[];
+  return (await Q(sql`SELECT * FROM migrations ORDER BY name ASC`)) as { name: string }[];
 }
 
 export async function migrate(direction: number = 0) {
@@ -39,7 +38,7 @@ export async function migrate(direction: number = 0) {
         migrationsRunCounter++;
         try {
           await up();
-          await query(sql`INSERT INTO migrations (name) VALUES (${migrationName})`);
+          await Q(sql`INSERT INTO migrations (name) VALUES (${migrationName})`);
         } catch (e) {
           console.error(`Migration ${migrationName} failed`);
           throw e;
@@ -61,7 +60,7 @@ export async function rollback(amount: number = 0) {
     console.log(`Rolling back ${migrationName}`);
     try {
       await down();
-      await query(sql`DELETE FROM migrations WHERE name = ${migrationName}`);
+      await Q(sql`DELETE FROM migrations WHERE name = ${migrationName}`);
     } catch (e) {
       console.error(`Migration ${migrationName} failed`);
       throw e;
