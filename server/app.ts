@@ -1,5 +1,5 @@
 import './config';
-import { isDev, API_PATH, APP_STATIC_PATH } from './config';
+import { isDev, API_PATH, APP_STATIC_PATH, BASE_HOSTNAME } from './config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { T } from '@db';
 import api from './routes/api';
 import { logger } from './lib/middlewares.js';
-import { parseUrlFile, getSubdomain } from './lib/utils.js';
+import { parseUrlFile } from './lib/utils.js';
 
 const app = express();
 
@@ -27,13 +27,27 @@ app.use(`/${API_PATH}`, api);
 
 const appDist = express.static(APP_STATIC_PATH);
 
+export function getSubdomain(url: URL) {
+  const subdomain = url.hostname.replace(new RegExp(`\\.${BASE_HOSTNAME}$`), '');
+  if (subdomain === url.hostname) return null;
+  return subdomain;
+}
+
 app.all('*', async (req, res, next) => {
   if (!req.headers.host) throw 'No host?';
   if (!req.url) throw 'No URL?';
 
   const url = new URL(`${req.url}`, `https://${req.headers.host}`);
 
-  const subdomain = getSubdomain(url);
+  if (!url.hostname.endsWith(BASE_HOSTNAME)) {
+    console.log('Not on the right hostname');
+    return next();
+  }
+
+  const subdomain =
+    BASE_HOSTNAME === url.hostname
+      ? null
+      : url.hostname.replace(new RegExp(`\\.${BASE_HOSTNAME}$`), '');
 
   if (!subdomain) {
     // Serve static app

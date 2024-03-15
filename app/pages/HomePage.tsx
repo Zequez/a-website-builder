@@ -43,14 +43,16 @@ const HomePage = () => {
             </div>
           </div>
         ) : membersStatus === 'loaded' && members ? (
-          <Members members={members} isAuthenticated={!!memberAuth} />
-        ) : null}
-        {!memberAuth ? (
-          <div class="flex justify-center pb-4 pt-4">
-            <Button size="lg" href="#auth">
-              Register
-            </Button>
-          </div>
+          <>
+            <Members members={members} isAuthenticated={!!memberAuth} />
+            {!memberAuth ? (
+              <div class="flex justify-center pb-4">
+                <Button size="lg" href="#auth">
+                  Register
+                </Button>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     </div>
@@ -68,7 +70,7 @@ const Members = ({
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
   return (
-    <div class="flex-grow">
+    <div class="flex-grow mb-4">
       <h1 class="text-center text-3xl py-4 text-black/30 font-semibold tracking-wider">Members</h1>
       <div class="grid grid-cols-1 max-w-screen-sm mx-auto border border-solid border-black/10 sm:rounded-md">
         {sortedMembers.map((m) => (

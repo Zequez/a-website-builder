@@ -10,3 +10,6 @@ export const isTest = appEnv === 'test';
 
 export const PORT = isTest ? 3123 : process.env.PORT ? parseInt(process.env.PORT) : 3000;
 export const SILENCE_SQL_LOGS = process.env.SILENCE_SQL_LOGS === 'true';
+export const BASE_HOSTNAME = process.env.BASE_HOSTNAME!;
+
+if (!BASE_HOSTNAME) throw 'BASE_HOSTNAME environment variable not set';

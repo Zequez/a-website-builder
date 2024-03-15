@@ -5,6 +5,7 @@ import mime from 'mime';
 import { File_, Member } from '@db';
 import { IncomingHttpHeaders } from 'http';
 import { FileB64 } from '@server/db/driver';
+import { BASE_HOSTNAME } from '@server/config';
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),
@@ -36,13 +37,6 @@ export function parseUrlFile(url: URL) {
   if (!fileName.match(/\./)) fileName += '.html';
   const mimeType = mime.getType(fileName);
   return { fileName, mimeType };
-}
-
-export function getSubdomain(url: URL) {
-  if (!process.env.BASE_HOSTNAME) throw 'BASE_HOSTNAME environment variable not set';
-  const subdomain = url.hostname.replace(new RegExp(`\\.${process.env.BASE_HOSTNAME}$`), '');
-  if (subdomain === url.hostname) return null;
-  return subdomain;
 }
 
 export function removeKeys(obj: Record<string, any>, excluded: string[] = []) {
