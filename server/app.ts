@@ -1,9 +1,8 @@
 import './config';
-import { isDev, API_PATH, APP_STATIC_PATH, BASE_HOSTNAME } from './config';
+import { isDev, API_PATH, APP_STATIC_PATH, BASE_HOSTNAME, BASE_HOSTNAME2 } from './config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 import { T } from '@db';
 import api from './routes/api';
@@ -27,6 +26,8 @@ app.use(`/${API_PATH}`, api);
 
 const appDist = express.static(APP_STATIC_PATH);
 
+const VALID_BASE_HOSTNAMES = [BASE_HOSTNAME, BASE_HOSTNAME2];
+
 export function getSubdomain(url: URL) {
   const subdomain = url.hostname.replace(new RegExp(`\\.${BASE_HOSTNAME}$`), '');
   if (subdomain === url.hostname) return null;
@@ -39,15 +40,23 @@ app.all('*', async (req, res, next) => {
 
   const url = new URL(`${req.url}`, `https://${req.headers.host}`);
 
-  if (!url.hostname.endsWith(BASE_HOSTNAME)) {
-    console.log('Not on the right hostname');
-    return next();
+  let validHostname: null | string = null;
+  let subdomain: null | string = null;
+  for (let hostname of VALID_BASE_HOSTNAMES) {
+    if (hostname === url.hostname) {
+      validHostname = hostname;
+    } else if (url.hostname.endsWith(hostname)) {
+      subdomain = url.hostname.replace(new RegExp(`\\.${hostname}$`), '');
+      validHostname = hostname;
+    }
   }
 
-  const subdomain =
-    BASE_HOSTNAME === url.hostname
-      ? null
-      : url.hostname.replace(new RegExp(`\\.${BASE_HOSTNAME}$`), '');
+  if (!validHostname)
+    return res
+      .status(400)
+      .json({
+        error: `Invalid hostname. Valid hostnames are: ${VALID_BASE_HOSTNAMES.join(' or ')}`,
+      });
 
   if (!subdomain) {
     // Serve static app
@@ -71,7 +80,6 @@ app.all('*', async (req, res, next) => {
 });
 
 app.all('*', (req, res) => {
-  console.log(req);
   res.status(404).json({ error: 'Not found' });
 });
 
