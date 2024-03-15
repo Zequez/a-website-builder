@@ -31,7 +31,7 @@ specifiers:
   mime: ^4.0.1
   node-html-parser: ^6.1.12
   pg: ^8.11.3
-  preact: github:zequez/preact#main
+  preact: ^10.19.6
   squid: ^0.5.2
   tsc-alias: ^1.8.8
   tsx: ^4.7.1
@@ -77,7 +77,7 @@ dependencies:
   mime: 4.0.1
   node-html-parser: 6.1.12
   pg: 8.11.3
-  preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
+  preact: 10.19.6
   squid: 0.5.2
   tsc-alias: 1.8.8
   tsx: 4.7.1
@@ -932,7 +932,7 @@ packages:
     peerDependencies:
       preact: ^10.0.0
     dependencies:
-      preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
+      preact: 10.19.6
     dev: false
 
   /@prefresh/utils/1.2.0:
@@ -950,7 +950,7 @@ packages:
       '@prefresh/core': 1.5.2_preact@10.19.6
       '@prefresh/utils': 1.2.0
       '@rollup/pluginutils': 4.2.1
-      preact: github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82
+      preact: 10.19.6
       vite: 5.1.4_@types+node@20.11.21
     transitivePeerDependencies:
       - supports-color
@@ -4380,6 +4380,10 @@ packages:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
     dev: false
 
+  /preact/10.19.6:
+    resolution: {integrity: sha512-gympg+T2Z1fG1unB8NH29yHJwnEaCH37Z32diPDku316OTnRPeMbiRV9kTrfZpocXjdfnWuFUl/Mj4BHaf6gnw==}
+    dev: false
+
   /pretty-format/29.7.0:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -5600,12 +5604,4 @@ packages:
   /yocto-queue/1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
-    dev: false
-
-  github.com/zequez/preact/c5f048366a8a02417125eb17829f472122938b82:
-    resolution: {tarball: https://codeload.github.com/zequez/preact/tar.gz/c5f048366a8a02417125eb17829f472122938b82}
-    name: preact
-    version: 10.19.6
-    prepare: true
-    requiresBuild: true
     dev: false
