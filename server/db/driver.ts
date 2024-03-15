@@ -14,8 +14,13 @@ function select<T>(table: string) {
     all: async (): Promise<T[]> => await Q(sql`SELECT * FROM ${TA}`),
     get: async (id: number | string): Promise<T | null> =>
       (await Q<T>(sql`SELECT * from ${TA} WHERE id = ${id} LIMIT 1`))[0] || null,
-    insert: async (keyValues: Record<string, any>): Promise<T | null> =>
-      (await Q<T>(sql`INSERT INTO ${TA} ${spreadInsert(keyValues)} RETURNING *`))[0] || null,
+    find: async (id: number | string): Promise<T> => {
+      const record = (await Q<T>(sql`SELECT * from ${TA} WHERE id = ${id} LIMIT 1`))[0];
+      if (!record) throw 'Record not found';
+      return record;
+    },
+    insert: async (keyValues: Record<string, any>): Promise<T> =>
+      (await Q<T>(sql`INSERT INTO ${TA} ${spreadInsert(keyValues)} RETURNING *`))[0],
     update: async (id: number | string, keyValues: Record<string, any>): Promise<T> =>
       (
         await Q<T>(sql`UPDATE ${TA} SET ${spreadUpdate(keyValues)} WHERE id = ${id} RETURNING *`)
@@ -29,6 +34,7 @@ function select<T>(table: string) {
           (await Q<T>(sql`SELECT * FROM ${TA} WHERE ${spreadAnd(keyValues)} LIMIT 1`))[0] || null,
       };
     },
+    truncate: async () => await Q(sql`TRUNCATE TABLE ${TA} RESTART IDENTITY CASCADE`),
   };
 }
 

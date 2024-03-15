@@ -1,9 +1,12 @@
 import { migrate, rollback } from '@db/migration';
+import { apply } from './fixtures';
 
 export async function setup() {
+  console.log('Migrating DB');
   await migrate();
-}
-
-export async function tearDown() {
-  await rollback();
+  await apply();
+  return () => {
+    console.log('Rolling back DB');
+    return rollback();
+  };
 }

@@ -1,12 +1,24 @@
 import { afterAll, beforeAll } from 'vitest';
 import waitPort from 'wait-port';
 import { PORT } from '@server/server';
+import { apply } from './fixtures';
 
 beforeAll(async () => {
+  console.log('BEFORE ALL');
+  // I realized this is never going to work because the server runs on a separate process
+  // and it does queries by while the tests are running. I have no idea how to implement this; but
+  // I can still truncate all tables and apply the fixtures
+
+  // await setGlobalClient();
+  // await query(sql`BEGIN`);
+
   await waitPort({ port: PORT, output: 'silent' });
-  // Load fixtures
+  await apply();
 });
 
 afterAll(async () => {
-  // Roll back the database
+  console.log('AFTER ALL');
+
+  // await query(sql`ROLLBACK`);
+  // await releaseGlobalClient();
 });

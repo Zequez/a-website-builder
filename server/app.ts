@@ -1,5 +1,5 @@
 import './config';
-import { env, isDev, API_PATH, APP_STATIC_PATH } from './config';
+import { isDev, API_PATH, APP_STATIC_PATH } from './config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
