@@ -32,3 +32,8 @@ export function useLocalStorageState<T>(key: string, initialValue: T) {
 
   return [state, setState] as const;
 }
+
+export const appUrl = (path: string) => {
+  const onAppPath = window.location.pathname.startsWith('/app');
+  return onAppPath ? `/app${path === '/' ? '' : path}` : path;
+};

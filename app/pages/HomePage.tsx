@@ -2,7 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import ErrorIcon from '~icons/fa6-solid/circle-xmark';
 
 import { SanitizedMember } from '@db';
-import { gravatarUrl } from '@app/lib/utils';
+import { gravatarUrl, appUrl } from '@app/lib/utils';
 import * as api from '@app/lib/api';
 import Button from '@app/components/Button';
 import { useAuth } from '@app/components/Auth';
@@ -118,7 +118,7 @@ const Header = ({ isAuth, signOut }: { isAuth: boolean; signOut: () => void }) =
           {isAuth ? 'Account' : 'Access'}
         </Button>
         {isAuth ? (
-          <Button _class="bg-emerald-400" href="/editor">
+          <Button _class="bg-emerald-400" href={appUrl('/editor')}>
             Editor
           </Button>
         ) : null}

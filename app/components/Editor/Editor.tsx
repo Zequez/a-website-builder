@@ -5,7 +5,7 @@ import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
 import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 
-import { cx } from '@app/lib/utils';
+import { appUrl, cx } from '@app/lib/utils';
 import { Site } from './types';
 
 import { useAuth } from '../Auth';
@@ -147,7 +147,7 @@ function BottomButtons({
           </a>
         )
       ) : null}
-      <a class={bottomButtonStyle('bg-red-500')} href="/">
+      <a class={bottomButtonStyle('bg-red-500')} href={appUrl('/')}>
         Exit
       </a>
     </>

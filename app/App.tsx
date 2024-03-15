@@ -10,7 +10,6 @@ function routePage() {
   let pathname = window.location.pathname;
   if (pathname.startsWith('/app')) pathname = pathname.replace(/^\/app/, '');
   if (pathname === '') pathname = '/';
-  console.log(window.location.pathname, pathname);
   switch (pathname) {
     case '/':
       return 'home';
