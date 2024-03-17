@@ -1,7 +1,6 @@
 node_modules
 .vercel
-dist/ts
-dist/app
+dist/*
 lib/bs/*
 elm-stuff
 .env

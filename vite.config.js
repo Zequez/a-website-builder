@@ -9,9 +9,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [preact(), UnoCSS(), Icons({ compiler: 'jsx' }), tsconfigPaths()],
     root: resolve(__dirname, 'app'),
-    base: mode === 'production' ? '/app/' : '/',
+    base: '/', //mode === 'production' ? '/app/' : '/',
     build: {
-      outDir: resolve(__dirname, 'dist', 'app'),
+      outDir: resolve(__dirname, 'dist'), //, 'app'),
       emptyOutDir: true,
       rollupOptions: {
         input: {

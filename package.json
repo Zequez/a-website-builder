@@ -8,7 +8,7 @@
     "dev": "node ./dist/ts/server/index.js",
     "dev:app": "vite",
     "dev:server": "NODE_ENV=development tsx watch ./server/index.ts",
-    "build": "NODE_ENV=production concurrently pnpm:build:app pnpm:build:server",
+    "build": "NODE_ENV=production  pnpm build:app && pnpm build:server",
     "build:app": "NODE_ENV=production vite build",
     "build:server": "NODE_ENV=production tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "deploy:prod": "vercel deploy --prod",
