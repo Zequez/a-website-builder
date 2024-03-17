@@ -5,7 +5,7 @@ import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
 
 import { cx } from '@app/lib/utils';
 import { filesByName as template } from './template';
-import { EditorFiles } from './types';
+import { LocalFiles } from './types';
 import { useRef, useState } from 'preact/hooks';
 import FloatingMenu from '../FloatingMenu';
 
@@ -18,11 +18,11 @@ export default function SidebarFiles({
   onRenameFile,
   onDeleteFile,
 }: {
-  files: EditorFiles;
+  files: LocalFiles;
   openedFileName: string | null;
   onOpenFile: (fileName: string) => void;
   onAddFile: (fileName: string) => void;
-  onApplyTemplate: (template: EditorFiles) => void;
+  onApplyTemplate: (template: LocalFiles) => void;
   onRenameFile: (fileName: string, newFileName: string) => void;
   onDeleteFile: (fileName: string) => void;
 }) {

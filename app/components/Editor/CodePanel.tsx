@@ -1,4 +1,4 @@
-import { EditorFile, Site } from './types';
+import { LocalFile, Site } from './types';
 
 export default function CodePanel({
   site,
@@ -6,7 +6,7 @@ export default function CodePanel({
   onChange,
 }: {
   site: Site | null;
-  file: EditorFile | null;
+  file: LocalFile | null;
   onChange: (content: string) => void;
 }) {
   {

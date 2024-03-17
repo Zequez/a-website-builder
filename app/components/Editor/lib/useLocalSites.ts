@@ -132,7 +132,6 @@ export class SitesLocalStorage {
       throw `Invalid site on localstorage; removing`;
     }
 
-    console.log('Loading local site', site);
     this._byLocalId[localId] = site;
   }
 

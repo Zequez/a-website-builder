@@ -10,7 +10,7 @@ import {
   postSite as apiPostSite,
 } from '@app/lib/api';
 import { SiteWithFiles } from '@db';
-import { EditorFile, Site } from '../types';
+import { LocalFile, Site } from '../types';
 
 const noAuthPromise = Promise.resolve({
   error: 'Must be logged in for this',

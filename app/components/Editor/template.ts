@@ -1,6 +1,6 @@
-import { EditorFile, EditorFiles } from './types';
+import { LocalFile, LocalFiles } from './types';
 
-const template: EditorFile[] = [
+const template: LocalFile[] = [
   {
     id: null,
     name: 'index.html',
@@ -31,7 +31,7 @@ const template: EditorFile[] = [
   },
 ];
 
-export const filesByName: EditorFiles = template.reduce<EditorFiles>((acc, file) => {
+export const filesByName: LocalFiles = template.reduce<LocalFiles>((acc, file) => {
   acc[file.name] = file;
   return acc;
 }, {});

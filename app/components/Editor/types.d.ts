@@ -3,10 +3,10 @@ export type Site = {
   localId: string;
   name: string;
   localName: string;
-  files: EditorFiles;
+  files: LocalFiles;
 };
 
-export type EditorFile = {
+export type LocalFile = {
   id: string | null;
   name: string;
   content: string;
@@ -17,4 +17,4 @@ export type EditorFile = {
   // };
 };
 
-export type EditorFiles = { [key: string]: EditorFile };
+export type LocalFiles = { [key: string]: LocalFile };

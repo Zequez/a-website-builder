@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { Site, EditorFiles, EditorFile } from '../types';
+import { Site, LocalFiles, LocalFile } from '../types';
 import { keyBy } from '@shared/utils';
 import { SiteWithFiles } from '@db';
 import { FileB64 } from '@server/db/driver';
@@ -61,7 +61,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     });
   }
 
-  function addSite(template: EditorFiles = {}) {
+  function addSite(template: LocalFiles = {}) {
     storage.addLocal({
       id: null,
       name: 'New Site',
@@ -167,7 +167,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     })();
   }
 
-  function applyTemplate(localId: string, files: EditorFiles) {
+  function applyTemplate(localId: string, files: LocalFiles) {
     const site = storage.byLocalId(localId);
     storage.update(localId, { files: { ...site.files, ...files } });
   }
@@ -192,7 +192,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
   };
 }
 
-function remoteFileToLocalFile(fileB64: FileB64): EditorFile {
+function remoteFileToLocalFile(fileB64: FileB64): LocalFile {
   return {
     id: fileB64.id,
     name: fileB64.name,

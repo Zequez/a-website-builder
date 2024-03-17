@@ -1,6 +1,6 @@
 import { parse } from 'node-html-parser';
 import { encode } from 'js-base64';
-import { EditorFile } from '../types';
+import { LocalFile } from '../types';
 
 export function contentToDataUrl(mime: string, content: string) {
   try {
@@ -12,7 +12,7 @@ export function contentToDataUrl(mime: string, content: string) {
 }
 
 export function generateIframeEncodedUrl(
-  files: { [key: string]: EditorFile },
+  files: { [key: string]: LocalFile },
   entryPoint: string = 'index.html',
 ): string | null {
   const entrypointFile = files[entryPoint];
