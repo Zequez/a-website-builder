@@ -66,6 +66,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
       id: null,
       name: 'New Site',
       files: template,
+      generatedFiles: {},
     });
   }
 
@@ -81,6 +82,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
         name: site.name,
         localName: site.local_name,
         files: keyBy(site.files.map(remoteFileToLocalFile), 'name'),
+        generatedFiles: {},
       });
     }
   }
@@ -172,6 +174,10 @@ export default function useSites(memberAuth: MemberAuth | null) {
     storage.update(localId, { files: { ...site.files, ...files } });
   }
 
+  function setGeneratedFiles(localId: string, files: LocalFiles) {
+    storage.update(localId, { generatedFiles: files });
+  }
+
   return {
     byLocalId: (localId: string) => storage.byLocalId(localId),
     sites: storage.all,
@@ -189,6 +195,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     writeFile,
     deleteFile,
     applyTemplate,
+    setGeneratedFiles,
   };
 }
 

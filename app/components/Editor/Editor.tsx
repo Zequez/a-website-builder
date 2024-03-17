@@ -15,6 +15,7 @@ import SidebarSites from './SidebarSites';
 import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
+import { build } from './lib/builder';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
@@ -28,6 +29,12 @@ const Editor = () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, []);
+
+  useEffect(() => {
+    if (site) {
+      build(site.files).then((files) => S.setGeneratedFiles(site.localId, files));
+    }
+  }, [site?.files]);
 
   const handleFileClick = (fileName: string) => {
     setOpenFileName(fileName);

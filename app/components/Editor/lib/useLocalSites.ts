@@ -54,7 +54,6 @@ export class SitesLocalStorage {
   }
 
   addRemote(site: Site) {
-    console.log('Adding remote site', site);
     this.set(site);
   }
 

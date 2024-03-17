@@ -4,6 +4,7 @@ export type Site = {
   name: string;
   localName: string;
   files: LocalFiles;
+  generatedFiles: LocalFiles;
 };
 
 export type LocalFile = {

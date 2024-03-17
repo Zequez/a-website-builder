@@ -29,8 +29,12 @@ export default function Preview({
   const [fullscreenScale, setFullscreenScale] = useState(1);
   const [lastEntrypointUsed, setLastEntrypointUsed] = useState<string | null>(null);
 
-  const files = site.files;
-  const currentFile = currentFileName ? files[currentFileName] : null;
+  const files = site.generatedFiles;
+  let adjustedCurrentFileName = currentFileName;
+  if (adjustedCurrentFileName?.endsWith('.njk')) {
+    adjustedCurrentFileName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
+  }
+  const currentFile = adjustedCurrentFileName ? files[adjustedCurrentFileName] : null;
 
   const mobileAspectRatio = 9 / 16;
   const mobileWidth = 360;
