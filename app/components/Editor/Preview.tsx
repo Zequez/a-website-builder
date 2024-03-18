@@ -4,7 +4,7 @@ import MobileIcon from '~icons/fa6-solid/mobile';
 import DesktopIcon from '~icons/fa6-solid/desktop';
 import FullScreenIcon from '~icons/fa6-solid/expand';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
-import { Site } from './types';
+import { LocalSite } from './types';
 import { cx, useLocalStorageState } from '@app/lib/utils';
 import { FC } from '../FC';
 
@@ -15,7 +15,7 @@ export default function Preview({
   currentFileName,
 }: {
   currentFileName: string | null;
-  site: Site;
+  site: LocalSite;
   onSwitchPosition: () => void;
 }) {
   const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
@@ -29,10 +29,13 @@ export default function Preview({
   const [fullscreenScale, setFullscreenScale] = useState(1);
   const [lastEntrypointUsed, setLastEntrypointUsed] = useState<string | null>(null);
 
-  const files = site.generatedFiles;
+  const files = site.generatedFiles || {};
   let adjustedCurrentFileName = currentFileName;
   if (adjustedCurrentFileName?.endsWith('.njk')) {
-    adjustedCurrentFileName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
+    const htmlName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
+    if (files[htmlName]) {
+      adjustedCurrentFileName = htmlName;
+    }
   }
   const currentFile = adjustedCurrentFileName ? files[adjustedCurrentFileName] : null;
 

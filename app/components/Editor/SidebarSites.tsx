@@ -1,30 +1,35 @@
 import { useState, useRef } from 'preact/hooks';
 import cx from 'classnames';
 
-import { Site } from './types';
+import { LocalSite } from './types';
 import CheckIcon from '~icons/fa6-solid/check';
 import PlusIcon from '~icons/fa6-solid/plus';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
-import CloudIcon from '~icons/fa6-solid/cloud';
+// import CloudIcon from '~icons/fa6-solid/cloud';
+
+import SyncStatusIcon from './SyncStatusIcon';
 
 import FloatingMenu from '../FloatingMenu';
+import { SyncStatus } from './lib/sync';
 
 export default function SidebarSites({
   sites,
-  selectedSiteLocalId,
+  selectedSiteId,
   onLocalNameChangeAttempt,
   onNameChange,
   onSelect,
   onDelete,
   onAdd,
+  syncStatus,
 }: {
-  sites: Site[];
-  selectedSiteLocalId: string | null;
+  sites: LocalSite[];
+  selectedSiteId: string | null;
   onLocalNameChangeAttempt: (localId: string, newName: string) => Promise<boolean>;
   onNameChange: (localId: string, newName: string) => void;
   onSelect: (localId: string) => void;
   onDelete: (localId: string) => void;
   onAdd: () => void;
+  syncStatus: { [key: string]: SyncStatus };
 }) {
   return (
     <div class="flex flex-col">
@@ -32,11 +37,12 @@ export default function SidebarSites({
       {sites.map((site) => (
         <SiteButton
           site={site}
-          isSelected={selectedSiteLocalId === site.localId}
-          onNameChange={(newVal) => onNameChange(site.localId, newVal)}
-          onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.localId, newVal)}
-          onDelete={() => onDelete(site.localId)}
-          onOpen={() => onSelect(site.localId)}
+          isSelected={selectedSiteId === site.localId}
+          onNameChange={(newVal) => onNameChange(site.id, newVal)}
+          onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
+          onDelete={() => onDelete(site.id)}
+          onOpen={() => onSelect(site.id)}
+          syncStatus={syncStatus[site.id]}
         />
       ))}
       <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
@@ -55,6 +61,7 @@ function SiteButton({
   onNameChange,
   onDelete,
   onOpen,
+  syncStatus,
 }: {
   site: { name: string; localName: string; id: string | null };
   isSelected: boolean;
@@ -62,6 +69,7 @@ function SiteButton({
   onNameChange: (val: string) => void;
   onDelete: () => void;
   onOpen: () => void;
+  syncStatus: SyncStatus;
 }) {
   const [mode, setMode] = useState<'view' | 'editName' | 'editLocalName'>('view');
   const [menuIsOpen, setMenuIsOpen] = useState(false);
@@ -136,8 +144,12 @@ function SiteButton({
               </span>
             </div>
             {site.id ? (
-              <div class="h-full flex justify-center text-blue-500/70" title="Site is online">
-                <CloudIcon class="w-4 -mt-1 -mr-1" />
+              <div
+                class="h-full flex justify-center items-center whitespace-nowrap text-blue-500/70"
+                style={{ fontSize: '0.5rem' }}
+                title={`Sync status ${syncStatus}`}
+              >
+                <SyncStatusIcon status={syncStatus} />
               </div>
             ) : null}
           </button>

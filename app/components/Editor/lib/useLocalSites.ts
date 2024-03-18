@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'preact/hooks';
-import { Site } from '../types';
-import { randomAlphaNumericString } from '@shared/utils';
+import { LocalFiles, LocalSite } from '../types';
+import { randomAlphaNumericString, uuid } from '@shared/utils';
 
 export class SitesLocalStorage {
   LS_PREFIX: string;
-  _byLocalId: Record<string, Site> = {};
+  _byId: Record<string, LocalSite> = {};
   onChange: () => void = () => {};
 
   constructor(prefix: string) {
@@ -14,58 +14,56 @@ export class SitesLocalStorage {
 
   asNewObject(): SitesLocalStorage {
     const cloned = Object.create(Object.getPrototypeOf(this));
-    cloned._byLocalId = this._byLocalId;
+    cloned._byId = this._byId;
     cloned.onChange = this.onChange;
     cloned.LS_PREFIX = this.LS_PREFIX;
     // console.log(this, cloned);
     return cloned as SitesLocalStorage;
   }
 
-  update(localId: string, update: Partial<Site>) {
-    const site = this.byLocalId(localId);
-    this.set({ ...site, ...update });
+  update(id: string, update: Partial<LocalSite>) {
+    const site = this.byId(id);
+    this.set({ ...site, ...update, updatedAt: new Date() });
   }
 
-  delete_(localId: string) {
-    this.deleteItem(localId);
-    delete this._byLocalId[localId];
+  delete_(id: string) {
+    this.deleteItem(id);
+    delete this._byId[id];
     this.onChange();
   }
 
-  get all(): Site[] {
-    return Object.values(this._byLocalId);
+  get all(): LocalSite[] {
+    return Object.values(this._byId);
   }
 
-  byLocalId(localId: string): Site {
-    const found = this._byLocalId[localId];
+  byId(id: string): LocalSite {
+    const found = this._byId[id];
     if (!found) {
-      throw `No site with local id ${localId} in local storage`;
+      throw `No site with id ${id} in local storage`;
     }
     return found;
   }
 
-  addLocal(site: Omit<Site, 'localId' | 'localName'>) {
-    let newLocalId = '';
-    do {
-      newLocalId = randomAlphaNumericString();
-    } while (this._byLocalId[newLocalId]);
-
-    this.set({ ...site, localId: newLocalId, localName: newLocalId });
-  }
-
-  addRemote(site: Site) {
-    this.set(site);
-  }
-
-  makeRemote(localId: string, id: string) {
-    const site = this.byLocalId(localId);
-    const updatedSite = { ...site, localId: id, id };
-    this.setItem(updatedSite.localId, JSON.stringify(updatedSite));
-    this._byLocalId[updatedSite.localId] = updatedSite;
-    this.deleteItem(localId);
-    delete this._byLocalId[localId];
+  set(site: LocalSite) {
+    this.setItem(site.id, JSON.stringify(site));
+    this._byId[site.id] = site;
     this.onChange();
   }
+
+  // addRemote(site: LocalSite) {
+  //   this.set(site);
+  // }
+
+  // makeRemote(localId: string, id: string) {
+  //   console.warn('makeRemote Deprecated function');
+  //   // const site = this.byId(localId);
+  //   // const updatedSite = { ...site, localId: id, id };
+  //   // this.setItem(updatedSite.localId, JSON.stringify(updatedSite));
+  //   // this._byId[updatedSite.localId] = updatedSite;
+  //   // this.deleteItem(localId);
+  //   // delete this._byId[localId];
+  //   // this.onChange();
+  // }
 
   findByLocalName(localName: string) {
     return this.all.find((site) => site.localName === localName) || null;
@@ -78,8 +76,8 @@ export class SitesLocalStorage {
   // ██║     ██║███████╗███████╗███████║
   // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝
 
-  renameFile(localId: string, oldFileName: string, newFileName: string) {
-    const site = this.byLocalId(localId);
+  renameFile(id: string, oldFileName: string, newFileName: string) {
+    const site = this.byId(id);
     const file = site.files[oldFileName];
     if (!file) throw `No file name ${oldFileName} in site ${site.localName}`;
     const newFiles = { ...site.files, [newFileName]: { ...file, name: newFileName } };
@@ -87,10 +85,16 @@ export class SitesLocalStorage {
     this.set({ ...site, files: newFiles });
   }
 
-  writeFile(localId: string, name: string, content: string) {
-    const site = this.byLocalId(localId);
+  createFile(id: string, name: string) {
+    return this.writeFile(id, name, '');
+  }
+
+  writeFile(id: string, name: string, content: string) {
+    const site = this.byId(id);
     const existingFile = site.files[name];
-    const file = existingFile ? { ...existingFile, content } : { id: null, name, content };
+    const file = existingFile
+      ? { ...existingFile, content, updatedAt: new Date() }
+      : { id: uuid(), name, content, updatedAt: new Date() };
     const newFiles = {
       ...site.files,
       [name]: { ...file, content },
@@ -99,11 +103,15 @@ export class SitesLocalStorage {
     return file;
   }
 
-  deleteFile(localId: string, name: string) {
-    const site = this.byLocalId(localId);
+  deleteFile(id: string, name: string) {
+    const site = this.byId(id);
     const newFiles = { ...site.files };
     delete newFiles[name];
     this.set({ ...site, files: newFiles });
+  }
+
+  allFiles(): LocalFiles {
+    return Object.assign({}, ...this.all.map((site) => site.files));
   }
 
   // ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗
@@ -119,25 +127,20 @@ export class SitesLocalStorage {
       .forEach((key) => this.loadSite(key.slice(this.LS_PREFIX.length)));
   }
 
-  private loadSite(localId: string) {
-    const siteEncoded = this.getItem(localId);
+  private loadSite(id: string) {
+    const siteEncoded = this.getItem(id);
     if (!siteEncoded) {
-      throw `No site with local id ${localId} in local storage`;
+      throw `No site with local id ${id} in local storage`;
     }
-    const site = JSON.parse(siteEncoded) as Site;
+    const site = JSON.parse(siteEncoded) as LocalSite;
+    site.updatedAt = new Date(site.updatedAt);
 
-    if (site.localId !== localId) {
-      this.delete_(localId);
+    if (site.id !== id) {
+      this.delete_(id);
       throw `Invalid site on localstorage; removing`;
     }
 
-    this._byLocalId[localId] = site;
-  }
-
-  private set(site: Site) {
-    this.setItem(site.localId, JSON.stringify(site));
-    this._byLocalId[site.localId] = site;
-    this.onChange();
+    this._byId[id] = site;
   }
 
   private getItem(key: string) {
@@ -155,10 +158,6 @@ export class SitesLocalStorage {
 
 export default function useLocalSites(prefix: string) {
   const [storage, setStorage] = useState(() => new SitesLocalStorage(prefix));
-
-  // useEffect(() => {
-  //   new MutationObserver
-  // }, [])
 
   useEffect(() => {
     // @ts-ignore

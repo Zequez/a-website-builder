@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate } from 'uuid';
 
 export function groupBy<T extends { [key: string]: any }>(arr: T[], key: string) {
   return arr.reduce((acc, obj) => {
@@ -38,3 +38,5 @@ export function randomAlphaNumericString() {
 }
 
 export const uuid = uuidv4;
+
+export const validateUuid = validate;

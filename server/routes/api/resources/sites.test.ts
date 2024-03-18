@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { T } from '@db';
-import { randomAlphaNumericString } from '@shared/utils';
+import { randomAlphaNumericString, uuid } from '@shared/utils';
 import { tokenFromMember } from '@server/lib/utils';
 import { get, post } from '@server/test/utils';
 
@@ -15,6 +15,63 @@ describe('GET /sites', () => {
 });
 
 describe('POST /sites', () => {
+  it('should use the provided UUID', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const name = randomAlphaNumericString();
+    const localName = randomAlphaNumericString();
+    const newUuid = uuid();
+    const res = await post(`sites`, { name, localName, id: newUuid }, token);
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data).toHaveProperty('id', newUuid);
+    expect(data).toHaveProperty('name', name);
+    expect(data).toHaveProperty('local_name', localName);
+    expect(data).toHaveProperty('created_at');
+  });
+
+  it('should fail if the site with that UUID already exists', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const name = randomAlphaNumericString();
+    const newUuid = uuid();
+    const res = await post(
+      `sites`,
+      { name, localName: randomAlphaNumericString(), id: newUuid },
+      token,
+    );
+    expect(res.status).toBe(201);
+    const res2 = await post(
+      `sites`,
+      { name, localName: randomAlphaNumericString(), id: newUuid },
+      token,
+    );
+    expect(res2.status).toBe(409);
+  });
+
+  it('should generate a UUID if none is provided', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const name = randomAlphaNumericString();
+    const localName = randomAlphaNumericString();
+    const res = await post(`sites`, { name, localName }, token);
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data).toHaveProperty('id');
+    expect(data).toHaveProperty('name', name);
+    expect(data).toHaveProperty('local_name', localName);
+    expect(data).toHaveProperty('created_at');
+  });
+
+  it('should fail with invalid UUID', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const name = randomAlphaNumericString();
+    const localName = randomAlphaNumericString();
+    const res = await post(`sites`, { name, localName, id: 'invalid' }, token);
+    expect(res.status).toBe(400);
+  });
+
   it('should create a new site for the current member', async () => {
     const member = (await T.members.all())[0];
     const token = await tokenFromMember(member);

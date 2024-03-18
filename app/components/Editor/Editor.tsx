@@ -5,8 +5,8 @@ import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
 import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 
-import { appUrl, cx } from '@app/lib/utils';
-import { Site } from './types';
+import { appUrl, cx, useLocalStorageState } from '@app/lib/utils';
+import { LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
@@ -16,25 +16,34 @@ import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
 import { build } from './lib/builder';
+import Inspector from './Inspector';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
   const S = useSites(memberAuth);
   const site = S.selectedSite;
   const [openFileName, setOpenFileName] = useState<string | null>(null);
+  const [editorInspector, setEditorInspector] = useLocalStorageState('editor_inspector', false);
+  const [syncEnabled, setSyncEnabled] = useState(false);
 
   useEffect(() => {
-    document.body.classList.add('overflow-hidden');
+    function toggleEditorInspector(ev: KeyboardEvent) {
+      console.log('Toggling editor inspector', ev);
+      if (ev.key === 'i' && ev.metaKey) {
+        setEditorInspector((state) => !state);
+      }
+    }
+    window.addEventListener('keydown', toggleEditorInspector);
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      window.removeEventListener('keydown', toggleEditorInspector);
     };
   }, []);
 
   useEffect(() => {
-    if (site) {
-      build(site.files).then((files) => S.setGeneratedFiles(site.localId, files));
+    if (syncEnabled) {
+      S.sync();
     }
-  }, [site?.files]);
+  }, [syncEnabled, S.sites, S.remoteSites, S.sitesSyncStatus]);
 
   const handleFileClick = (fileName: string) => {
     setOpenFileName(fileName);
@@ -42,7 +51,7 @@ const Editor = () => {
 
   const onEditorContentChanges = (content: string) => {
     if (site && openFileName) {
-      S.writeFile(site.localId, openFileName, content);
+      S.writeFile(site.id, openFileName, content);
     }
   };
 
@@ -63,14 +72,22 @@ const Editor = () => {
 
   const handleAddFile = (newFileName: string) => {
     if (site) {
-      S.createFile(site.localId, newFileName, '');
+      S.createFile(site.id, newFileName, '');
       setOpenFileName(newFileName);
     }
   };
 
   const handleRenameFile = (fileName: string, newFileName: string) => {
     if (site) {
-      S.renameFile(site.localId, fileName, newFileName);
+      S.renameFile(site.id, fileName, newFileName);
+    }
+  };
+
+  const handleAttemptSyncEnabling = () => {
+    if (memberAuth) {
+      setSyncEnabled(!syncEnabled);
+    } else {
+      alert('You must register to enable syncing');
     }
   };
 
@@ -78,15 +95,17 @@ const Editor = () => {
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
-      <div class="w-44 bg-gray-500 flex flex-col overflow-auto">
+      {editorInspector ? <Inspector S={S} /> : null}
+      <div class="w-54 bg-gray-500 flex flex-col overflow-auto">
         <SidebarSites
           sites={S.sites}
-          selectedSiteLocalId={site?.localId || null}
+          selectedSiteId={site?.localId || null}
           onSelect={handleSelectSite}
           onAdd={() => S.addSite()}
-          onDelete={(localId) => handleDeleteSite(localId)}
+          onDelete={(id) => handleDeleteSite(id)}
           onLocalNameChangeAttempt={S.setLocalName}
           onNameChange={S.setName}
+          syncStatus={S.sitesSyncStatus}
         />
 
         {site ? (
@@ -96,14 +115,18 @@ const Editor = () => {
             onOpenFile={handleFileClick}
             onAddFile={handleAddFile}
             onRenameFile={handleRenameFile}
-            onApplyTemplate={(template) => S.applyTemplate(site.localId, template)}
-            onDeleteFile={(fileName) => S.deleteFile(site.localId, fileName)}
+            onApplyTemplate={(template) => S.applyTemplate(site.id, template)}
+            onDeleteFile={(fileName) => S.deleteFile(site.id, fileName)}
           />
         ) : (
           <div class="flex-grow"></div>
         )}
 
-        <BottomButtons selectedSite={site} onPublish={() => S.publishSite(site!.localId!)} />
+        <BottomButtons
+          selectedSite={site}
+          syncEnabled={syncEnabled}
+          onToggleSync={handleAttemptSyncEnabling}
+        />
       </div>
 
       <div class="flex flex-grow flex-col">
@@ -126,14 +149,16 @@ const Editor = () => {
 };
 
 const bottomButtonStyle = (c: string) =>
-  cx('block text-white py-1 uppercase text-center tracking-wider', c);
+  cx('block  py-1 uppercase text-left tracking-wider px-2', c);
 
 function BottomButtons({
   selectedSite,
-  onPublish,
+  syncEnabled,
+  onToggleSync,
 }: {
-  selectedSite: Site | null;
-  onPublish: () => void;
+  selectedSite: LocalSite | null;
+  syncEnabled: boolean;
+  onToggleSync: () => void;
 }) {
   const currentHost = window.location.host;
   const currentProtocol = window.location.protocol;
@@ -143,19 +168,22 @@ function BottomButtons({
 
   return (
     <>
-      {selectedSite ? (
-        !selectedSite.id ? (
-          <button class={bottomButtonStyle('bg-orange-400')} onClick={onPublish}>
-            Publish <CloudIcon class="inline-block -mt-1" />
-          </button>
-        ) : (
-          <a class={bottomButtonStyle('bg-lime-600')} href={siteUrl!} target="_blank">
-            Live site <OutLink class="inline-block ml-1 -mt-1" />
-          </a>
-        )
-      ) : null}
-      <a class={bottomButtonStyle('bg-red-500')} href={appUrl('/')}>
-        Exit
+      <button
+        class={bottomButtonStyle(
+          syncEnabled ? 'bg-lime-600 text-white/60' : 'bg-gray-400 text-white',
+        )}
+        onClick={onToggleSync}
+      >
+        <div class="flex w-full">
+          <div class="flex-grow text-left">{syncEnabled ? 'Syncing' : 'SYNC'}</div>
+          <div>{syncEnabled ? '🟢' : '⚪️'}</div>
+        </div>
+      </button>
+      {/* <a class={bottomButtonStyle('bg-lime-600')} href={siteUrl!} target="_blank">
+        Live site <OutLink class="inline-block ml-1 -mt-1" />
+      </a> */}
+      <a class={bottomButtonStyle('bg-blue-300 text-black/60')} href={appUrl('/')}>
+        &larr; Back home
       </a>
     </>
   );

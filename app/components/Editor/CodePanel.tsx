@@ -1,13 +1,13 @@
 import { createRef } from 'preact';
 import { useRef } from 'preact/hooks';
-import { LocalFile, Site } from './types';
+import { LocalFile, LocalSite } from './types';
 
 export default function CodePanel({
   site,
   file,
   onChange,
 }: {
-  site: Site | null;
+  site: LocalSite | null;
   file: LocalFile | null;
   onChange: (content: string) => void;
 }) {

@@ -15,6 +15,7 @@ export type Site = {
   domain_name: string;
   member_id: number;
   created_at: string;
+  updated_at: string;
 };
 
 export type File_ = {
@@ -26,6 +27,7 @@ export type File_ = {
   data_size: string;
   data_cdn_url: string;
   created_at: string;
+  updated_at: string;
 };
 
 export type SanitizedMember = Omit<Member, 'passphrase'>;
