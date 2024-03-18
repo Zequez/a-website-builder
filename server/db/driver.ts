@@ -57,7 +57,9 @@ const extendedMembers = {
     const sites = await T.sites.where({ member_id: member.id }).all();
     const sitesIds = sites.map((s) => s.id);
     const files = (await Q(
-      sql`SELECT * FROM files WHERE site_id IN (${sql.raw(sitesIds.join(','))})`,
+      sql`SELECT * FROM files WHERE site_id IN (${sql.raw(
+        sitesIds.map((i) => `'${i}'`).join(','),
+      )})`,
     )) as File_[];
     const editedFiles = files.map(updateFileToB64);
     const filesBySiteId = groupBy(editedFiles, 'site_id');
@@ -68,7 +70,7 @@ const extendedMembers = {
 
 const extendedFiles = {
   ...files,
-  findExisting: async (siteId: string | number, name: string): Promise<File_ | null> => {
+  findExisting: async (siteId: string, name: string): Promise<File_ | null> => {
     return (
       (
         await Q<File_>(sql`SELECT * FROM files WHERE site_id = ${siteId} AND name ILIKE ${name}`)

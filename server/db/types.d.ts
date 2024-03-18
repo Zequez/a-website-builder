@@ -9,7 +9,7 @@ export type Member = {
 };
 
 export type Site = {
-  id: number;
+  id: string;
   name: string;
   local_name: string;
   domain_name: string;

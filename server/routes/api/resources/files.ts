@@ -40,7 +40,7 @@ router.put('/files/:id', jsonParser, authorize, async (req, res) => {
 });
 
 export type RoutePostFilesQuery = {
-  site_id: number;
+  site_id: string;
   name: string;
   data: string;
 };

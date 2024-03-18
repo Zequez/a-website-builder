@@ -50,6 +50,32 @@ export async function migrate(direction: number = 0) {
   console.log('DONE');
 }
 
+export async function DANGER_USE_ONLY_ON_TEST_ENVIRONMENT_reset() {
+  // Drop all tables on the DB
+  await Q(sql`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public';
+
+    SELECT 'DROP TABLE IF EXISTS "' || table_name || '" CASCADE;' AS drop_statement
+    FROM information_schema.tables
+    WHERE table_schema = 'public';
+
+    DO $$
+    DECLARE
+        drop_statement TEXT;
+    BEGIN
+        FOR drop_statement IN
+            SELECT 'DROP TABLE IF EXISTS "' || table_name || '" CASCADE;' AS drop_statement
+            FROM information_schema.tables
+            WHERE table_schema = 'public'  -- Adjust if your tables are in a different schema
+        LOOP
+            EXECUTE drop_statement;
+        END LOOP;
+    END $$;
+  `);
+}
+
 export async function rollback(amount: number = 0) {
   const migrationsRows = await migrationRecords();
   const migrationsNames = Object.keys(migrations).sort();

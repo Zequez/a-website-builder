@@ -142,7 +142,7 @@ describe('POST /files', () => {
     const res = await post(
       'files',
       {
-        site_id: -1,
+        site_id: uuid(),
         name: randomNewData,
         data: btoa(randomNewData),
       },

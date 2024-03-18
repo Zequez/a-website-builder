@@ -34,8 +34,8 @@ export async function apply() {
 }
 
 export const records = {
-  bob: T.members.find(1),
-  bobSite1: T.sites.find(1),
-  bobSite1File: T.files.one(),
-  pat: T.members.find(2),
+  bob: async () => await T.members.find(1),
+  bobSite1: async () => await T.sites.one(),
+  bobSite1File: async () => await T.files.one(),
+  pat: async () => await T.members.find(2),
 };
