@@ -28,7 +28,6 @@ export default function CodePanel({
     }
   }
 
-  console.log('Code panel');
   return file ? (
     <textarea
       class={'flex-grow p-4 bg-gray-700 text-white font-mono outline-none focus:bg-gray-600'}

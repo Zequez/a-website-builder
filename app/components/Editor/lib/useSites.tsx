@@ -27,7 +27,10 @@ export default function useSites(memberAuth: MemberAuth | null) {
   //   }
   // }, [remote.sites]);
 
-  const sitesSyncStatus = resolveSyncStatus(storage.all, remote.sites ?? []);
+  const localFiles = storage.allFiles();
+  const remoteFiles = remote.allFiles;
+
+  const sitesSyncStatus = resolveSyncStatus(storage.all, remote.sites);
   const filesSyncStatus = resolveSyncStatus(
     Object.values(storage.allFiles()),
     Object.values(remote.allFiles),
@@ -35,7 +38,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
   const sync = useCallback(async () => {
     console.log('Sync attempt!');
-    if (!isSyncing && !syncError.length) {
+    if (remote.loaded && !isSyncing && !syncError.length) {
       setIsSyncing(true);
       console.log('Attempting to sync');
       for (let siteId in sitesSyncStatus) {
@@ -73,35 +76,19 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ███████║██║   ██║   ███████╗███████║
   // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
-  function setName(localId: string, newName: string) {
-    storage.update(localId, { name: newName });
-    // const site = storage.byId(localId);
-    // if (site.id) {
-    //   remote.putSite({
-    //     id: site.id,
-    //     name: site.name,
-    //     localName: site.localName,
-    //   });
-    // }
+  function setName(id: string, newName: string) {
+    storage.update(id, { name: newName });
   }
 
-  function setLocalName(localId: string, newLocalName: string): Promise<boolean> {
+  function setLocalName(id: string, newLocalName: string): Promise<boolean> {
     if (!newLocalName) return Promise.resolve(false);
     const existingSite = storage.findByLocalName(newLocalName);
     return new Promise((resolve) => {
       // TODO: Should also check the server
       if (existingSite) {
-        resolve(existingSite.localId === localId);
+        resolve(existingSite.id === id);
       } else {
-        storage.update(localId, { localName: newLocalName });
-        // const site = storage.byId(localId);
-        // if (site.id) {
-        //   remote.putSite({
-        //     id: site.id,
-        //     name: site.name,
-        //     localName: site.localName,
-        //   });
-        // }
+        storage.update(id, { localName: newLocalName });
         resolve(true);
       }
     });
@@ -120,39 +107,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
   function deleteSite(localId: string) {
     storage.delete_(localId);
-  }
-
-  // function loadFromRemoteSites(remoteSites: SiteWithFiles[]) {
-  //   for (const site of remoteSites) {
-  //     storage.set({
-  //       id: site.id,
-  //       name: site.name,
-  //       localName: site.local_name,
-  //       files: keyBy(site.files.map(remoteFileToLocalFile), 'name'),
-  //       generatedFiles: {},
-  //       updatedAt: new Date(site.updated_at),
-  //     });
-  //   }
-  // }
-
-  function publishSite(localId: string) {
-    // const site = storage.byId(localId);
-    // if (site.id === null) {
-    //   (async () => {
-    //     const { data: createdSite, error } = await remote.publishSite(site);
-    //     if (createdSite) {
-    //       setSelected(createdSite.id.toString());
-    //       for (let fileName in site.files) {
-    //         const file = site.files[fileName];
-    //         await remote.postFile(createdSite.id, file);
-    //       }
-    //     } else {
-    //       console.error('Error publishing site', error);
-    //     }
-    //   })();
-    // } else {
-    //   // Site is already published, update it instead
-    // }
   }
 
   // ███████╗██╗██╗     ███████╗███████╗
@@ -215,13 +169,13 @@ export default function useSites(memberAuth: MemberAuth | null) {
     // })();
   }
 
-  function applyTemplate(localId: string, files: LocalFiles) {
-    const site = storage.byId(localId);
-    storage.update(localId, { files: { ...site.files, ...files } });
+  function applyTemplate(id: string, files: LocalFiles) {
+    const site = storage.byId(id);
+    storage.update(id, { files: { ...site.files, ...files } });
   }
 
-  function setGeneratedFiles(localId: string, files: LocalFiles) {
-    storage.update(localId, { generatedFiles: files });
+  function setGeneratedFiles(id: string, files: LocalFiles) {
+    storage.update(id, { generatedFiles: files });
   }
 
   return {
@@ -232,11 +186,12 @@ export default function useSites(memberAuth: MemberAuth | null) {
     setLocalName,
     addSite,
     deleteSite,
-    publishSite,
     selectedLocalId,
     setSelected,
     selectedSite: selectedLocalId ? storage.byId(selectedLocalId) : null,
 
+    localFiles,
+    remoteFiles,
     sitesSyncStatus,
     filesSyncStatus,
     isSyncing,

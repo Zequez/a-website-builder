@@ -12,6 +12,8 @@ export default function SyncStatusIcon({ status }: { status: SyncStatus }) {
       return <span>🟡🟢</span>;
     case 'synced':
       return <span>🟢🟢</span>;
+    case 'unknown':
+      return <span>❓</span>;
     default:
       return null;
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { LocalFiles, LocalSite } from '../types';
+import { LocalFile, LocalFiles, LocalSite } from '../types';
 import { randomAlphaNumericString, uuid } from '@shared/utils';
 
 export class SitesLocalStorage {
@@ -111,7 +111,12 @@ export class SitesLocalStorage {
   }
 
   allFiles(): LocalFiles {
-    return Object.assign({}, ...this.all.map((site) => site.files));
+    return this.all.reduce<{ [key: string]: LocalFile }>((acc, site) => {
+      for (let file in site.files) {
+        acc[site.files[file].id] = site.files[file];
+      }
+      return acc;
+    }, {});
   }
 
   // ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗

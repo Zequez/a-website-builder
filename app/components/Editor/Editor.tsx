@@ -24,7 +24,7 @@ const Editor = () => {
   const site = S.selectedSite;
   const [openFileName, setOpenFileName] = useState<string | null>(null);
   const [editorInspector, setEditorInspector] = useLocalStorageState('editor_inspector', false);
-  const [syncEnabled, setSyncEnabled] = useState(false);
+  const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
   useEffect(() => {
     function toggleEditorInspector(ev: KeyboardEvent) {

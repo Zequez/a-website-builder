@@ -32,6 +32,8 @@ function remoteSiteToLocalSite(site: SiteWithFiles): LocalSite {
 export default function useRemoteSites(auth: MemberAuth | null) {
   const { data: member, error } = useRemoteResource(apiMember, auth?.member?.id, auth);
 
+  const loaded = member !== null;
+
   const [_byId, setById] = useState<Record<string, LocalSite>>({});
 
   useEffect(() => {
@@ -53,7 +55,12 @@ export default function useRemoteSites(auth: MemberAuth | null) {
 
   const allFiles: LocalFiles = useMemo(() => {
     if (sites) {
-      return Object.assign({}, ...sites.map((site) => site.files));
+      return sites.reduce<{ [key: string]: LocalFile }>((acc, site) => {
+        for (let file in site.files) {
+          acc[site.files[file].id] = site.files[file];
+        }
+        return acc;
+      }, {});
     } else {
       return {};
     }
@@ -118,7 +125,8 @@ export default function useRemoteSites(auth: MemberAuth | null) {
   }
 
   return {
-    sites,
+    loaded,
+    sites: loaded ? sites : null,
     byId,
     _byId,
     allFiles,
