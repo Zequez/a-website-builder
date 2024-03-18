@@ -43,4 +43,12 @@ router.put(`/sites/:id`, jsonParser, authorize, async (req, res) => {
   return res.status(200).json({});
 });
 
+router.delete('/sites/:id', authorize, async (req, res) => {
+  const site = await T.sites.get(req.params.id);
+  if (!site) return res.status(404).json({ error: 'Site not found' });
+  if (site.member_id !== req.tokenMember!.id) return res.status(403).json({ error: 'Forbidden' });
+  await T.sites.delete(site.id);
+  return res.status(200).json({});
+});
+
 export default router;

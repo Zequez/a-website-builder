@@ -1,4 +1,7 @@
 import { API_PATH, PORT } from '@server/config';
+import { tokenFromMember } from '@server/lib/utils';
+import { beforeAll } from 'vitest';
+import { loadFixtures } from '@server/test/fixtures';
 
 const apiUrl = `http://localhost:${PORT}/${API_PATH}/`;
 
@@ -47,3 +50,14 @@ export const genApiShortcut =
 export const post = genApiShortcut('POST');
 export const put = genApiShortcut('PUT');
 export const delete_ = genApiShortcut('DELETE');
+
+export { loadFixtures };
+
+type LoadedFixtures = Awaited<ReturnType<typeof loadFixtures>>;
+const fixtures = {} as LoadedFixtures;
+export const preloadFixtures = async () => {
+  Object.assign(fixtures, await loadFixtures());
+  return fixtures;
+};
+
+export { fixtures };

@@ -1,4 +1,5 @@
-import { T } from '@db';
+import { File_, Member, T } from '@db';
+import { tokenFromMember } from '@server/lib/utils';
 
 export async function apply() {
   await T.members.truncate();
@@ -33,9 +34,19 @@ export async function apply() {
   return { bob, pat, bobSite1, bobSite1File };
 }
 
-export const records = {
-  bob: async () => await T.members.find(1),
-  bobSite1: async () => await T.sites.one(),
-  bobSite1File: async () => await T.files.one(),
-  pat: async () => await T.members.find(2),
+async function loadMemberResources(email: string) {
+  const member = await T.members.where({ email }).one();
+  const sites = await T.sites.where({ member_id: member!.id }).all();
+  let files: File_[] = [];
+  for (let site of sites) {
+    files = files.concat(await T.files.where({ site_id: site.id }).all());
+  }
+  return { member: member!, sites, files, token: tokenFromMember(member!) };
+}
+
+export const loadFixtures = async () => {
+  return {
+    bob: await loadMemberResources('bob@example.com'),
+    pat: await loadMemberResources('pat@example.com'),
+  };
 };

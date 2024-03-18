@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { T } from '@db';
 import { randomAlphaNumericString, uuid } from '@shared/utils';
 import { tokenFromMember } from '@server/lib/utils';
-import { get, post } from '@server/test/utils';
+import { get, post, fixtures as F, delete_ } from '@server/test/utils';
 
 describe('GET /sites', () => {
   it('should return sites', async () => {
@@ -16,12 +16,10 @@ describe('GET /sites', () => {
 
 describe('POST /sites', () => {
   it('should use the provided UUID', async () => {
-    const member = (await T.members.all())[0];
-    const token = await tokenFromMember(member);
     const name = randomAlphaNumericString();
     const localName = randomAlphaNumericString();
     const newUuid = uuid();
-    const res = await post(`sites`, { name, localName, id: newUuid }, token);
+    const res = await post(`sites`, { name, localName, id: newUuid }, F.bob.token);
     expect(res.status).toBe(201);
     const data = await res.json();
     expect(data).toHaveProperty('id', newUuid);
@@ -31,30 +29,26 @@ describe('POST /sites', () => {
   });
 
   it('should fail if the site with that UUID already exists', async () => {
-    const member = (await T.members.all())[0];
-    const token = await tokenFromMember(member);
     const name = randomAlphaNumericString();
     const newUuid = uuid();
     const res = await post(
       `sites`,
       { name, localName: randomAlphaNumericString(), id: newUuid },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(201);
     const res2 = await post(
       `sites`,
       { name, localName: randomAlphaNumericString(), id: newUuid },
-      token,
+      F.bob.token,
     );
     expect(res2.status).toBe(409);
   });
 
   it('should generate a UUID if none is provided', async () => {
-    const member = (await T.members.all())[0];
-    const token = await tokenFromMember(member);
     const name = randomAlphaNumericString();
     const localName = randomAlphaNumericString();
-    const res = await post(`sites`, { name, localName }, token);
+    const res = await post(`sites`, { name, localName }, F.bob.token);
     expect(res.status).toBe(201);
     const data = await res.json();
     expect(data).toHaveProperty('id');
@@ -64,26 +58,23 @@ describe('POST /sites', () => {
   });
 
   it('should fail with invalid UUID', async () => {
-    const member = (await T.members.all())[0];
-    const token = await tokenFromMember(member);
     const name = randomAlphaNumericString();
     const localName = randomAlphaNumericString();
-    const res = await post(`sites`, { name, localName, id: 'invalid' }, token);
+    const res = await post(`sites`, { name, localName, id: 'invalid' }, F.bob.token);
     expect(res.status).toBe(400);
   });
 
   it('should create a new site for the current member', async () => {
-    const member = (await T.members.all())[0];
-    const token = await tokenFromMember(member);
     const name = randomAlphaNumericString();
     const localName = randomAlphaNumericString();
-    const res = await post(`sites`, { name, localName }, token);
+    const res = await post(`sites`, { name, localName }, F.bob.token);
     expect(res.status).toBe(201);
-    const data = await res.json();
-    expect(data).toHaveProperty('id');
-    expect(data).toHaveProperty('name', name);
-    expect(data).toHaveProperty('local_name', localName);
-    expect(data).toHaveProperty('created_at');
+    const site = await res.json();
+    expect(site).toHaveProperty('id');
+    expect(site).toHaveProperty('name', name);
+    expect(site).toHaveProperty('local_name', localName);
+    expect(site).toHaveProperty('created_at');
+    expect(site).toHaveProperty('member_id', F.bob.member.id);
   });
 
   it('should not create new site without authorization', async () => {
@@ -91,5 +82,36 @@ describe('POST /sites', () => {
     const localName = randomAlphaNumericString();
     const res = await post(`sites`, { name, localName }, '');
     expect(res.status).toBe(401);
+  });
+});
+
+describe('DELETE /sites/:id', () => {
+  it('should delete the site', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const site = (await T.sites.all())[0];
+    const res = await delete_(`sites/${site.id}`, {}, token);
+    expect(res.status).toBe(200);
+  });
+
+  it('should not delete the site without authorization', async () => {
+    const site = (await T.sites.all())[0];
+    const res = await delete_(`sites/${site.id}`, {}, '');
+    expect(res.status).toBe(401);
+  });
+
+  it('should not delete the site that does not exist', async () => {
+    const member = (await T.members.all())[0];
+    const token = await tokenFromMember(member);
+    const res = await delete_(`sites/${uuid()}`, {}, token);
+    expect(res.status).toBe(404);
+  });
+
+  it('should not delete the site that does not belong to the current member', async () => {
+    const site = (await T.sites.all())[0];
+    const member = (await T.members.all())[1];
+    const token = await tokenFromMember(member);
+    const res = await delete_(`sites/${site.id}`, {}, token);
+    expect(res.status).toBe(403);
   });
 });
