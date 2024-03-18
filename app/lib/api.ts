@@ -1,19 +1,25 @@
 import type {
+  // Members
   RouteResourceMembersId,
   RouteResourceMembers,
+  // Files
   RoutePutFilesIdQuery,
   RoutePutFilesId,
   RoutePostFilesQuery,
   RoutePostFiles,
-  RouteDeleteFiles,
+  RouteDeleteFilesId,
+  // Sites
   RoutePostSitesQuery,
   RoutePostSites,
+  RoutePutSitesIdQuery,
+  RoutePutSitesId,
+  RouteDeleteSitesId,
+  RouteDeleteSitesIdQuery,
+  // Authentication
   RoutePostAuthSignIn,
   RoutePostAuthSignUp,
   RouteGetAuthMe,
   RoutePostAuthChangePass,
-  RoutePutSitesIdQuery,
-  RoutePutSitesId,
 } from '@server/routes/api/types';
 
 import { MemberAuth } from '@app/components/Auth';
@@ -104,8 +110,8 @@ export const me = api<RouteGetAuthMe>('auth/me', 'GET');
 export const changePass = api<RoutePostAuthChangePass>('auth/changePass', 'POST');
 
 // Members
-export const members = api<RouteResourceMembers>('members', 'GET');
-export const member = async (id: number, auth: string) =>
+export const getMembers = api<RouteResourceMembers>('members', 'GET');
+export const getMember = async (id: number, auth: string) =>
   await api<RouteResourceMembersId>(`members/${id}`, 'GET')({}, auth);
 // export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
 
@@ -117,7 +123,7 @@ export const postFile = async (params: RoutePostFilesQuery, auth: string) =>
   await api<RoutePostFiles>('files', 'POST')(params, auth);
 
 export const deleteFile = async (id: string, auth: string) =>
-  await api<RouteDeleteFiles>(`files/${id}`, 'DELETE')({}, auth);
+  await api<RouteDeleteFilesId>(`files/${id}`, 'DELETE')({}, auth);
 
 // Sites
 export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
@@ -125,5 +131,8 @@ export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
 
 export const putSite = async (params: RoutePutSitesIdQuery, auth: string) =>
   await api<RoutePutSitesId>(`sites/${params.id}`, 'PUT')(params, auth);
+
+export const deleteSite = async (params: RouteDeleteSitesIdQuery, auth: string) =>
+  await api<RouteDeleteSitesId>(`sites/${params.id}`, 'DELETE')({}, auth);
 
 // Hooks

@@ -76,8 +76,8 @@ router.post('/files', jsonParser, authorize, async (req, res) => {
   return res.status(201).json(updateFileToB64(file));
 });
 
-export type RouteDeleteFilesQuery = Record<PropertyKey, never>;
-export type RouteDeleteFiles = Record<PropertyKey, never>;
+export type RouteDeleteFilesIdQuery = Record<PropertyKey, never>;
+export type RouteDeleteFilesId = Record<PropertyKey, never>;
 router.delete('/files/:id', authorize, async (req, res) => {
   const file = await T.files.get(req.params.id);
   if (!file) return res.status(404).json({ error: 'File not found' });

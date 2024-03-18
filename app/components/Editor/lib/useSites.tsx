@@ -47,12 +47,24 @@ export default function useSites(memberAuth: MemberAuth | null) {
         const remoteSite = remote._byId[siteId];
         if (status === 'local-only') {
           // Create on remote
-          const { error } = await remote.publishSite(localSite);
-          if (error) setSyncError(toArr(error));
+          if (!localSite.deleted) {
+            const { error } = await remote.postSite(localSite);
+            if (error) setSyncError(toArr(error));
+          } else {
+            storage.delete_(localSite.id);
+          }
         } else if (status == 'local-latest') {
           // Update remote
-          const { error } = await remote.putSite(localSite);
-          if (error) setSyncError(toArr(error));
+          if (!localSite.deleted) {
+            const { error } = await remote.putSite(localSite);
+            if (error) setSyncError(toArr(error));
+          } else {
+            const { error } = await remote.deleteSite(localSite);
+            if (error) setSyncError(toArr(error));
+            else {
+              storage.delete_(localSite.id);
+            }
+          }
         } else if (status === 'remote-only') {
           // Create on local
           storage.set(remoteSite);
@@ -67,7 +79,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     } else {
       console.log('Already syncing!');
     }
-  }, [isSyncing, sitesSyncStatus]);
+  }, [isSyncing, sitesSyncStatus, storage, remote._byId]);
 
   // ███████╗██╗████████╗███████╗███████╗
   // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
@@ -102,11 +114,15 @@ export default function useSites(memberAuth: MemberAuth | null) {
       files: template,
       generatedFiles: {},
       updatedAt: new Date(),
+      deleted: false,
     });
   }
 
   function deleteSite(localId: string) {
-    storage.delete_(localId);
+    storage.update(localId, { deleted: true });
+    if (localId === selectedLocalId) {
+      setSelected(null);
+    }
   }
 
   // ███████╗██╗██╗     ███████╗███████╗

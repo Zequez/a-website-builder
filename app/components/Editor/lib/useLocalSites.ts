@@ -139,6 +139,7 @@ export class SitesLocalStorage {
     }
     const site = JSON.parse(siteEncoded) as LocalSite;
     site.updatedAt = new Date(site.updatedAt);
+    site.deleted = typeof site.deleted === 'undefined' ? false : site.deleted;
 
     if (site.id !== id) {
       this.delete_(id);

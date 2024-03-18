@@ -1,14 +1,6 @@
 import { useEffect, useState, useMemo } from 'preact/hooks';
 import { MemberAuth, useAuth } from '@app/components/Auth';
-import {
-  useRemoteResource,
-  member as apiMember,
-  putFile as apiPutFile,
-  postFile as apiPostFile,
-  deleteFile as apiDeleteFile,
-  putSite as apiPutSite,
-  postSite as apiPostSite,
-} from '@app/lib/api';
+import * as api from '@app/lib/api';
 import { SiteWithFiles } from '@db';
 import { LocalFile, LocalFiles, LocalSite } from '../types';
 import { keyBy } from '@shared/utils';
@@ -26,20 +18,41 @@ function remoteSiteToLocalSite(site: SiteWithFiles): LocalSite {
     localName: site.local_name,
     files: keyBy(site.files.map(remoteFileToLocalFile), 'name'),
     updatedAt: new Date(site.updated_at),
+    deleted: false,
   };
 }
 
 export default function useRemoteSites(auth: MemberAuth | null) {
-  const { data: member, error } = useRemoteResource(apiMember, auth?.member?.id, auth);
+  const { data: member, error } = api.useRemoteResource(api.getMember, auth?.member?.id, auth);
 
   const loaded = member !== null;
 
-  const [_byId, setById] = useState<Record<string, LocalSite>>({});
-
-  useEffect(() => {
-    const newById = keyBy(member?.sites ? member.sites.map(remoteSiteToLocalSite) : [], 'id');
-    setById(newById);
+  const remoteById = useMemo(() => {
+    if (member) {
+      return keyBy(member?.sites ? member.sites.map(remoteSiteToLocalSite) : [], 'id');
+    } else {
+      return {};
+    }
   }, [member?.sites]);
+
+  const [updatedById, setUpdatedById] = useState<Record<string, LocalSite>>({});
+
+  const _byId = useMemo(() => {
+    const resolved = { ...remoteById, ...updatedById };
+    for (let id in updatedById) {
+      if (updatedById[id].deleted) {
+        delete resolved[id];
+      }
+    }
+    return resolved;
+  }, [remoteById, updatedById]);
+
+  // const [_byId, setById] = useState<Record<string, LocalSite>>({});
+
+  // useEffect(() => {
+  //   const newById = keyBy(member?.sites ? member.sites.map(remoteSiteToLocalSite) : [], 'id');
+  //   setById(newById);
+  // }, [member?.sites]);
 
   const sites = useMemo(() => {
     return Object.values(_byId);
@@ -68,7 +81,7 @@ export default function useRemoteSites(auth: MemberAuth | null) {
 
   async function putSite(site: LocalSite) {
     if (!auth) return noAuthPromise;
-    const { data, error } = await apiPutSite(
+    const { data, error } = await api.putSite(
       {
         id: site.id,
         name: site.name,
@@ -77,31 +90,36 @@ export default function useRemoteSites(auth: MemberAuth | null) {
       auth.token,
     );
     if (data) {
-      setById((byId) => ({ ...byId, [site.id]: site }));
+      setUpdatedById((byId) => ({ ...byId, [site.id]: site }));
     }
     return { data, error };
   }
 
-  async function publishSite(site: LocalSite) {
+  async function postSite(site: LocalSite) {
     if (!auth) return noAuthPromise;
-    const { data, error } = await apiPostSite(
+    const { data, error } = await api.postSite(
       { id: site.id, name: site.name, localName: site.localName },
       auth.token,
     );
     if (data) {
-      setById((byId) => ({ ...byId, [site.id]: site }));
+      setUpdatedById((byId) => ({ ...byId, [site.id]: site }));
     }
     return { data, error };
   }
 
   async function deleteSite(site: LocalSite) {
-    throw 'Not implemented';
+    if (!auth) return noAuthPromise;
+    const { data, error } = await api.deleteSite(site, auth.token);
+    if (data) {
+      setUpdatedById((byId) => ({ ...byId, [site.id]: { ...site, deleted: true } }));
+    }
+    return { data, error };
   }
 
   async function putFile(file: { id: string; name: string; content: string }) {
     if (!auth) return noAuthPromise;
 
-    return await apiPutFile(
+    return await api.putFile(
       {
         id: file.id,
         name: file.name,
@@ -113,7 +131,7 @@ export default function useRemoteSites(auth: MemberAuth | null) {
 
   async function postFile(siteId: string, file: { name: string; content: string }) {
     if (!auth) return noAuthPromise;
-    return await apiPostFile(
+    return await api.postFile(
       { name: file.name, data: btoa(file.content), site_id: siteId },
       auth.token,
     );
@@ -121,7 +139,7 @@ export default function useRemoteSites(auth: MemberAuth | null) {
 
   async function deleteFile(id: string) {
     if (!auth) return noAuthPromise;
-    return await apiDeleteFile(id, auth.token);
+    return await api.deleteFile(id, auth.token);
   }
 
   return {
@@ -135,7 +153,7 @@ export default function useRemoteSites(auth: MemberAuth | null) {
     postFile,
     deleteSite,
     putSite,
-    publishSite,
+    postSite,
     deleteFile,
   };
 }

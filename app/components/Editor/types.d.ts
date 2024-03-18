@@ -9,6 +9,7 @@ export type LocalSite = {
   files: LocalFiles;
   generatedFiles?: LocalFiles;
   updatedAt: Date;
+  deleted: boolean;
 };
 
 export type LocalFile = {

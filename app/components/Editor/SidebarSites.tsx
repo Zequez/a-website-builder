@@ -34,17 +34,19 @@ export default function SidebarSites({
   return (
     <div class="flex flex-col">
       <div class="text-white text-center text-lg my-2">Sites</div>
-      {sites.map((site) => (
-        <SiteButton
-          site={site}
-          isSelected={selectedSiteId === site.localId}
-          onNameChange={(newVal) => onNameChange(site.id, newVal)}
-          onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
-          onDelete={() => onDelete(site.id)}
-          onOpen={() => onSelect(site.id)}
-          syncStatus={syncStatus[site.id]}
-        />
-      ))}
+      {sites.map((site) =>
+        site.deleted ? null : (
+          <SiteButton
+            site={site}
+            isSelected={selectedSiteId === site.localId}
+            onNameChange={(newVal) => onNameChange(site.id, newVal)}
+            onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
+            onDelete={() => onDelete(site.id)}
+            onOpen={() => onSelect(site.id)}
+            syncStatus={syncStatus[site.id]}
+          />
+        ),
+      )}
       <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
         <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 w-8 h-8 text-xs rounded-full">
           <PlusIcon />

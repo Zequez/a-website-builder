@@ -43,6 +43,8 @@ router.put(`/sites/:id`, jsonParser, authorize, async (req, res) => {
   return res.status(200).json({});
 });
 
+export type RouteDeleteSitesIdQuery = { id: string };
+export type RouteDeleteSitesId = Record<PropertyKey, never>;
 router.delete('/sites/:id', authorize, async (req, res) => {
   const site = await T.sites.get(req.params.id);
   if (!site) return res.status(404).json({ error: 'Site not found' });
