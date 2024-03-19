@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { records } from './fixtures';
 import { T } from '@db';
 
 describe('Bob and Pat', () => {

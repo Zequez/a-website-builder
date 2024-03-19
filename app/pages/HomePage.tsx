@@ -16,7 +16,7 @@ const HomePage = () => {
 
   useEffect(() => {
     (async () => {
-      const { data: members, error } = await api.members({});
+      const { data: members, error } = await api.getMembers({}, null);
       if (members) {
         setMembersStatus('loaded');
         setMembers(members);

@@ -50,7 +50,7 @@ const Auth = () => {
 
   const submitSignUp: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
-    const { data, error } = await api.signUp({ email, passphrase, fullName });
+    const { data, error } = await api.signUp({ email, passphrase, fullName }, null);
 
     if (data) {
       setPassphrase('');
@@ -69,7 +69,7 @@ const Auth = () => {
 
   const submitSignIn: JSX.SubmitEventHandler<HTMLFormElement> = async (ev) => {
     ev.preventDefault();
-    const { data, error } = await api.signIn({ email, passphrase });
+    const { data, error } = await api.signIn({ email, passphrase }, null);
     if (data) {
       setPassphrase('');
       setToken(data.token);
