@@ -5,7 +5,7 @@ import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
 
 import { resolveSyncStatus } from './sync';
-import useLocalResource from './useLocalResource';
+import useLocalResources from './useLocalResources';
 import useRemoteResources from './useRemoteResources';
 import {
   RouteGetFiles,
@@ -22,8 +22,8 @@ function toArr<T>(x: T | T[]) {
 export default function useSites(memberAuth: MemberAuth | null) {
   const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
-  const LSites = useLocalResource<LocalSite>({ localStoragePrefix: '__SITES__' });
-  const LFiles = useLocalResource<LocalFile>({ localStoragePrefix: '__FILES__' });
+  const LSites = useLocalResources<LocalSite>({ localStoragePrefix: '__SITES__' });
+  const LFiles = useLocalResources<LocalFile>({ localStoragePrefix: '__FILES__' });
 
   const fetchParams = useMemo(
     () => (memberAuth ? { member_id: memberAuth.member.id } : null),

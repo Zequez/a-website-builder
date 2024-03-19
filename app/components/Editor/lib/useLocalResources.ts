@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 
 type UseLocalResourceConfig = {
   localStoragePrefix: string;
@@ -9,7 +9,7 @@ type ResourceType = {
   updatedAt: Date;
   deleted: boolean;
 };
-export default function useLocalResource<T extends ResourceType>(config: UseLocalResourceConfig) {
+export default function useLocalResources<T extends ResourceType>(config: UseLocalResourceConfig) {
   const PREFIX = config.localStoragePrefix;
   const LS = config.localStorage || window.localStorage;
 
