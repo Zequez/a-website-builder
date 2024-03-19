@@ -1,6 +1,5 @@
 import { createRef } from 'preact';
-import { useRef } from 'preact/hooks';
-import { LocalFile, OldLocalSite, LocalSite } from './types';
+import { LocalFile, LocalSite } from './types';
 
 export default function CodePanel({
   site,
