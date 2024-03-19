@@ -72,8 +72,6 @@ const Editor = () => {
     }
   };
 
-  // const openFile = openFileName && site ? site.files[openFileName] : null;
-
   const openFile = S.selectedFile;
 
   return (
@@ -106,7 +104,7 @@ const Editor = () => {
         )}
 
         <BottomButtons
-          selectedSite={site}
+          selectedSite={S.RSites._byId && site && S.RSites._byId[site.id]}
           syncEnabled={S.syncEnabled}
           onToggleSync={handleAttemptSyncEnabling}
         />
@@ -152,6 +150,16 @@ function BottomButtons({
 
   return (
     <>
+      {selectedSite ? (
+        <a class={bottomButtonStyle('bg-lime-300 text-black/40')} href={siteUrl!} target="_blank">
+          <div class="flex w-full">
+            <div class="flex-grow text-left">Live site</div>
+            <div>
+              <OutLink class="inline-block ml-1 -mt-1" />
+            </div>
+          </div>
+        </a>
+      ) : null}
       <button
         class={bottomButtonStyle(
           syncEnabled ? 'bg-lime-600 text-white/60' : 'bg-gray-400 text-white',
@@ -163,9 +171,7 @@ function BottomButtons({
           <div>{syncEnabled ? '🟢' : '⚪️'}</div>
         </div>
       </button>
-      {/* <a class={bottomButtonStyle('bg-lime-600')} href={siteUrl!} target="_blank">
-        Live site <OutLink class="inline-block ml-1 -mt-1" />
-      </a> */}
+
       <a class={bottomButtonStyle('bg-blue-300 text-black/60')} href={appUrl('/')}>
         &larr; Back home
       </a>
