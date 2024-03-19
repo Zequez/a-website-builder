@@ -22,15 +22,15 @@ function toArr<T>(x: T | T[]) {
 export default function useSites(memberAuth: MemberAuth | null) {
   const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
-  const _LSites = useLocalResource<LocalSite>({ localStoragePrefix: '__SITES__' });
-  const _LFiles = useLocalResource<LocalFile>({ localStoragePrefix: '__FILES__' });
+  const LSites = useLocalResource<LocalSite>({ localStoragePrefix: '__SITES__' });
+  const LFiles = useLocalResource<LocalFile>({ localStoragePrefix: '__FILES__' });
 
   const fetchParams = useMemo(
     () => (memberAuth ? { member_id: memberAuth.member.id } : null),
     [memberAuth],
   );
 
-  const _RSites = useRemoteResources<RouteGetSitesQuery, RouteGetSites, LocalSite>({
+  const RSites = useRemoteResources<RouteGetSitesQuery, RouteGetSites, LocalSite>({
     auth: memberAuth,
     fetchEndpoint: api.getSites,
     fetchParams,
@@ -47,7 +47,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     deleteEndpoint: api.deleteSite,
   });
 
-  const _RFiles = useRemoteResources<RouteGetFilesQuery, RouteGetFiles, LocalFile>({
+  const RFiles = useRemoteResources<RouteGetFilesQuery, RouteGetFiles, LocalFile>({
     auth: memberAuth,
     fetchEndpoint: api.getFiles,
     fetchParams,
@@ -99,46 +99,46 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
   const sitesSyncStatus = useMemo(
-    () => resolveSyncStatus(_LSites.list, _RSites.list),
-    [_LSites.list, _RSites.list],
+    () => resolveSyncStatus(LSites.list, RSites.list),
+    [LSites.list, RSites.list],
   );
   const [isSyncingSites, setIsSyncingSites] = useState(false);
   const [sitesSyncingError, setSitesSyncingError] = useState<string[]>([]);
   const syncSites = useCallback(async () => {
-    if (_RSites._byId && !isSyncingSites && !sitesSyncingError.length) {
+    if (RSites._byId && !isSyncingSites && !sitesSyncingError.length) {
       setIsSyncingSites(true);
       console.log('Attempting to sync sites');
       for (let siteId in sitesSyncStatus) {
         const status = sitesSyncStatus[siteId];
         if (status === 'synced') continue;
-        const localSite = _LSites._byId[siteId];
-        const remoteSite = _RSites._byId[siteId];
+        const localSite = LSites._byId[siteId];
+        const remoteSite = RSites._byId[siteId];
         if (status === 'local-only') {
           // Create on remote
           if (!localSite.deleted) {
-            const { error } = await _RSites.post(localSite);
+            const { error } = await RSites.post(localSite);
             if (error) setSitesSyncingError(toArr(error));
           } else {
-            _LSites.remove(localSite.id);
+            LSites.remove(localSite.id);
           }
         } else if (status === 'local-latest') {
           if (!localSite.deleted) {
-            const { error } = await _RSites.put(localSite);
+            const { error } = await RSites.put(localSite);
             if (error) setSitesSyncingError(toArr(error));
           } else {
-            const { error } = await _RSites.delete(localSite);
+            const { error } = await RSites.delete(localSite);
             if (error) setSitesSyncingError(toArr(error));
             else {
-              _LSites.remove(localSite.id);
+              LSites.remove(localSite.id);
             }
           }
         } else if (status === 'remote-only' || status === 'remote-latest') {
-          _LSites.set(remoteSite);
+          LSites.set(remoteSite);
         }
       }
       setIsSyncingSites(false);
     }
-  }, [sitesSyncStatus, isSyncingSites, _RSites._byId, _LSites._byId]);
+  }, [sitesSyncStatus, isSyncingSites, RSites._byId, LSites._byId]);
 
   // ███████╗██╗██╗     ███████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗
   // ██╔════╝██║██║     ██╔════╝██╔════╝    ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
@@ -148,45 +148,45 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
   const filesSyncStatus = useMemo(
-    () => resolveSyncStatus(_LFiles.list, _RFiles.list),
-    [_LFiles.list, _RFiles.list],
+    () => resolveSyncStatus(LFiles.list, RFiles.list),
+    [LFiles.list, RFiles.list],
   );
   const [isSyncingFiles, setIsSyncingFiles] = useState(false);
   const [filesSyncingError, setFilesSyncingError] = useState<string[]>([]);
   const syncFiles = useCallback(async () => {
-    if (_RFiles._byId && !isSyncingFiles && !filesSyncingError.length) {
+    if (RFiles._byId && !isSyncingFiles && !filesSyncingError.length) {
       setIsSyncingFiles(true);
       console.log('Attempting to sync files');
       for (let fileId in filesSyncStatus) {
         const status = filesSyncStatus[fileId];
         if (status === 'synced') continue;
-        const localFile = _LFiles._byId[fileId];
-        const remoteFile = _RFiles._byId[fileId];
+        const localFile = LFiles._byId[fileId];
+        const remoteFile = RFiles._byId[fileId];
         if (status === 'local-only') {
           if (!localFile.deleted) {
-            const { error } = await _RFiles.post(localFile);
+            const { error } = await RFiles.post(localFile);
             if (error) setFilesSyncingError(toArr(error));
           } else {
-            _LFiles.remove(localFile.id);
+            LFiles.remove(localFile.id);
           }
         } else if (status === 'local-latest') {
           if (!localFile.deleted) {
-            const { error } = await _RFiles.put(localFile);
+            const { error } = await RFiles.put(localFile);
             if (error) setFilesSyncingError(toArr(error));
           } else {
-            const { error } = await _RFiles.delete(localFile);
+            const { error } = await RFiles.delete(localFile);
             if (error) setFilesSyncingError(toArr(error));
             else {
-              _LFiles.remove(localFile.id);
+              LFiles.remove(localFile.id);
             }
           }
         } else if (status === 'remote-only' || status === 'remote-latest') {
-          _LFiles.set(remoteFile);
+          LFiles.set(remoteFile);
         }
       }
       setIsSyncingFiles(false);
     }
-  }, [filesSyncStatus, isSyncingFiles, _RFiles._byId, _LFiles._byId]);
+  }, [filesSyncStatus, isSyncingFiles, RFiles._byId, LFiles._byId]);
 
   // ███████╗██╗████████╗███████╗███████╗
   // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
@@ -196,25 +196,25 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
   function setSiteName(id: string, newName: string) {
-    _LSites.update(id, { name: newName });
+    LSites.update(id, { name: newName });
   }
 
   function setSiteLocalName(id: string, newLocalName: string): Promise<boolean> {
     if (!newLocalName) return Promise.resolve(false);
-    const existingSite = _LSites.list.find((s) => s.localName === newLocalName);
+    const existingSite = LSites.list.find((s) => s.localName === newLocalName);
     return new Promise((resolve) => {
       // TODO: Should also check the server
       if (existingSite) {
         resolve(existingSite.id === id);
       } else {
-        _LSites.update(id, { localName: newLocalName });
+        LSites.update(id, { localName: newLocalName });
         resolve(true);
       }
     });
   }
 
   function addSite() {
-    _LSites.set({
+    LSites.set({
       id: uuid(),
       localName: randomAlphaNumericString(),
       name: 'New Site',
@@ -224,7 +224,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function deleteSite(id: string) {
-    _LSites.update(id, { deleted: true });
+    LSites.update(id, { deleted: true });
     if (id === selectedSiteId) {
       setSelectedSiteId(null);
       setSelectedFileId(null);
@@ -239,11 +239,11 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝
 
   function writeFile(file: { id: string; name: string; content: string }) {
-    _LFiles.update(file.id, file);
+    LFiles.update(file.id, file);
   }
 
   function createFile(siteId: string, file: { name: string; content: string }) {
-    return _LFiles.set({
+    return LFiles.set({
       id: uuid(),
       name: file.name,
       siteId,
@@ -254,18 +254,18 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function renameFile(file: { id: string; name: string }) {
-    _LFiles.update(file.id, { name: file.name });
+    LFiles.update(file.id, { name: file.name });
   }
 
   function deleteFile(id: string) {
-    _LFiles.update(id, { deleted: true });
+    LFiles.update(id, { deleted: true });
     if (id === selectedFileId) {
       setSelectedFileId(null);
     }
   }
 
   function applyTemplate(id: string, files: { name: string; content: string }[]) {
-    const site = _LSites.byId[id];
+    const site = LSites.byId[id];
     if (!site) return;
     files.forEach((f) => {
       createFile(id, f);
@@ -273,7 +273,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function siteFiles(siteId: string) {
-    return _LFiles.list.filter((f) => f.siteId === siteId);
+    return LFiles.list.filter((f) => f.siteId === siteId);
   }
   const selectedSiteFiles = useMemo(() => {
     if (selectedSiteId) {
@@ -281,7 +281,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     } else {
       return null;
     }
-  }, [selectedSiteId, _LFiles.list]);
+  }, [selectedSiteId, LFiles.list]);
 
   useEffect(() => {
     if (syncEnabled) {
@@ -298,21 +298,21 @@ export default function useSites(memberAuth: MemberAuth | null) {
   return {
     // Sites
 
-    LSites: _RSites,
-    RSites: _RSites,
+    LSites,
+    RSites,
 
     selectSite: (id: string) => {
       setSelectedSiteId(id);
-      const firstFile = _LFiles.list.find((f) => f.siteId === id);
+      const firstFile = LFiles.list.find((f) => f.siteId === id);
       setSelectedFileId(firstFile ? firstFile.id : null);
     },
     selectedSiteId,
-    selectedSite: selectedSiteId ? _LSites.byId[selectedSiteId] : null,
+    selectedSite: selectedSiteId ? LSites.byId[selectedSiteId] : null,
     selectedSiteFiles,
     siteFiles,
 
-    sitesById: _LSites.byId,
-    sitesList: _LSites.list,
+    sitesById: LSites.byId,
+    sitesList: LSites.list,
     isSyncingSites,
     sitesSyncingError,
     sitesSyncStatus,
@@ -323,15 +323,15 @@ export default function useSites(memberAuth: MemberAuth | null) {
     deleteSite,
 
     // Files
-    LFiles: _RFiles,
-    RFiles: _RFiles,
+    LFiles,
+    RFiles,
 
     selectedFileId,
     selectFile: setSelectedFileId,
-    selectedFile: selectedFileId ? _LFiles.byId[selectedFileId] : null,
+    selectedFile: selectedFileId ? LFiles.byId[selectedFileId] : null,
 
-    filesById: _LFiles.byId,
-    filesList: _LFiles.list,
+    filesById: LFiles.byId,
+    filesList: LFiles.list,
     isSyncingFiles,
     filesSyncingError,
     filesSyncStatus,
