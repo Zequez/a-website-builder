@@ -12,6 +12,14 @@ describe('GET /sites', () => {
     const apiSites = await res.json();
     expect(apiSites.length).toBe(dbSites.length);
   });
+
+  it('should return sites by member', async () => {
+    const res = await get(`sites?member_id=${F.bob.member.id}`);
+    expect(res.status).toBe(200);
+    const dbSites = await T.sites.where({ member_id: F.bob.member.id }).all();
+    const apiSites = await res.json();
+    expect(apiSites.length).toBe(dbSites.length);
+  });
 });
 
 describe('POST /sites', () => {

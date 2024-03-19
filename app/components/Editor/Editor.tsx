@@ -6,7 +6,7 @@ import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
 import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 
 import { appUrl, cx, useLocalStorageState } from '@app/lib/utils';
-import { LocalSite } from './types';
+import { LocalSite, _LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
@@ -22,13 +22,11 @@ const Editor = () => {
   const { memberAuth } = useAuth();
   const S = useSites(memberAuth);
   const site = S.selectedSite;
-  const [openFileName, setOpenFileName] = useState<string | null>(null);
+  const file = S.selectedFile;
   const [editorInspector, setEditorInspector] = useLocalStorageState('editor_inspector', false);
-  const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
   useEffect(() => {
     function toggleEditorInspector(ev: KeyboardEvent) {
-      console.log('Toggling editor inspector', ev);
       if (ev.key === 'i' && ev.metaKey) {
         setEditorInspector((state) => !state);
       }
@@ -39,84 +37,71 @@ const Editor = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (syncEnabled) {
-      S.sync();
-    }
-  }, [syncEnabled, S.sites, S.remoteSites, S.sitesSyncStatus]);
-
-  const handleFileClick = (fileName: string) => {
-    setOpenFileName(fileName);
+  const handleFileClick = (id: string) => {
+    S.selectFile(id);
   };
 
   const onEditorContentChanges = (content: string) => {
-    if (site && openFileName) {
-      S.writeFile(site.id, openFileName, content);
+    if (file) {
+      S.writeFile({ ...file, content });
     }
   };
 
-  const handleSelectSite = (localId: string) => {
-    S.setSelected(localId);
-    const newSelectedSite = S.byLocalId(localId);
-    const firstFile = Object.keys(newSelectedSite.files)[0];
-    setOpenFileName(firstFile || null);
+  const handleSelectSite = (id: string) => {
+    S.selectSite(id);
   };
 
-  const handleDeleteSite = (localId: string) => {
-    S.deleteSite(localId);
-    if (site && localId === site.localId) {
-      S.setSelected(null);
-      setOpenFileName(null);
-    }
+  const handleDeleteSite = (id: string) => {
+    S.deleteSite(id);
   };
 
-  const handleAddFile = (newFileName: string) => {
+  const handleAddFile = (name: string) => {
     if (site) {
-      S.createFile(site.id, newFileName, '');
-      setOpenFileName(newFileName);
+      const { id } = S.createFile(site.id, { name, content: '' });
+      S.selectFile(id);
     }
   };
 
-  const handleRenameFile = (fileName: string, newFileName: string) => {
-    if (site) {
-      S.renameFile(site.id, fileName, newFileName);
-    }
+  const handleRenameFile = (id: string, name: string) => {
+    S.renameFile({ id, name });
   };
 
   const handleAttemptSyncEnabling = () => {
     if (memberAuth) {
-      setSyncEnabled(!syncEnabled);
+      S.setSyncEnabled((v) => !v);
     } else {
       alert('You must register to enable syncing');
     }
   };
 
-  const openFile = openFileName && site ? site.files[openFileName] : null;
+  // const openFile = openFileName && site ? site.files[openFileName] : null;
+
+  const openFile = S.selectedFile;
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {editorInspector ? <Inspector S={S} /> : null}
       <div class="w-54 bg-gray-500 flex flex-col overflow-auto">
         <SidebarSites
-          sites={S.sites}
-          selectedSiteId={site?.localId || null}
+          sites={S.sitesList}
+          selectedSiteId={site?.id || null}
           onSelect={handleSelectSite}
           onAdd={() => S.addSite()}
           onDelete={(id) => handleDeleteSite(id)}
-          onLocalNameChangeAttempt={S.setLocalName}
-          onNameChange={S.setName}
+          onLocalNameChangeAttempt={S.setSiteLocalName}
+          onNameChange={S.setSiteName}
           syncStatus={S.sitesSyncStatus}
         />
 
-        {site ? (
+        {site && S.selectedSiteFiles ? (
           <SidebarFiles
-            files={site.files}
-            openedFileName={openFileName}
+            files={S.selectedSiteFiles}
+            selectedFileId={S.selectedFile?.id || null}
             onOpenFile={handleFileClick}
             onAddFile={handleAddFile}
             onRenameFile={handleRenameFile}
             onApplyTemplate={(template) => S.applyTemplate(site.id, template)}
-            onDeleteFile={(fileName) => S.deleteFile(site.id, fileName)}
+            onDeleteFile={(fileId) => S.deleteFile(fileId)}
           />
         ) : (
           <div class="flex-grow"></div>
@@ -124,7 +109,7 @@ const Editor = () => {
 
         <BottomButtons
           selectedSite={site}
-          syncEnabled={syncEnabled}
+          syncEnabled={S.syncEnabled}
           onToggleSync={handleAttemptSyncEnabling}
         />
       </div>
@@ -138,7 +123,8 @@ const Editor = () => {
           {site ? (
             <Preview
               site={site}
-              currentFileName={openFileName || null}
+              siteFiles={S.selectedSiteFiles!}
+              currentFileId={S.selectedFileId}
               onSwitchPosition={() => null}
             />
           ) : null}
@@ -156,7 +142,7 @@ function BottomButtons({
   syncEnabled,
   onToggleSync,
 }: {
-  selectedSite: LocalSite | null;
+  selectedSite: _LocalSite | null;
   syncEnabled: boolean;
   onToggleSync: () => void;
 }) {

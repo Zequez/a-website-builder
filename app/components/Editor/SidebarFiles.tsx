@@ -4,49 +4,53 @@ import TimesIcon from '~icons/fa6-solid/xmark';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
 
 import { cx } from '@app/lib/utils';
-import { filesByName as template } from './template';
-import { LocalFiles } from './types';
+import template from './template';
+import { LocalFile } from './types';
 import { useRef, useState } from 'preact/hooks';
 import FloatingMenu from '../FloatingMenu';
+import { keyBy } from '@shared/utils';
 
 export default function SidebarFiles({
   files,
-  openedFileName,
+  selectedFileId,
   onOpenFile,
   onAddFile,
   onApplyTemplate,
   onRenameFile,
   onDeleteFile,
 }: {
-  files: LocalFiles;
-  openedFileName: string | null;
-  onOpenFile: (fileName: string) => void;
-  onAddFile: (fileName: string) => void;
-  onApplyTemplate: (template: LocalFiles) => void;
-  onRenameFile: (fileName: string, newFileName: string) => void;
-  onDeleteFile: (fileName: string) => void;
+  files: LocalFile[];
+  selectedFileId: string | null;
+  onOpenFile: (fileId: string) => void;
+  onAddFile: (name: string) => void;
+  onApplyTemplate: (template: { name: string; content: string }[]) => void;
+  onRenameFile: (fileId: string, newFileName: string) => void;
+  onDeleteFile: (fileId: string) => void;
 }) {
   const [newFileName, setNewFileName] = useState<null | string>(null);
-  const [renameFile, setRenameFile] = useState<null | string>(null);
+  const [renameFileId, setRenameFileId] = useState<null | string>(null);
   const [renameFileName, setRenameFileName] = useState<null | string>(null);
 
-  function handleRenameFileStart(fileName: string) {
-    setRenameFile(fileName);
-    setRenameFileName(fileName);
+  const filesByName = keyBy(files, 'name');
+  const filesById = keyBy(files, 'id');
+
+  function handleRenameFileStart(id: string) {
+    setRenameFileId(id);
+    setRenameFileName(filesById[id].name);
   }
 
   function handleRenameFileApply() {
     if (!renameFileName) return;
-    if (!renameFile) return;
-    if (renameFile !== renameFileName) {
-      onRenameFile(renameFile, renameFileName);
+    if (!renameFileId) return;
+    if (filesById[renameFileId].name !== renameFileName) {
+      onRenameFile(renameFileId, renameFileName);
     }
-    setRenameFile(null);
+    setRenameFileId(null);
     setRenameFileName(null);
   }
 
   function handleCancelRenameFile() {
-    setRenameFile(null);
+    setRenameFileId(null);
     setRenameFileName(null);
   }
 
@@ -64,17 +68,18 @@ export default function SidebarFiles({
     setNewFileName(null);
   }
 
-  function handleDeletePrompt(name: string) {
+  function handleDeletePrompt(id: string) {
     if (window.confirm('Are you sure you want to delete this file?')) {
-      onDeleteFile(name);
+      onDeleteFile(id);
     }
   }
 
-  const fileAlreadyExists = newFileName ? !!files[newFileName] : false;
+  const fileAlreadyExists = newFileName ? !!filesByName[newFileName] : false;
   const newFileNameIsValid = !fileAlreadyExists && !!(newFileName && newFileName.length > 0);
 
+  const renameFileCurrentName = renameFileId ? filesById[renameFileId].name : null;
   const renameFileAlreadyExists = renameFileName
-    ? renameFileName !== renameFile && !!files[renameFileName]
+    ? renameFileName !== renameFileCurrentName && !!filesByName[renameFileName]
     : false;
   const renameFileNameIsValid =
     !renameFileAlreadyExists && !!(renameFileName && renameFileName.length > 0);
@@ -83,25 +88,27 @@ export default function SidebarFiles({
     <div class="flex flex-col flex-grow">
       <div class="text-white text-center text-lg my-2">Files</div>
 
-      {Object.values(files).map(({ name }) =>
-        renameFileName !== null && renameFile === name ? (
-          <FileNamer
-            name={renameFileName}
-            onChange={setRenameFileName}
-            isValid={renameFileNameIsValid}
-            onApply={handleRenameFileApply}
-            onCancel={handleCancelRenameFile}
-          />
-        ) : (
-          <FileButton
-            name={name}
-            isSelected={name === openedFileName}
-            onSelect={() => onOpenFile(name)}
-            onRenameStart={() => handleRenameFileStart(name)}
-            onDelete={() => handleDeletePrompt(name)}
-          />
-        ),
-      )}
+      {files
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(({ name, id }) =>
+          renameFileName !== null && renameFileId === id ? (
+            <FileNamer
+              name={renameFileName}
+              onChange={setRenameFileName}
+              isValid={renameFileNameIsValid}
+              onApply={handleRenameFileApply}
+              onCancel={handleCancelRenameFile}
+            />
+          ) : (
+            <FileButton
+              name={name}
+              isSelected={id === selectedFileId}
+              onSelect={() => onOpenFile(id)}
+              onRenameStart={() => handleRenameFileStart(id)}
+              onDelete={() => handleDeletePrompt(id)}
+            />
+          ),
+        )}
       {newFileName !== null ? (
         <FileNamer
           name={newFileName}
@@ -112,8 +119,8 @@ export default function SidebarFiles({
         />
       ) : null}
 
-      {Object.keys(files).length === 0 ? (
-        <div class="flex items-center justify-center">
+      {files.length === 0 ? (
+        <div class="flex items-center justify-center mt-4">
           <button
             class="bg-emerald-500 hover:bg-emerald-400 px-2 py-1 text-white rounded-md uppercase tracking-wider mb-2"
             onClick={() => onApplyTemplate(template)}

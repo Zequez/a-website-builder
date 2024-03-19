@@ -4,18 +4,21 @@ import MobileIcon from '~icons/fa6-solid/mobile';
 import DesktopIcon from '~icons/fa6-solid/desktop';
 import FullScreenIcon from '~icons/fa6-solid/expand';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
-import { LocalSite } from './types';
+import { LocalFile, LocalSite, _LocalSite } from './types';
 import { cx, useLocalStorageState } from '@app/lib/utils';
 import { FC } from '../FC';
+import { keyBy } from '@shared/utils';
 
 const FULLSCREEN_PORTAL_EL = document.getElementById('fullscreen-preview');
 
 export default function Preview({
   site,
-  currentFileName,
+  siteFiles,
+  currentFileId,
 }: {
-  currentFileName: string | null;
-  site: LocalSite;
+  currentFileId: string | null;
+  site: _LocalSite;
+  siteFiles: LocalFile[];
   onSwitchPosition: () => void;
 }) {
   const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
@@ -29,15 +32,16 @@ export default function Preview({
   const [fullscreenScale, setFullscreenScale] = useState(1);
   const [lastEntrypointUsed, setLastEntrypointUsed] = useState<string | null>(null);
 
-  const files = site.generatedFiles || {};
-  let adjustedCurrentFileName = currentFileName;
-  if (adjustedCurrentFileName?.endsWith('.njk')) {
-    const htmlName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
-    if (files[htmlName]) {
-      adjustedCurrentFileName = htmlName;
-    }
-  }
-  const currentFile = adjustedCurrentFileName ? files[adjustedCurrentFileName] : null;
+  const filesByName = keyBy(siteFiles, 'name');
+
+  // let adjustedCurrentFileName = currentFileName;
+  // if (adjustedCurrentFileName?.endsWith('.njk')) {
+  //   const htmlName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
+  //   if (files[htmlName]) {
+  //     adjustedCurrentFileName = htmlName;
+  //   }
+  // }
+  // const currentFile = adjustedCurrentFileName ? files[adjustedCurrentFileName] : null;
 
   const mobileAspectRatio = 9 / 16;
   const mobileWidth = 360;
@@ -53,13 +57,15 @@ export default function Preview({
     setMobileScale(Math.min(scaleToAdjustWidth, scaleToAdjustHeight));
   }
 
+  const currentFile = currentFileId ? siteFiles.find((f) => f.id === currentFileId) : null;
+
   const getEntrypointFileName = useCallback(
     function () {
       if (currentFile && currentFile.name.endsWith('.html')) {
         return currentFile.name;
-      } else if (lastEntrypointUsed && site.files[lastEntrypointUsed]) {
+      } else if (lastEntrypointUsed && filesByName[lastEntrypointUsed]) {
         return lastEntrypointUsed;
-      } else if (site.files['index.html']) {
+      } else if (filesByName['index.html']) {
         return 'index.html';
       } else {
         return null;
@@ -74,7 +80,7 @@ export default function Preview({
 
   const recommendedEntrypoint = getEntrypointFileName();
   const iframeEncodedUrl = recommendedEntrypoint
-    ? generateIframeEncodedUrl(files, recommendedEntrypoint)
+    ? generateIframeEncodedUrl(filesByName, recommendedEntrypoint)
     : null;
 
   useEffect(() => {

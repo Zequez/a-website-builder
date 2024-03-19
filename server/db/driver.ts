@@ -51,7 +51,7 @@ export type SiteWithFiles = Site & { files: FileB64[] };
 
 const extendedMembers = {
   ...members,
-  withSitesAndFiles: async (id: string) => {
+  withSites: async (id: string) => {
     const member = await T.members.get(id);
     if (!member) return null;
     const sites = await T.sites.where({ member_id: member.id }).all();
@@ -75,6 +75,11 @@ const extendedFiles = {
       (
         await Q<File_>(sql`SELECT * FROM files WHERE site_id = ${siteId} AND name ILIKE ${name}`)
       )[0] || null
+    );
+  },
+  findByMemberId: async (memberId: string) => {
+    return await Q<File_>(
+      sql`SELECT * FROM files WHERE site_id IN (SELECT id FROM sites WHERE member_id = ${memberId})`,
     );
   },
 };

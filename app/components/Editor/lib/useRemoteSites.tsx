@@ -1,15 +1,25 @@
 import { useEffect, useState, useMemo } from 'preact/hooks';
 import { MemberAuth, useAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
-import { SiteWithFiles } from '@db';
+import { FileB64, SiteWithFiles } from '@db';
 import { LocalFile, LocalFiles, LocalSite } from '../types';
 import { keyBy } from '@shared/utils';
-import { remoteFileToLocalFile } from './utils';
 
 const noAuthPromise = Promise.resolve({
   error: 'Must be logged in for this',
   data: null,
 });
+
+export function remoteFileToLocalFile(fileB64: FileB64): LocalFile {
+  return {
+    id: fileB64.id,
+    name: fileB64.name,
+    content: atob(fileB64.data),
+    updatedAt: new Date(fileB64.updated_at),
+    siteId: fileB64.site_id,
+    deleted: false,
+  };
+}
 
 function remoteSiteToLocalSite(site: SiteWithFiles): LocalSite {
   return {
@@ -129,12 +139,20 @@ export default function useRemoteSites(auth: MemberAuth | null) {
     );
   }
 
-  async function postFile(siteId: string, file: { name: string; content: string }) {
+  async function postFile(file: LocalFile) {
     if (!auth) return noAuthPromise;
-    return await api.postFile(
-      { name: file.name, data: btoa(file.content), site_id: siteId },
+    const { data, error } = await api.postFile(
+      { id: file.id, name: file.name, data: btoa(file.content), site_id: file.siteId },
       auth.token,
     );
+    console.log('postFile', data, error);
+    if (data) {
+      const site = _byId[file.siteId];
+      const newFiles = { ...site.files };
+      delete newFiles[file.name];
+      setUpdatedById((byId) => ({ ...byId, [file.siteId]: { ...site, files: newFiles } }));
+    }
+    return { data, error };
   }
 
   async function deleteFile(id: string) {

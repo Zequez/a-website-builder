@@ -20,7 +20,7 @@ export async function apply() {
 
   const bobSite1 = await T.sites.insert({
     name: 'Personal Website',
-    local_name: 'example.com',
+    local_name: 'bob',
     member_id: bob.id,
   });
 
@@ -31,7 +31,27 @@ export async function apply() {
     site_id: bobSite1.id,
   });
 
-  return { bob, pat, bobSite1, bobSite1File };
+  const bobSite1File2 = await T.files.insert({
+    name: 'index2.html',
+    data: 'Hello World!',
+    data_size: 11,
+    site_id: bobSite1.id,
+  });
+
+  const patSite = await T.sites.insert({
+    name: "Pat's personal site",
+    local_name: 'pat',
+    member_id: pat.id,
+  });
+
+  const patSite1File = await T.files.insert({
+    name: 'index.html',
+    data: 'Hello World!',
+    data_size: 11,
+    site_id: patSite.id,
+  });
+
+  return { bob, pat, bobSite1, bobSite1File, bobSite1File2, patSite, patSite1File };
 }
 
 async function loadMemberResources(email: string) {

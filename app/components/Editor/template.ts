@@ -1,8 +1,7 @@
-import { LocalFile, LocalFiles } from './types';
+import { LocalFile } from './types';
 
-const template: LocalFile[] = [
+const template = [
   {
-    id: null,
     name: 'index.html',
     content: `<!DOCTYPE html>
 <html>
@@ -20,20 +19,13 @@ const template: LocalFile[] = [
 </html>`,
   },
   {
-    id: null,
     name: 'style.css',
     content: `body { background: red; }`,
   },
   {
-    id: null,
     name: 'script.js',
     content: `console.log("Test");`,
   },
 ];
-
-export const filesByName: LocalFiles = template.reduce<LocalFiles>((acc, file) => {
-  acc[file.name] = file;
-  return acc;
-}, {});
 
 export default template;

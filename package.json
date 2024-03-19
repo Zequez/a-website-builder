@@ -15,8 +15,8 @@
     "db:migrations:add": "tsx ./scripts/createMigration.ts",
     "db:migrations:migrate": "tsx ./scripts/migrate.ts",
     "db:seeds": "tsx ./scripts/applySeeds.ts",
-    "test": "concurrently pnpm:test:server pnpm:test:runner",
-    "test:runner": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest",
+    "test": "pnpm test:runner",
+    "test:runner": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --disable-console-intercept",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test tsx watch ./server/index.ts"
   },
   "type": "module",

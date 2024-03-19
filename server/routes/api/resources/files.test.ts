@@ -2,8 +2,17 @@ import { describe, it, expect } from 'vitest';
 
 import { T } from '@db';
 import { randomAlphaNumericString, uuid } from '@shared/utils';
-import { post, put, delete_ } from '@server/test/utils';
+import { post, put, delete_, get, fixtures as F } from '@server/test/utils';
 import { randomEmail, tokenFromMember } from '@server/lib/utils';
+
+describe('GET /files', () => {
+  it('should get all the files by the given member', async () => {
+    const res = await get(`files?member_id=${F.bob.member.id}`);
+    expect(res.status).toEqual(200);
+    const data = await res.json();
+    expect(data.length).toEqual(2);
+  });
+});
 
 describe('PUT /files/:id', () => {
   it('should not update a file without the correct authentication', async () => {
@@ -111,6 +120,24 @@ describe('PUT /files/:id', () => {
 });
 
 describe('POST /files', () => {
+  it('should create a new file with the given UUID', async () => {
+    const newUuid = uuid();
+    const res = await post(
+      'files',
+      {
+        name: randomAlphaNumericString(),
+        data: btoa(randomAlphaNumericString()),
+        site_id: F.bob.sites[0].id,
+        id: newUuid,
+      },
+      F.bob.token,
+    );
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.site_id).toEqual(F.bob.sites[0].id);
+    expect(data.id).toEqual(newUuid);
+  });
+
   it('should not create a new file without the correct authentication', async () => {
     const randomNewData = randomAlphaNumericString();
     const res = await post('files', {
@@ -121,8 +148,6 @@ describe('POST /files', () => {
   });
 
   it('should not create a new file without a site ID', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
     const randomNewData = randomAlphaNumericString();
     const res = await post(
       'files',
@@ -130,7 +155,7 @@ describe('POST /files', () => {
         name: randomNewData,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(400);
   });
@@ -255,7 +280,7 @@ describe('DELETE /files', () => {
       data: '',
     });
     const res = await delete_(`files/${file!.id}`, {}, token);
-    expect(res.status).toBe(204);
+    expect(res.status).toBe(200);
     const nullFile = await T.files.get(file.id);
     expect(nullFile).toBe(null);
   });

@@ -1,7 +1,7 @@
 import type {
   // Members
-  RouteResourceMembersId,
-  RouteResourceMembers,
+  RouteGetMembersId,
+  RouteGetMembers,
   // Files
   RoutePutFilesIdQuery,
   RoutePutFilesId,
@@ -20,21 +20,36 @@ import type {
   RoutePostAuthSignUp,
   RouteGetAuthMe,
   RoutePostAuthChangePass,
+  RouteGetMembersIdQuery,
+  RoutePostAuthSignUpQuery,
+  RoutePostAuthSignInQuery,
+  RouteGetAuthMeQuery,
+  RoutePostAuthChangePassQuery,
+  RouteGetMembersQuery,
+  RouteDeleteFilesIdQuery,
+  RouteGetFiles,
+  RouteGetFilesQuery,
+  RouteGetSites,
+  RouteGetSitesQuery,
 } from '@server/routes/api/types';
 
 import { MemberAuth } from '@app/components/Auth';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
-function api<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
-  return (data: Record<string, any> = {}, authorization: string = '') => {
+function api<T, Q extends Record<string, any>>(
+  path: string | ((q: Q) => string),
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+): ApiEndpoint<Q, T> {
+  return (query: Q, authorization: string | null | undefined = null) => {
     const authHeader: { Authorization: string } | {} = authorization
       ? { Authorization: `Bearer ${authorization}` }
       : {};
-    const baseUrl = `${API_BASE_URL}/${path}`;
+    const resolvedPath = typeof path === 'string' ? path : path(query);
+    const baseUrl = `${API_BASE_URL}/${resolvedPath}`;
     if (method === 'GET') {
       return typedSimplifiedResponse<T>(
-        fetch(`${baseUrl}?${new URLSearchParams(data)}`, {
+        fetch(`${baseUrl}?${new URLSearchParams(query)}`, {
           method,
           headers: {
             'Content-Type': 'application/json',
@@ -50,7 +65,7 @@ function api<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
             'Content-Type': 'application/json',
             ...authHeader,
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(query),
         }),
       );
     }
@@ -75,17 +90,26 @@ async function typedSimplifiedResponse<T>(resPromise: Promise<Response>) {
   }
 }
 
+export type ApiEndpoint<T, K> = (
+  params: T,
+  auth: string | null | undefined,
+) => TypedSimplifiedResponse<K>;
+
 export function useRemoteResource<T, K>(
-  apiEndpoint: (params: T, auth: string) => TypedSimplifiedResponse<K>,
-  params: T | undefined,
-  auth: MemberAuth | null,
+  apiEndpoint: ApiEndpoint<T, K>,
+  params: T | null,
+  auth: MemberAuth | null | undefined,
 ) {
   const [remoteResource, setRemoteResource] = useState<K | null>(null);
   const [fetchError, setFetchError] = useState<string | string[] | null>(null);
   useEffect(() => {
-    if (auth && params) {
+    console.log('Fetching remote resource');
+    const noAuthRequired = typeof auth === 'undefined';
+    if ((auth || noAuthRequired) && params) {
       (async () => {
-        const { data, error } = await apiEndpoint(params, auth.token);
+        const { data, error } = await (noAuthRequired
+          ? apiEndpoint(params, undefined)
+          : apiEndpoint(params, auth.token));
         if (data !== null) {
           setRemoteResource(data);
         } else {
@@ -94,7 +118,7 @@ export function useRemoteResource<T, K>(
         }
       })();
     }
-  }, [auth]);
+  }, [auth, params]);
 
   return fetchError === null
     ? { data: remoteResource, error: null }
@@ -104,35 +128,37 @@ export function useRemoteResource<T, K>(
 export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedResponse<T>>;
 
 // Auth
-export const signUp = api<RoutePostAuthSignUp>('auth/signUp', 'POST');
-export const signIn = api<RoutePostAuthSignIn>('auth/signIn', 'POST');
-export const me = api<RouteGetAuthMe>('auth/me', 'GET');
-export const changePass = api<RoutePostAuthChangePass>('auth/changePass', 'POST');
+export const signUp = api<RoutePostAuthSignUp, RoutePostAuthSignUpQuery>('auth/signUp', 'POST');
+export const signIn = api<RoutePostAuthSignIn, RoutePostAuthSignInQuery>('auth/signIn', 'POST');
+export const me = api<RouteGetAuthMe, RouteGetAuthMeQuery>('auth/me', 'GET');
+export const changePass = api<RoutePostAuthChangePass, RoutePostAuthChangePassQuery>(
+  'auth/changePass',
+  'POST',
+);
 
 // Members
-export const getMembers = api<RouteResourceMembers>('members', 'GET');
-export const getMember = async (id: number, auth: string) =>
-  await api<RouteResourceMembersId>(`members/${id}`, 'GET')({}, auth);
-// export const file = async (id: string) => await api<RouteResourcePostFileId>(`files/${id}`, 'GET')({});
+export const getMembers = api<RouteGetMembers, RouteGetMembersQuery>('members', 'GET');
+export const getMember = api<RouteGetMembersId, RouteGetMembersIdQuery>(
+  ({ id }) => `members/${id}`,
+  'GET',
+);
 
 // Files
-export const putFile = async (params: RoutePutFilesIdQuery, auth: string) =>
-  await api<RoutePutFilesId>(`files/${params.id}`, 'PUT')(params, auth);
-
-export const postFile = async (params: RoutePostFilesQuery, auth: string) =>
-  await api<RoutePostFiles>('files', 'POST')(params, auth);
-
-export const deleteFile = async (id: string, auth: string) =>
-  await api<RouteDeleteFilesId>(`files/${id}`, 'DELETE')({}, auth);
+export const getFiles = api<RouteGetFiles, RouteGetFilesQuery>('files', 'GET');
+export const putFile = api<RoutePutFilesId, RoutePutFilesIdQuery>(({ id }) => `files/${id}`, 'PUT');
+export const postFile = api<RoutePostFiles, RoutePostFilesQuery>('files', 'POST');
+export const deleteFile = api<RouteDeleteFilesId, RouteDeleteFilesIdQuery>(
+  ({ id }) => `files/${id}`,
+  'DELETE',
+);
 
 // Sites
-export const postSite = async (params: RoutePostSitesQuery, auth: string) =>
-  await api<RoutePostSites>('sites', 'POST')(params, auth);
-
-export const putSite = async (params: RoutePutSitesIdQuery, auth: string) =>
-  await api<RoutePutSitesId>(`sites/${params.id}`, 'PUT')(params, auth);
-
-export const deleteSite = async (params: RouteDeleteSitesIdQuery, auth: string) =>
-  await api<RouteDeleteSitesId>(`sites/${params.id}`, 'DELETE')({}, auth);
+export const getSites = api<RouteGetSites, RouteGetSitesQuery>('sites', 'GET');
+export const postSite = api<RoutePostSites, RoutePostSitesQuery>('sites', 'POST');
+export const putSite = api<RoutePutSitesId, RoutePutSitesIdQuery>(({ id }) => `sites/${id}`, 'PUT');
+export const deleteSite = api<RouteDeleteSitesId, RouteDeleteSitesIdQuery>(
+  ({ id }) => `sites/${id}`,
+  'DELETE',
+);
 
 // Hooks

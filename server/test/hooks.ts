@@ -5,7 +5,7 @@ import { apply } from './fixtures';
 import { preloadFixtures } from './utils';
 
 beforeAll(async () => {
-  console.log('BEFORE ALL SCRIPTs');
+  // console.log('BEFORE ALL SCRIPTs');
   // I realized this is never going to work because the server runs on a separate process
   // and it does queries by while the tests are running. I have no idea how to implement this; but
   // I can still truncate all tables and apply the fixtures

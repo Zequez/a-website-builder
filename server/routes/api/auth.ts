@@ -18,7 +18,7 @@ export type RoutePostAuthSignUp = {
   member: Omit<Member, 'passphrase'>;
   token: string;
 };
-type RoutePostAuthSignUpQuery = {
+export type RoutePostAuthSignUpQuery = {
   email: string;
   passphrase: string;
   fullName: string;

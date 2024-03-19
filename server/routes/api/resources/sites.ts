@@ -5,11 +5,16 @@ import { validateUuid } from '@shared/utils';
 
 const router = Router();
 
-export type RouteGetSitesQuery = Record<PropertyKey, never>;
+export type RouteGetSitesQuery = { member_id: number };
 export type RouteGetSites = Site[];
 router.get('/sites', async (req, res) => {
-  const sites = await T.sites.all();
-  return res.status(200).json(sites);
+  if (typeof req.query.member_id === 'string') {
+    const sites = await T.sites.where({ member_id: req.query.member_id }).all();
+    return res.status(200).json(sites);
+  } else {
+    const sites = await T.sites.all();
+    return res.status(200).json(sites);
+  }
 });
 
 export type RoutePostSitesQuery = { name: string; localName: string; id?: string };

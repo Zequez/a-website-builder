@@ -1,7 +1,7 @@
 import { useState, useRef } from 'preact/hooks';
 import cx from 'classnames';
 
-import { LocalSite } from './types';
+import { LocalSite, _LocalSite } from './types';
 import CheckIcon from '~icons/fa6-solid/check';
 import PlusIcon from '~icons/fa6-solid/plus';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
@@ -22,7 +22,7 @@ export default function SidebarSites({
   onAdd,
   syncStatus,
 }: {
-  sites: LocalSite[];
+  sites: _LocalSite[];
   selectedSiteId: string | null;
   onLocalNameChangeAttempt: (localId: string, newName: string) => Promise<boolean>;
   onNameChange: (localId: string, newName: string) => void;
@@ -34,19 +34,21 @@ export default function SidebarSites({
   return (
     <div class="flex flex-col">
       <div class="text-white text-center text-lg my-2">Sites</div>
-      {sites.map((site) =>
-        site.deleted ? null : (
-          <SiteButton
-            site={site}
-            isSelected={selectedSiteId === site.localId}
-            onNameChange={(newVal) => onNameChange(site.id, newVal)}
-            onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
-            onDelete={() => onDelete(site.id)}
-            onOpen={() => onSelect(site.id)}
-            syncStatus={syncStatus[site.id]}
-          />
-        ),
-      )}
+      {sites
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((site) =>
+          site.deleted ? null : (
+            <SiteButton
+              site={site}
+              isSelected={selectedSiteId === site.id}
+              onNameChange={(newVal) => onNameChange(site.id, newVal)}
+              onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
+              onDelete={() => onDelete(site.id)}
+              onOpen={() => onSelect(site.id)}
+              syncStatus={syncStatus[site.id]}
+            />
+          ),
+        )}
       <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
         <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 w-8 h-8 text-xs rounded-full">
           <PlusIcon />

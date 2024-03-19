@@ -1,85 +1,192 @@
-import { useState, useEffect, useCallback } from 'preact/hooks';
-import { LocalSite, LocalFiles, LocalFile } from '../types';
-import { keyBy, randomAlphaNumericString, uuid } from '@shared/utils';
-import { SiteWithFiles } from '@db';
-import { FileB64 } from '@server/db/driver';
+import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
+import { LocalFile, _LocalSite } from '../types';
+import { randomAlphaNumericString, uuid } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
+import * as api from '@app/lib/api';
 
-import useLocalSites from './useLocalSites';
-import useRemoteSites from './useRemoteSites';
 import { resolveSyncStatus } from './sync';
+import useLocalResource from './useLocalResource';
+import useRemoteResources from './useRemoteResources';
+import {
+  RouteGetFiles,
+  RouteGetFilesQuery,
+  RouteGetSites,
+  RouteGetSitesQuery,
+} from '@server/routes/api/types';
+import { useLocalStorageState } from '@app/lib/utils';
 
 function toArr<T>(x: T | T[]) {
   return Array.isArray(x) ? x : [x];
 }
 
 export default function useSites(memberAuth: MemberAuth | null) {
-  const storage = useLocalSites('__SITES__');
-  const remote = useRemoteSites(memberAuth);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncError, setSyncError] = useState<string[]>([]);
+  const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
-  const [selectedLocalId, setSelected] = useState<string | null>(null);
+  const _LSites = useLocalResource<_LocalSite>({ localStoragePrefix: '__SITES__' });
+  const _LFiles = useLocalResource<LocalFile>({ localStoragePrefix: '__FILES__' });
 
-  // useEffect(() => {
-  //   if (remote.sites) {
-  //     loadFromRemoteSites(remote.sites);
-  //   }
-  // }, [remote.sites]);
-
-  const localFiles = storage.allFiles();
-  const remoteFiles = remote.allFiles;
-
-  const sitesSyncStatus = resolveSyncStatus(storage.all, remote.sites);
-  const filesSyncStatus = resolveSyncStatus(
-    Object.values(storage.allFiles()),
-    Object.values(remote.allFiles),
+  const fetchParams = useMemo(
+    () => (memberAuth ? { member_id: memberAuth.member.id } : null),
+    [memberAuth],
   );
 
-  const sync = useCallback(async () => {
-    console.log('Sync attempt!');
-    if (remote.loaded && !isSyncing && !syncError.length) {
-      setIsSyncing(true);
-      console.log('Attempting to sync');
+  const _RSites = useRemoteResources<RouteGetSitesQuery, RouteGetSites, _LocalSite>({
+    auth: memberAuth,
+    fetchEndpoint: api.getSites,
+    fetchParams,
+    parseRemoteData: (sites: RouteGetSites) =>
+      sites.map((site) => ({
+        id: site.id,
+        name: site.name,
+        localName: site.local_name,
+        updatedAt: new Date(site.updated_at),
+        deleted: false,
+      })),
+    postEndpoint: api.postSite,
+    putEndpoint: api.putSite,
+    deleteEndpoint: api.deleteSite,
+  });
+
+  const _RFiles = useRemoteResources<RouteGetFilesQuery, RouteGetFiles, LocalFile>({
+    auth: memberAuth,
+    fetchEndpoint: api.getFiles,
+    fetchParams,
+    parseRemoteData: (files: RouteGetFiles) =>
+      files.map((f) => ({
+        id: f.id,
+        name: f.name,
+        content: atob(f.data),
+        updatedAt: new Date(f.updated_at),
+        siteId: f.site_id,
+        deleted: false,
+      })),
+    postEndpoint: (file: LocalFile, token: any) =>
+      api.postFile(
+        {
+          id: file.id,
+          site_id: file.siteId,
+          name: file.name,
+          data: btoa(file.content),
+        },
+        token,
+      ),
+    putEndpoint: (file: LocalFile, token: any) =>
+      api.putFile(
+        {
+          id: file.id,
+          name: file.name,
+          data: btoa(file.content),
+        },
+        token,
+      ),
+    deleteEndpoint: (file: LocalFile, token: any) =>
+      api.deleteFile(
+        {
+          id: file.id,
+        },
+        token,
+      ),
+  });
+
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+
+  // ███████╗██╗████████╗███████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗
+  // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝    ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+  // ███████╗██║   ██║   █████╗  ███████╗    ███████╗ ╚████╔╝ ██╔██╗ ██║██║
+  // ╚════██║██║   ██║   ██╔══╝  ╚════██║    ╚════██║  ╚██╔╝  ██║╚██╗██║██║
+  // ███████║██║   ██║   ███████╗███████║    ███████║   ██║   ██║ ╚████║╚██████╗
+  // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+
+  const sitesSyncStatus = useMemo(
+    () => resolveSyncStatus(_LSites.list, _RSites.list),
+    [_LSites.list, _RSites.list],
+  );
+  const [isSyncingSites, setIsSyncingSites] = useState(false);
+  const [sitesSyncingError, setSitesSyncingError] = useState<string[]>([]);
+  const syncSites = useCallback(async () => {
+    if (_RSites._byId && !isSyncingSites && !sitesSyncingError.length) {
+      setIsSyncingSites(true);
+      console.log('Attempting to sync sites');
       for (let siteId in sitesSyncStatus) {
         const status = sitesSyncStatus[siteId];
-        const localSite = storage._byId[siteId];
-        const remoteSite = remote._byId[siteId];
+        if (status === 'synced') continue;
+        const localSite = _LSites._byId[siteId];
+        const remoteSite = _RSites._byId[siteId];
         if (status === 'local-only') {
           // Create on remote
           if (!localSite.deleted) {
-            const { error } = await remote.postSite(localSite);
-            if (error) setSyncError(toArr(error));
+            const { error } = await _RSites.post(localSite);
+            if (error) setSitesSyncingError(toArr(error));
           } else {
-            storage.delete_(localSite.id);
+            _LSites.remove(localSite.id);
           }
-        } else if (status == 'local-latest') {
-          // Update remote
+        } else if (status === 'local-latest') {
           if (!localSite.deleted) {
-            const { error } = await remote.putSite(localSite);
-            if (error) setSyncError(toArr(error));
+            const { error } = await _RSites.put(localSite);
+            if (error) setSitesSyncingError(toArr(error));
           } else {
-            const { error } = await remote.deleteSite(localSite);
-            if (error) setSyncError(toArr(error));
+            const { error } = await _RSites.delete(localSite);
+            if (error) setSitesSyncingError(toArr(error));
             else {
-              storage.delete_(localSite.id);
+              _LSites.remove(localSite.id);
             }
           }
-        } else if (status === 'remote-only') {
-          // Create on local
-          storage.set(remoteSite);
-        } else if (status === 'remote-latest') {
-          // Update on local
-          storage.set(remoteSite);
-        } else if (status === 'synced') {
-          // Do nothing
+        } else if (status === 'remote-only' || status === 'remote-latest') {
+          _LSites.set(remoteSite);
         }
       }
-      setIsSyncing(false);
-    } else {
-      console.log('Already syncing!');
+      setIsSyncingSites(false);
     }
-  }, [isSyncing, sitesSyncStatus, storage, remote._byId]);
+  }, [sitesSyncStatus, isSyncingSites, _RSites._byId, _LSites._byId]);
+
+  // ███████╗██╗██╗     ███████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗
+  // ██╔════╝██║██║     ██╔════╝██╔════╝    ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+  // █████╗  ██║██║     █████╗  ███████╗    ███████╗ ╚████╔╝ ██╔██╗ ██║██║
+  // ██╔══╝  ██║██║     ██╔══╝  ╚════██║    ╚════██║  ╚██╔╝  ██║╚██╗██║██║
+  // ██║     ██║███████╗███████╗███████║    ███████║   ██║   ██║ ╚████║╚██████╗
+  // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+
+  const filesSyncStatus = useMemo(
+    () => resolveSyncStatus(_LFiles.list, _RFiles.list),
+    [_LFiles.list, _RFiles.list],
+  );
+  const [isSyncingFiles, setIsSyncingFiles] = useState(false);
+  const [filesSyncingError, setFilesSyncingError] = useState<string[]>([]);
+  const syncFiles = useCallback(async () => {
+    if (_RFiles._byId && !isSyncingFiles && !filesSyncingError.length) {
+      setIsSyncingFiles(true);
+      console.log('Attempting to sync files');
+      for (let fileId in filesSyncStatus) {
+        const status = filesSyncStatus[fileId];
+        if (status === 'synced') continue;
+        const localFile = _LFiles._byId[fileId];
+        const remoteFile = _RFiles._byId[fileId];
+        if (status === 'local-only') {
+          if (!localFile.deleted) {
+            const { error } = await _RFiles.post(localFile);
+            if (error) setFilesSyncingError(toArr(error));
+          } else {
+            _LFiles.remove(localFile.id);
+          }
+        } else if (status === 'local-latest') {
+          if (!localFile.deleted) {
+            const { error } = await _RFiles.put(localFile);
+            if (error) setFilesSyncingError(toArr(error));
+          } else {
+            const { error } = await _RFiles.delete(localFile);
+            if (error) setFilesSyncingError(toArr(error));
+            else {
+              _LFiles.remove(localFile.id);
+            }
+          }
+        } else if (status === 'remote-only' || status === 'remote-latest') {
+          _LFiles.set(remoteFile);
+        }
+      }
+      setIsSyncingFiles(false);
+    }
+  }, [filesSyncStatus, isSyncingFiles, _RFiles._byId, _LFiles._byId]);
 
   // ███████╗██╗████████╗███████╗███████╗
   // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
@@ -88,40 +195,39 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ███████║██║   ██║   ███████╗███████║
   // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
-  function setName(id: string, newName: string) {
-    storage.update(id, { name: newName });
+  function setSiteName(id: string, newName: string) {
+    _LSites.update(id, { name: newName });
   }
 
-  function setLocalName(id: string, newLocalName: string): Promise<boolean> {
+  function setSiteLocalName(id: string, newLocalName: string): Promise<boolean> {
     if (!newLocalName) return Promise.resolve(false);
-    const existingSite = storage.findByLocalName(newLocalName);
+    const existingSite = _LSites.list.find((s) => s.localName === newLocalName);
     return new Promise((resolve) => {
       // TODO: Should also check the server
       if (existingSite) {
         resolve(existingSite.id === id);
       } else {
-        storage.update(id, { localName: newLocalName });
+        _LSites.update(id, { localName: newLocalName });
         resolve(true);
       }
     });
   }
 
-  function addSite(template: LocalFiles = {}) {
-    storage.set({
+  function addSite() {
+    _LSites.set({
       id: uuid(),
       localName: randomAlphaNumericString(),
       name: 'New Site',
-      files: template,
-      generatedFiles: {},
       updatedAt: new Date(),
       deleted: false,
     });
   }
 
-  function deleteSite(localId: string) {
-    storage.update(localId, { deleted: true });
-    if (localId === selectedLocalId) {
-      setSelected(null);
+  function deleteSite(id: string) {
+    _LSites.update(id, { deleted: true });
+    if (id === selectedSiteId) {
+      setSelectedSiteId(null);
+      setSelectedFileId(null);
     }
   }
 
@@ -132,93 +238,112 @@ export default function useSites(memberAuth: MemberAuth | null) {
   // ██║     ██║███████╗███████╗███████║
   // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝
 
-  function writeFile(localId: string, fileName: string, content: string) {
-    storage.writeFile(localId, fileName, content);
-    // (async () => {
-    //   const file = storage.byId(localId).files[fileName];
-    //   if (file.id) {
-    //     const { error } = await remote.putFile({
-    //       id: file.id,
-    //       name: file.name,
-    //       content: file.content,
-    //     });
-    //     if (error) {
-    //       console.error('Error writing remote file', error);
-    //     }
-    //   }
-    // })();
+  function writeFile(file: { id: string; name: string; content: string }) {
+    _LFiles.update(file.id, file);
   }
 
-  function createFile(localId: string, name: string, content: string) {
-    storage.writeFile(localId, name, content);
-    // (async () => {
-    //   const site = storage.byId(localId);
-    //   if (site.id) {
-    //     await remote.postFile(site.id, { name, content });
-    //   }
-    // })();
+  function createFile(siteId: string, file: { name: string; content: string }) {
+    return _LFiles.set({
+      id: uuid(),
+      name: file.name,
+      siteId,
+      content: file.content,
+      updatedAt: new Date(),
+      deleted: false,
+    });
   }
 
-  function renameFile(localId: string, fileName: string, newFileName: string) {
-    storage.renameFile(localId, fileName, newFileName);
-    // (async () => {
-    //   const site = storage.byId(localId);
-    //   const file = site.files[newFileName];
-    //   if (file.id) {
-    //     await remote.putFile({
-    //       id: file.id,
-    //       name: newFileName,
-    //       content: file.content,
-    //     });
-    //   }
-    // })();
+  function renameFile(file: { id: string; name: string }) {
+    _LFiles.update(file.id, { name: file.name });
   }
 
-  function deleteFile(localId: string, fileName: string) {
-    const site = storage.byId(localId);
-    const file = site.files[fileName];
-    storage.deleteFile(localId, fileName);
-    // (async () => {
-    //   if (site.id && file.id) {
-    //     await remote.deleteFile(file.id);
-    //   }
-    // })();
+  function deleteFile(id: string) {
+    _LFiles.update(id, { deleted: true });
+    if (id === selectedFileId) {
+      setSelectedFileId(null);
+    }
   }
 
-  function applyTemplate(id: string, files: LocalFiles) {
-    const site = storage.byId(id);
-    storage.update(id, { files: { ...site.files, ...files } });
+  function applyTemplate(id: string, files: { name: string; content: string }[]) {
+    const site = _LSites.byId[id];
+    if (!site) return;
+    files.forEach((f) => {
+      createFile(id, f);
+    });
   }
 
-  function setGeneratedFiles(id: string, files: LocalFiles) {
-    storage.update(id, { generatedFiles: files });
+  function siteFiles(siteId: string) {
+    return _LFiles.list.filter((f) => f.siteId === siteId);
   }
+  const selectedSiteFiles = useMemo(() => {
+    if (selectedSiteId) {
+      return siteFiles(selectedSiteId);
+    } else {
+      return null;
+    }
+  }, [selectedSiteId, _LFiles.list]);
+
+  useEffect(() => {
+    if (syncEnabled) {
+      syncSites();
+    }
+  }, [syncEnabled, sitesSyncStatus]);
+
+  useEffect(() => {
+    if (syncEnabled) {
+      syncFiles();
+    }
+  }, [syncEnabled, filesSyncStatus]);
 
   return {
-    byLocalId: (localId: string) => storage.byId(localId),
-    sites: storage.all,
-    remoteSites: remote.sites,
-    setName,
-    setLocalName,
+    // Sites
+
+    LSites: _RSites,
+    RSites: _RSites,
+
+    selectSite: (id: string) => {
+      setSelectedSiteId(id);
+      const firstFile = _LFiles.list.find((f) => f.siteId === id);
+      setSelectedFileId(firstFile ? firstFile.id : null);
+    },
+    selectedSiteId,
+    selectedSite: selectedSiteId ? _LSites.byId[selectedSiteId] : null,
+    selectedSiteFiles,
+    siteFiles,
+
+    sitesById: _LSites.byId,
+    sitesList: _LSites.list,
+    isSyncingSites,
+    sitesSyncingError,
+    sitesSyncStatus,
+
+    setSiteName,
+    setSiteLocalName,
     addSite,
     deleteSite,
-    selectedLocalId,
-    setSelected,
-    selectedSite: selectedLocalId ? storage.byId(selectedLocalId) : null,
 
-    localFiles,
-    remoteFiles,
-    sitesSyncStatus,
+    // Files
+    LFiles: _RFiles,
+    RFiles: _RFiles,
+
+    selectedFileId,
+    selectFile: setSelectedFileId,
+    selectedFile: selectedFileId ? _LFiles.byId[selectedFileId] : null,
+
+    filesById: _LFiles.byId,
+    filesList: _LFiles.list,
+    isSyncingFiles,
+    filesSyncingError,
     filesSyncStatus,
-    isSyncing,
-    sync,
-    syncError,
 
     createFile,
     renameFile,
     writeFile,
     deleteFile,
     applyTemplate,
-    setGeneratedFiles,
+
+    // Other
+    syncEnabled,
+    setSyncEnabled,
   };
 }

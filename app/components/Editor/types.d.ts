@@ -12,16 +12,27 @@ export type LocalSite = {
   deleted: boolean;
 };
 
+export type _LocalSite = {
+  id: string;
+  name: string;
+  localName: string;
+
+  updatedAt: Date;
+  deleted: boolean;
+};
+
 export type LocalFile = {
   id: string;
   name: string;
   content: string;
+  siteId: string;
   // unsavedContent: string;
   // remote?: {
   //   name: string;
   //   content: string;
   // };
   updatedAt: Date;
+  deleted: boolean;
 };
 
 export type LocalFiles = { [key: string]: LocalFile };
