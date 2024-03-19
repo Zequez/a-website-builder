@@ -13,7 +13,7 @@ import SidebarSites from './SidebarSites';
 import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
-import { build } from './lib/builder';
+// import { build } from './lib/builder';
 import Inspector from './Inspector';
 
 const Editor = () => {
