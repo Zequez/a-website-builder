@@ -1,16 +1,11 @@
-import { cx } from '@app/lib/utils';
 import useSites from './lib/useSites';
 import SyncStatusIcon from './SyncStatusIcon';
-import { LocalFile, LocalSite, _LocalSite } from './types';
+import { LocalFile } from './types';
 import { SyncStatus } from './lib/sync';
-// import {resolveSync} from './lib/sync';
 
 export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
   const localSites = S.sitesList;
   const remoteSites = S.RSites.list;
-
-  const localFiles = S.filesList;
-  const remoteFiles = S.RFiles.list;
 
   function filesStatusFor(localFiles: LocalFile[], remoteFiles: LocalFile[] | null) {
     const resolved: { [key: string]: SyncStatus } = {};
@@ -41,10 +36,6 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
 
           const localFiles = S.filesList.filter((f) => f.siteId === id);
           const remoteFiles = S.RFiles.list ? S.RFiles.list.filter((f) => f.siteId === id) : [];
-          // const localFilesById: { [key: string]: LocalFile } = {} = {}
-          // const remoteFilesById: { [key: string]: LocalFile } = {} = {}
-          // localFiles.forEach((f) => localFilesById[f.id] = f);
-          // remoteFiles.forEach((f) => filesById[f.id] = f);
           const filesStatus = filesStatusFor(localFiles, remoteFiles);
           return (
             <>

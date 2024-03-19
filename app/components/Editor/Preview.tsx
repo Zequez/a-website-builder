@@ -4,7 +4,7 @@ import MobileIcon from '~icons/fa6-solid/mobile';
 import DesktopIcon from '~icons/fa6-solid/desktop';
 import FullScreenIcon from '~icons/fa6-solid/expand';
 import { generateIframeEncodedUrl } from './lib/iframeTools';
-import { LocalFile, LocalSite, _LocalSite } from './types';
+import { LocalFile, OldLocalSite, LocalSite } from './types';
 import { cx, useLocalStorageState } from '@app/lib/utils';
 import { FC } from '../FC';
 import { keyBy } from '@shared/utils';
@@ -17,7 +17,7 @@ export default function Preview({
   currentFileId,
 }: {
   currentFileId: string | null;
-  site: _LocalSite;
+  site: LocalSite;
   siteFiles: LocalFile[];
   onSwitchPosition: () => void;
 }) {

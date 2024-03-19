@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
+import { useEffect } from 'preact/hooks';
 
-import CloudIcon from '~icons/fa6-solid/cloud';
 import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
-import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 
 import { appUrl, cx, useLocalStorageState } from '@app/lib/utils';
-import { LocalSite, _LocalSite } from './types';
+import { LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
@@ -142,7 +140,7 @@ function BottomButtons({
   syncEnabled,
   onToggleSync,
 }: {
-  selectedSite: _LocalSite | null;
+  selectedSite: LocalSite | null;
   syncEnabled: boolean;
   onToggleSync: () => void;
 }) {

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'preact/hooks';
 import cx from 'classnames';
 
-import { LocalSite, _LocalSite } from './types';
+import { LocalSite } from './types';
 import CheckIcon from '~icons/fa6-solid/check';
 import PlusIcon from '~icons/fa6-solid/plus';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
@@ -22,7 +22,7 @@ export default function SidebarSites({
   onAdd,
   syncStatus,
 }: {
-  sites: _LocalSite[];
+  sites: LocalSite[];
   selectedSiteId: string | null;
   onLocalNameChangeAttempt: (localId: string, newName: string) => Promise<boolean>;
   onNameChange: (localId: string, newName: string) => void;

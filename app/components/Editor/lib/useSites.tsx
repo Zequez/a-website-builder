@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
-import { LocalFile, _LocalSite } from '../types';
+import { LocalFile, LocalSite } from '../types';
 import { randomAlphaNumericString, uuid } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
@@ -22,7 +22,7 @@ function toArr<T>(x: T | T[]) {
 export default function useSites(memberAuth: MemberAuth | null) {
   const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
-  const _LSites = useLocalResource<_LocalSite>({ localStoragePrefix: '__SITES__' });
+  const _LSites = useLocalResource<LocalSite>({ localStoragePrefix: '__SITES__' });
   const _LFiles = useLocalResource<LocalFile>({ localStoragePrefix: '__FILES__' });
 
   const fetchParams = useMemo(
@@ -30,7 +30,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     [memberAuth],
   );
 
-  const _RSites = useRemoteResources<RouteGetSitesQuery, RouteGetSites, _LocalSite>({
+  const _RSites = useRemoteResources<RouteGetSitesQuery, RouteGetSites, LocalSite>({
     auth: memberAuth,
     fetchEndpoint: api.getSites,
     fetchParams,

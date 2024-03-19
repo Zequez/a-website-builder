@@ -5,18 +5,6 @@ export type LocalSite = {
   name: string;
   localName: string;
 
-  localId?: string;
-  files: LocalFiles;
-  generatedFiles?: LocalFiles;
-  updatedAt: Date;
-  deleted: boolean;
-};
-
-export type _LocalSite = {
-  id: string;
-  name: string;
-  localName: string;
-
   updatedAt: Date;
   deleted: boolean;
 };
@@ -26,11 +14,7 @@ export type LocalFile = {
   name: string;
   content: string;
   siteId: string;
-  // unsavedContent: string;
-  // remote?: {
-  //   name: string;
-  //   content: string;
-  // };
+
   updatedAt: Date;
   deleted: boolean;
 };
