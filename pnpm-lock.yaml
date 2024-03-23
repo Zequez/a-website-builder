@@ -25,6 +25,7 @@ specifiers:
   concurrently: ^8.2.2
   cors: ^2.8.5
   dotenv: ^16.4.5
+  eta: ^3.4.0
   express: ^4.18.3
   js-base64: ^3.7.7
   js-sha256: ^0.11.0
@@ -73,6 +74,7 @@ dependencies:
   concurrently: 8.2.2
   cors: 2.8.5
   dotenv: 16.4.5
+  eta: 3.4.0
   express: 4.18.3
   js-base64: 3.7.7
   js-sha256: 0.11.0
@@ -2879,6 +2881,11 @@ packages:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
     dependencies:
       '@types/estree': 1.0.5
+    dev: false
+
+  /eta/3.4.0:
+    resolution: {integrity: sha512-tCsc7WXTjrTx4ZjYLplcqrI3o4mYJ+Z6YspeuGL8tbt/hHoMchwBwtKfwM09svEY86iRapY93vUqQttcNuIO5Q==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /etag/1.8.1:

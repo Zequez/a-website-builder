@@ -1,4 +1,5 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import { sha256 } from 'js-sha256';
 
 import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
@@ -8,13 +9,18 @@ import { LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
+import build from './lib/builder';
 
 import SidebarSites from './SidebarSites';
 import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
-// import { build } from './lib/builder';
 import Inspector from './Inspector';
+
+function filesHash(files: { name: string; content: string }[]) {
+  console.log('Hashing files', files);
+  return files.map(({ name, content }) => `${name}.${sha256(content)}`).join(`\n`);
+}
 
 const Editor = () => {
   const { memberAuth } = useAuth();
@@ -22,6 +28,7 @@ const Editor = () => {
   const site = S.selectedSite;
   const file = S.selectedFile;
   const [editorInspector, setEditorInspector] = useLocalStorageState('editor_inspector', false);
+  const [buildFiles, setBuildFiles] = useState<{ name: string; content: string }[]>([]);
 
   useEffect(() => {
     function toggleEditorInspector(ev: KeyboardEvent) {
@@ -34,6 +41,18 @@ const Editor = () => {
       window.removeEventListener('keydown', toggleEditorInspector);
     };
   }, []);
+
+  const [isBuilding, setIsBuilding] = useState(false);
+
+  const [appliedBuild, setAppliedBuild] = useState<string>('');
+  useEffect(() => {
+    if (!S.selectedSiteId || !S.selectedSiteFiles) return;
+    build(S.selectedSiteFiles).then((newBuild) => {
+      if (newBuild) {
+        setBuildFiles(newBuild);
+      }
+    });
+  }, [S.selectedSiteId, S.selectedSiteFiles]);
 
   const handleFileClick = (id: string) => {
     S.selectFile(id);
@@ -119,7 +138,7 @@ const Editor = () => {
           {site ? (
             <Preview
               site={site}
-              siteFiles={S.selectedSiteFiles!}
+              siteFiles={buildFiles}
               currentFileId={S.selectedFileId}
               onSwitchPosition={() => null}
             />

@@ -1,6 +1,7 @@
 import { parse } from 'node-html-parser';
 import { encode } from 'js-base64';
 import { LocalFile } from '../types';
+import { keyBy } from '@shared/utils';
 
 export function contentToDataUrl(mime: string, content: string) {
   try {
@@ -12,19 +13,21 @@ export function contentToDataUrl(mime: string, content: string) {
 }
 
 export function generateIframeEncodedUrl(
-  files: { [key: string]: LocalFile },
-  entryPoint: string = 'index.html',
+  files: { name: string; content: string }[],
+  page: string = 'index.html',
 ): string | null {
-  const entrypointFile = files[entryPoint];
-  if (!entrypointFile) return null;
-  const content = entrypointFile.content;
+  const filesByName = keyBy(files, 'name');
+  const currentPage = filesByName[page];
+  if (!currentPage) return null;
+
+  const content = currentPage.content;
   const root = parse(content);
   root.querySelectorAll('link[rel="stylesheet"]').map((el) => {
     const href = el.getAttribute('href');
     if (href?.startsWith('./')) {
       const fileName = href.slice(2);
-      if (files[fileName]) {
-        const content = contentToDataUrl('text/css', files[fileName].content);
+      if (filesByName[fileName]) {
+        const content = contentToDataUrl('text/css', filesByName[fileName].content);
         if (content) el.setAttribute('href', content);
       }
     }
@@ -34,8 +37,8 @@ export function generateIframeEncodedUrl(
     const src = el.getAttribute('src');
     if (src?.startsWith('./')) {
       const fileName = src.slice(2);
-      if (files[fileName]) {
-        const content = contentToDataUrl('text/javascript', files[fileName].content);
+      if (filesByName[fileName]) {
+        const content = contentToDataUrl('text/javascript', filesByName[fileName].content);
         if (content) el.setAttribute('src', content);
       }
     }

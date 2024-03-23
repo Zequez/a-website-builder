@@ -258,9 +258,11 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function deleteFile(id: string) {
-    LFiles.update(id, { deleted: true });
-    if (id === selectedFileId) {
-      setSelectedFileId(null);
+    if (!LFiles.byId[id].deleted) {
+      LFiles.update(id, { deleted: true });
+      if (id === selectedFileId) {
+        setSelectedFileId(null);
+      }
     }
   }
 
@@ -273,7 +275,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function siteFiles(siteId: string) {
-    return LFiles.list.filter((f) => f.siteId === siteId);
+    return LFiles.list.filter((f) => f.siteId === siteId && !f.deleted);
   }
   const selectedSiteFiles = useMemo(() => {
     if (selectedSiteId) {

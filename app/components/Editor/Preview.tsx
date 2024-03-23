@@ -18,7 +18,7 @@ export default function Preview({
 }: {
   currentFileId: string | null;
   site: LocalSite;
-  siteFiles: LocalFile[];
+  siteFiles: { name: string; content: string }[];
   onSwitchPosition: () => void;
 }) {
   const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
@@ -57,31 +57,29 @@ export default function Preview({
     setMobileScale(Math.min(scaleToAdjustWidth, scaleToAdjustHeight));
   }
 
-  const currentFile = currentFileId ? siteFiles.find((f) => f.id === currentFileId) : null;
+  // const currentFile = siteFiles.find((f) => f.name === 'index.html') || null;
 
-  const getEntrypointFileName = useCallback(
-    function () {
-      if (currentFile && currentFile.name.endsWith('.html')) {
-        return currentFile.name;
-      } else if (lastEntrypointUsed && filesByName[lastEntrypointUsed]) {
-        return lastEntrypointUsed;
-      } else if (filesByName['index.html']) {
-        return 'index.html';
-      } else {
-        return null;
-      }
-    },
-    [currentFile, lastEntrypointUsed, site],
-  );
+  // const getEntrypointFileName = useCallback(
+  //   function () {
+  //     if (currentFile && currentFile.name.endsWith('.html')) {
+  //       return currentFile.name;
+  //     } else if (lastEntrypointUsed && filesByName[lastEntrypointUsed]) {
+  //       return lastEntrypointUsed;
+  //     } else if (filesByName['index.html']) {
+  //       return 'index.html';
+  //     } else {
+  //       return null;
+  //     }
+  //   },
+  //   [currentFile, lastEntrypointUsed, site],
+  // );
 
-  useEffect(() => {
-    setLastEntrypointUsed(getEntrypointFileName());
-  }, [currentFile]);
+  // useEffect(() => {
+  //   setLastEntrypointUsed(getEntrypointFileName());
+  // }, [currentFile]);
 
-  const recommendedEntrypoint = getEntrypointFileName();
-  const iframeEncodedUrl = recommendedEntrypoint
-    ? generateIframeEncodedUrl(filesByName, recommendedEntrypoint)
-    : null;
+  // const recommendedEntrypoint = getEntrypointFileName();
+  const iframeEncodedUrl = generateIframeEncodedUrl(siteFiles, 'index.html');
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -118,7 +116,7 @@ export default function Preview({
     >
       <div class="h-8 flex items-center text-gray-500 bg-white/80 w-full flex-shrink-0">
         <div class="px-2">Preview</div>
-        <div class="px-2 text-center flex-grow">{recommendedEntrypoint}</div>
+        <div class="px-2 text-center flex-grow">index.html</div>
         <div class="flex items-center h-full">
           <ViewModeButton isActive={mode === 'mobile'} onClick={() => setMode('mobile')}>
             <MobileIcon />
