@@ -58,6 +58,17 @@ function EtaBuilder(context: BuildContext) {
     }
   });
 
+  context.files = context.files.filter((file) => {
+    if (file.name.startsWith('components/') && file.name.endsWith('.eta')) {
+      const name = file.name.slice(11, -4);
+      console.log('Loaded component', name);
+      eta.loadTemplate(`@${name}`, file.content);
+      return false;
+    } else {
+      return true;
+    }
+  });
+
   const toAdd: BuildFile[] = [];
   context.files = context.files.filter((f) => {
     if (f.name.startsWith('pages/') && f.name.endsWith('.eta')) {
