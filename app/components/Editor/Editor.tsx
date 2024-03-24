@@ -121,7 +121,7 @@ const Editor = () => {
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {editorInspector ? <Inspector S={S} /> : null}
-      <div class="w-54 bg-gray-500 flex flex-col overflow-auto flex-shrink-0">
+      <div class="w-54 bg-gray-500 flex flex-col overflow-hidden flex-shrink-0">
         <SidebarSites
           sites={S.sitesList}
           selectedSiteId={site?.id || null}

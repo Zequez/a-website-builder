@@ -1,8 +1,6 @@
-import '@unocss/reset/tailwind.css';
-import 'virtual:uno.css';
+import './styles';
 import { render, options } from 'preact';
 import cx from 'classnames';
-import './spinner.css';
 import App from './App';
 import { AuthWrapper } from './components/Auth';
 
