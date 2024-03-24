@@ -74,7 +74,9 @@ const extendedFiles = {
   findExisting: async (siteId: string, name: string): Promise<File_ | null> => {
     return (
       (
-        await Q<File_>(sql`SELECT * FROM files WHERE site_id = ${siteId} AND name ILIKE ${name}`)
+        await Q<File_>(
+          sql`SELECT * FROM files WHERE is_dist = FALSE AND site_id = ${siteId} AND name ILIKE ${name}`,
+        )
       )[0] || null
     );
   },
