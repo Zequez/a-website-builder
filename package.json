@@ -17,6 +17,7 @@
     "db:migrations:migrate:prod": "NODE_ENV=production tsx ./scripts/migrate.ts",
     "db:seeds": "tsx ./scripts/applySeeds.ts",
     "test": "pnpm test:runner",
+    "test:app": "NODE_ENV=test vitest -c vitest.config.ts -r app/",
     "test:runner": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --disable-console-intercept",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test tsx watch ./server/index.ts"
   },
@@ -48,7 +49,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.11.21",
-    "@types/nunjucks": "^3.2.6",
     "@types/pg": "^8.11.2",
     "@types/uuid": "^9.0.8",
     "@unocss/preset-uno": "^0.58.5",
@@ -61,17 +61,17 @@
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "eta": "^3.4.0",
     "express": "^4.18.3",
+    "htm": "^3.1.1",
     "js-base64": "^3.7.7",
     "js-sha256": "^0.11.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "mime": "^4.0.1",
     "node-html-parser": "^6.1.12",
-    "nunjucks": "^3.2.4",
     "pg": "^8.11.3",
     "preact": "^10.19.6",
+    "preact-render-to-string": "^6.4.1",
     "squid": "^0.5.2",
     "tsc-alias": "^1.8.8",
     "tsx": "^4.7.1",
@@ -82,7 +82,11 @@
     "vercel": "^33.5.2",
     "vite": "^5.1.4",
     "vite-tsconfig-paths": "^4.3.1",
-    "vitest": "^1.3.1",
+    "vitest": "^1.4.0",
     "wait-port": "^1.1.0"
+  },
+  "devDependencies": {
+    "@vitest/browser": "^1.4.0",
+    "jsdom": "^24.0.0"
   }
 }

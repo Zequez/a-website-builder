@@ -116,10 +116,8 @@ describe('DELETE /sites/:id', () => {
   });
 
   it('should not delete the site that does not belong to the current member', async () => {
-    const site = (await T.sites.all())[0];
-    const member = (await T.members.all())[1];
-    const token = await tokenFromMember(member);
-    const res = await delete_(`sites/${site.id}`, {}, token);
+    const site = F.pat.sites[0];
+    const res = await delete_(`sites/${site.id}`, {}, F.bob.token);
     expect(res.status).toBe(403);
   });
 });
