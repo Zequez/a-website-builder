@@ -97,17 +97,19 @@ export default function Preview({
         <div class="px-2">Preview</div>
         <div class="px-2 text-center flex-grow flex items-center justify-center space-x-1">
           {buildFiles
-            ? buildFiles.map((file) => (
-                <button
-                  class={cx('text-white px-1 rounded', {
-                    'bg-black/60 text-white/60': file.name === currentFileName,
-                    'bg-black/20 text-white/60 hover:bg-black/20': file.name !== currentFileName,
-                  })}
-                  onClick={() => setCurrentFileName(file.name)}
-                >
-                  {file.name.replace(/\.html$/, '')}
-                </button>
-              ))
+            ? buildFiles
+                .filter((f) => f.name.endsWith('.html'))
+                .map((file) => (
+                  <button
+                    class={cx('text-white px-1 rounded', {
+                      'bg-black/60 text-white/60': file.name === currentFileName,
+                      'bg-black/20 text-white/60 hover:bg-black/20': file.name !== currentFileName,
+                    })}
+                    onClick={() => setCurrentFileName(file.name)}
+                  >
+                    {file.name.replace(/\.html$/, '')}
+                  </button>
+                ))
             : null}
         </div>
         <div class="flex items-center h-full">

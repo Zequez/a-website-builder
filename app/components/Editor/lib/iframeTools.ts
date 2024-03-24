@@ -24,8 +24,16 @@ export function generateIframeEncodedUrl(
   const root = parse(content);
   root.querySelectorAll('link[rel="stylesheet"]').map((el) => {
     const href = el.getAttribute('href');
-    if (href?.startsWith('./')) {
-      const fileName = href.slice(2);
+    let fileName = '';
+    if (href) {
+      if (href.startsWith('./')) {
+        fileName = href.slice(2);
+      }
+      if (href.startsWith('/')) {
+        fileName = href.slice(1);
+      }
+    }
+    if (fileName) {
       if (filesByName[fileName]) {
         const content = contentToDataUrl('text/css', filesByName[fileName].content);
         if (content) el.setAttribute('href', content);
