@@ -1,5 +1,5 @@
 import { createPortal } from 'preact/compat';
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import MobileIcon from '~icons/fa6-solid/mobile';
 import DesktopIcon from '~icons/fa6-solid/desktop';
 import FullScreenIcon from '~icons/fa6-solid/expand';
@@ -13,12 +13,12 @@ const FULLSCREEN_PORTAL_EL = document.getElementById('fullscreen-preview');
 
 export default function Preview({
   site,
-  siteFiles,
+  buildFiles,
   currentFileId,
 }: {
   currentFileId: string | null;
   site: LocalSite;
-  siteFiles: { name: string; content: string }[];
+  buildFiles: { name: string; content: string }[] | null;
   onSwitchPosition: () => void;
 }) {
   const [mode, setMode] = useLocalStorageState<'mobile' | 'desktop' | 'fullscreen'>(
@@ -32,16 +32,16 @@ export default function Preview({
   const [fullscreenScale, setFullscreenScale] = useState(1);
   const [lastEntrypointUsed, setLastEntrypointUsed] = useState<string | null>(null);
 
-  const filesByName = keyBy(siteFiles, 'name');
+  let [currentFileName, setCurrentFileName] = useState<string | null>(null);
 
-  // let adjustedCurrentFileName = currentFileName;
-  // if (adjustedCurrentFileName?.endsWith('.njk')) {
-  //   const htmlName = adjustedCurrentFileName.replace(/\.njk$/, '.html');
-  //   if (files[htmlName]) {
-  //     adjustedCurrentFileName = htmlName;
-  //   }
-  // }
-  // const currentFile = adjustedCurrentFileName ? files[adjustedCurrentFileName] : null;
+  const filesByName = buildFiles ? keyBy(buildFiles, 'name') : null;
+
+  if (currentFileName && (!filesByName || !filesByName[currentFileName])) {
+    currentFileName = null;
+  }
+  if (currentFileName === null && filesByName && Object.keys(filesByName).length > 0) {
+    currentFileName = Object.keys(filesByName)[0];
+  }
 
   const mobileAspectRatio = 9 / 16;
   const mobileWidth = 360;
@@ -57,29 +57,8 @@ export default function Preview({
     setMobileScale(Math.min(scaleToAdjustWidth, scaleToAdjustHeight));
   }
 
-  // const currentFile = siteFiles.find((f) => f.name === 'index.html') || null;
-
-  // const getEntrypointFileName = useCallback(
-  //   function () {
-  //     if (currentFile && currentFile.name.endsWith('.html')) {
-  //       return currentFile.name;
-  //     } else if (lastEntrypointUsed && filesByName[lastEntrypointUsed]) {
-  //       return lastEntrypointUsed;
-  //     } else if (filesByName['index.html']) {
-  //       return 'index.html';
-  //     } else {
-  //       return null;
-  //     }
-  //   },
-  //   [currentFile, lastEntrypointUsed, site],
-  // );
-
-  // useEffect(() => {
-  //   setLastEntrypointUsed(getEntrypointFileName());
-  // }, [currentFile]);
-
-  // const recommendedEntrypoint = getEntrypointFileName();
-  const iframeEncodedUrl = generateIframeEncodedUrl(siteFiles, 'index.html');
+  const iframeEncodedUrl =
+    buildFiles && currentFileName ? generateIframeEncodedUrl(buildFiles, currentFileName) : null;
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -116,7 +95,21 @@ export default function Preview({
     >
       <div class="h-8 flex items-center text-gray-500 bg-white/80 w-full flex-shrink-0">
         <div class="px-2">Preview</div>
-        <div class="px-2 text-center flex-grow">index.html</div>
+        <div class="px-2 text-center flex-grow flex items-center justify-center space-x-1">
+          {buildFiles
+            ? buildFiles.map((file) => (
+                <button
+                  class={cx('text-white px-1 rounded', {
+                    'bg-black/60 text-white/60': file.name === currentFileName,
+                    'bg-black/20 text-white/60 hover:bg-black/20': file.name !== currentFileName,
+                  })}
+                  onClick={() => setCurrentFileName(file.name)}
+                >
+                  {file.name.replace(/\.html$/, '')}
+                </button>
+              ))
+            : null}
+        </div>
         <div class="flex items-center h-full">
           <ViewModeButton isActive={mode === 'mobile'} onClick={() => setMode('mobile')}>
             <MobileIcon />

@@ -127,10 +127,16 @@ export default function htmlBuilder(context: BuildContext) {
       const injectedContent = nsInjectComponents(file.content);
       const pagesFunction = saferEval(`(${injectedContent})`);
       const pages = pagesFunction();
-      for (let [pagePath, pagePreactElement] of pages) {
-        const rendered = `<!DOCTYPE html>` + preactRenderToString(pagePreactElement);
-        const pageName = pagePath.startsWith('/') ? `${pagePath}.html` : `${name}/${pagePath}.html`;
-        context.files.push({ name: pageName, content: rendered });
+      if (!Array.isArray(pages)) {
+        context.errors.push('pages function must return an array of [pagePath, element]');
+      } else {
+        for (let [pagePath, pagePreactElement] of pages) {
+          const rendered = `<!DOCTYPE html>` + preactRenderToString(pagePreactElement);
+          const pageName = pagePath.startsWith('/')
+            ? `${pagePath.slice(1)}.html`
+            : `${name}/${pagePath}.html`;
+          context.files.push({ name: pageName, content: rendered });
+        }
       }
     }
     removeFile(file);

@@ -138,7 +138,7 @@ const Editor = () => {
           {site ? (
             <Preview
               site={site}
-              siteFiles={buildFiles}
+              buildFiles={buildFiles}
               currentFileId={S.selectedFileId}
               onSwitchPosition={() => null}
             />

@@ -118,6 +118,18 @@ describe('CustomHtmlBuilder', () => {
     );
   });
 
+  it('should allow to programatically definepages', () => {
+    const context = createContext([
+      {
+        name: 'pages/items.jsx',
+        content: 'function pages() { return [["potato", html`<div>a</div>`]] }',
+      },
+    ]);
+    htmlBuilder(context);
+    expect(context.files[0].name).toEqual('items/potato.html');
+    expect(context.files[0].content).toEqual('<!DOCTYPE html><div>a</div>');
+  });
+
   describe('components', () => {
     it('should allow to import a component from another; resolving dependencies', () => {
       const context = createContext([
