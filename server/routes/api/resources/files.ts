@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authorize, jsonParser } from '@server/lib/middlewares';
+import { authorize, jsonParser, errorHandler } from '@server/lib/middlewares';
 import { T } from '@db';
 import { FileB64 } from '@server/db/driver';
 import { updateFileToB64 } from '@server/lib/utils';
@@ -104,6 +104,7 @@ router.post('/files', jsonParser, authorize, async (req, res) => {
 export type RouteDeleteFilesIdQuery = { id: string };
 export type RouteDeleteFilesId = Record<PropertyKey, never>;
 router.delete('/files/:id', authorize, async (req, res) => {
+  if (!validateUuid(req.params.id)) return res.status(400).json({ error: 'Invalid UUID' });
   const file = await T.files.get(req.params.id);
   if (!file) return res.status(404).json({ error: 'File not found' });
   const site = await T.sites.get(file!.site_id);
@@ -111,6 +112,38 @@ router.delete('/files/:id', authorize, async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
 
   await T.files.delete(req.params.id);
+  return res.status(200).json({});
+});
+
+export type RoutePostFilesSaveBuildQuery = {
+  siteId: string;
+  files: { name: string; data: string }[];
+};
+export type RoutePostFilesSaveBuild = Record<PropertyKey, never>;
+router.post('/files/saveBuild', authorize, jsonParser, async (req, res) => {
+  const { siteId, files } = req.body;
+  if (!siteId) return res.status(400).json({ error: 'Site ID is required' });
+  if (!validateUuid(siteId)) return res.status(400).json({ error: 'Invalid UUID' });
+  if (!files) return res.status(400).json({ error: 'Files are required' });
+
+  const site = await T.sites.get(siteId);
+  if (!site) return res.status(404).json({ error: 'Site not found' });
+
+  if (site.member_id !== req.tokenMember!.id)
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  await T.files.where({ site_id: site.id, is_dist: true }).delete();
+  for (let file of files) {
+    const bufferData = Buffer.from(file.data, 'base64');
+    await T.files.insert({
+      site_id: site.id,
+      is_dist: true,
+      name: file.name,
+      data: bufferData,
+      data_size: bufferData.length,
+    });
+  }
+
   return res.status(200).json({});
 });
 

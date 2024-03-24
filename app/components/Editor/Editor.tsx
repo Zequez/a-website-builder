@@ -5,7 +5,7 @@ import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
 
 import { appUrl, cx, useLocalStorageState } from '@app/lib/utils';
-import { LocalSite } from './types';
+import { LocalFile, LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
@@ -16,6 +16,7 @@ import SidebarFiles from './SidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
 import Inspector from './Inspector';
+import { postFilesSaveBuild } from '@app/lib/api';
 
 function filesHash(files: { name: string; content: string }[]) {
   console.log('Hashing files', files);
@@ -42,9 +43,21 @@ const Editor = () => {
     };
   }, []);
 
-  const [isBuilding, setIsBuilding] = useState(false);
+  // useEffect(() => {
+  //   // Fix: Remove duplicate keys
+  //   const existingFiles: { [key: string]: LocalFile } = {};
+  //   if (S.selectedSiteFiles) {
+  //     S.selectedSiteFiles.forEach((file) => {
+  //       if (!existingFiles[file.name]) {
+  //         existingFiles[file.name] = file;
+  //       } else {
+  //         S.deleteFile(file.id);
+  //       }
+  //     });
+  //     // S.setSelectedSiteFiles(Object.values(existingFiles));
+  //   }
+  // }, [S.selectedSiteFiles]);
 
-  const [appliedBuild, setAppliedBuild] = useState<string>('');
   useEffect(() => {
     if (!S.selectedSiteId || !S.selectedSiteFiles) return;
     build(S.selectedSiteFiles).then((newBuild) => {
@@ -53,6 +66,18 @@ const Editor = () => {
       }
     });
   }, [S.selectedSiteId, S.selectedSiteFiles]);
+
+  useEffect(() => {
+    if (buildFiles && S.syncEnabled && site && memberAuth) {
+      postFilesSaveBuild(
+        {
+          siteId: site.id,
+          files: buildFiles.map(({ name, content }) => ({ name, data: btoa(content) })),
+        },
+        memberAuth.token,
+      );
+    }
+  }, [buildFiles, S.syncEnabled, site, memberAuth]);
 
   const handleFileClick = (id: string) => {
     S.selectFile(id);
@@ -96,7 +121,7 @@ const Editor = () => {
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {editorInspector ? <Inspector S={S} /> : null}
-      <div class="w-54 bg-gray-500 flex flex-col overflow-auto">
+      <div class="w-54 bg-gray-500 flex flex-col overflow-auto flex-shrink-0">
         <SidebarSites
           sites={S.sitesList}
           selectedSiteId={site?.id || null}
@@ -161,8 +186,11 @@ function BottomButtons({
   syncEnabled: boolean;
   onToggleSync: () => void;
 }) {
-  const currentHost = window.location.host;
+  let currentHost = window.location.host;
   const currentProtocol = window.location.protocol;
+  if (currentHost.match(/localhost\:5173/)) {
+    currentHost = `hoja.localhost:3000`;
+  }
   const siteUrl = selectedSite
     ? `${currentProtocol}//${selectedSite.localName}.${currentHost}`
     : null;

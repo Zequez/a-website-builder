@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import { T } from '@db';
 import { randomAlphaNumericString, uuid } from '@shared/utils';
 import { post, put, delete_, get, fixtures as F } from '@server/test/utils';
-import { randomEmail, tokenFromMember } from '@server/lib/utils';
 
 describe('GET /files', () => {
   it('should get all the files by the given member', async () => {
@@ -26,21 +25,15 @@ describe('PUT /files/:id', () => {
   });
 
   it('should not update if member does not own the file', async () => {
-    const newMember = await T.members.insert({
-      email: randomEmail(),
-      passphrase: randomAlphaNumericString(),
-      full_name: randomAlphaNumericString(),
-    });
-    const newMemberToken = await tokenFromMember(newMember);
     const randomNewData = randomAlphaNumericString();
-    const currentFile = (await T.files.all())[0];
+    const currentFile = F.bob.files[0];
     const res = await put(
       `files/${currentFile.id}`,
       {
         name: randomNewData,
         data: btoa(randomNewData),
       },
-      newMemberToken,
+      F.pat.token,
     );
 
     expect(res.status).toBe(401);
@@ -48,18 +41,14 @@ describe('PUT /files/:id', () => {
 
   it('should update the file', async () => {
     const randomNewData = randomAlphaNumericString();
-    const currentFile = (await T.files.all())[0];
-
-    const site = await T.sites.get(currentFile.site_id);
-    const member = await T.members.get(site!.member_id);
-    const token = await tokenFromMember(member!);
+    const currentFile = F.bob.files[0];
     const res = await put(
       `files/${currentFile.id}`,
       {
         name: randomNewData,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
 
     expect(res.status).toBe(200);
@@ -69,24 +58,21 @@ describe('PUT /files/:id', () => {
   });
 
   it('should not update a file with an empty name', async () => {
-    const token = await tokenFromMember((await T.members.one())!);
-    const currentFile = (await T.files.all())[0];
+    const currentFile = F.bob.files[0];
     const res = await put(
       `files/${currentFile.id}`,
       {
         name: '',
         data: btoa(randomAlphaNumericString()),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(400);
   });
 
   it('should not update a file with a name taken by another file', async () => {
-    const token = await tokenFromMember((await T.members.one())!);
-
     const existingFileName = randomAlphaNumericString();
-    const currentFile = await T.files.one();
+    const currentFile = F.bob.files[0];
     await T.files.insert({
       site_id: currentFile!.site_id,
       name: existingFileName,
@@ -98,22 +84,20 @@ describe('PUT /files/:id', () => {
         name: existingFileName,
         data: btoa(randomAlphaNumericString()),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(409);
   });
 
   it('should update a file without changing the name', async () => {
-    const token = await tokenFromMember((await T.members.one())!);
-
-    const currentFile = await T.files.one();
+    const currentFile = F.bob.files[0];
     const res = await put(
       `files/${currentFile!.id}`,
       {
         name: currentFile!.name,
         data: btoa(randomAlphaNumericString()),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(200);
   });
@@ -161,8 +145,6 @@ describe('POST /files', () => {
   });
 
   it('should not create a new file for a site that does not exist', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
     const randomNewData = randomAlphaNumericString();
     const res = await post(
       'files',
@@ -171,20 +153,14 @@ describe('POST /files', () => {
         name: randomNewData,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(400);
   });
 
   it('should not create a new file for a site not owned by the member', async () => {
-    const newMember = await T.members.insert({
-      email: randomEmail(),
-      passphrase: randomAlphaNumericString(),
-      full_name: randomAlphaNumericString(),
-    });
-    const newMemberToken = await tokenFromMember(newMember);
     const randomNewData = randomAlphaNumericString();
-    const site = (await T.sites.all())[0];
+    const site = F.bob.sites[0];
     const res = await post(
       'files',
       {
@@ -192,16 +168,14 @@ describe('POST /files', () => {
         name: randomNewData,
         data: btoa(randomNewData),
       },
-      newMemberToken,
+      F.pat.token,
     );
     expect(res.status).toBe(401);
   });
 
   it('should not create a new file without a name', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
     const randomNewData = randomAlphaNumericString();
-    const site = await T.sites.where({ member_id: member!.id }).one();
+    const site = F.bob.sites[0];
     const res = await post(
       'files',
       {
@@ -209,16 +183,14 @@ describe('POST /files', () => {
         site_id: site!.id,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(400);
   });
 
   it('should not create a new file with a name that already exists', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
     const randomNewData = randomAlphaNumericString();
-    const site = await T.sites.where({ member_id: member!.id }).one();
+    const site = F.bob.sites[0];
     const res = await post(
       'files',
       {
@@ -226,7 +198,7 @@ describe('POST /files', () => {
         site_id: site!.id,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(201);
     const res2 = await post(
@@ -236,16 +208,14 @@ describe('POST /files', () => {
         site_id: site!.id,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res2.status).toBe(409);
   });
 
   it('should not create a new file with a name that already exists case-insensitive', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
     const randomNewData = randomAlphaNumericString();
-    const site = await T.sites.where({ member_id: member!.id }).one();
+    const site = F.bob.sites[0];
     const res = await post(
       'files',
       {
@@ -253,7 +223,7 @@ describe('POST /files', () => {
         site_id: site!.id,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res.status).toBe(201);
     const res2 = await post(
@@ -263,7 +233,7 @@ describe('POST /files', () => {
         site_id: site!.id,
         data: btoa(randomNewData),
       },
-      token,
+      F.bob.token,
     );
     expect(res2.status).toBe(409);
   });
@@ -271,42 +241,64 @@ describe('POST /files', () => {
 
 describe('DELETE /files', () => {
   it('should delete a file', async () => {
-    const member = await T.members.one();
-    const token = await tokenFromMember(member!);
-    const site = await T.sites.where({ member_id: member!.id }).one();
-    const file = await T.files.insert({
-      site_id: site!.id,
-      name: randomAlphaNumericString(),
-      data: '',
-    });
-    const res = await delete_(`files/${file!.id}`, {}, token);
+    const res = await delete_(`files/${F.bob.files[0].id}`, {}, F.bob.token);
     expect(res.status).toBe(200);
-    const nullFile = await T.files.get(file.id);
+    const nullFile = await T.files.get(F.bob.files[0].id);
     expect(nullFile).toBe(null);
   });
 
   it('should not delete a file owned by a different member', async () => {
-    const ownerMember = await T.members.one();
-    const newMember = await T.members.insert({
-      email: randomEmail(),
-      passphrase: randomAlphaNumericString(),
-      full_name: randomAlphaNumericString(),
-    });
-    const token = await tokenFromMember(newMember!);
-    const site = await T.sites.where({ member_id: ownerMember!.id }).one();
-    const file = await T.files.insert({
-      site_id: site!.id,
-      name: randomAlphaNumericString(),
-      data: '',
-    });
-    const res = await delete_(`files/${file!.id}`, {}, token);
+    const res = await delete_(`files/${F.pat.files[0].id}`, {}, F.bob.token);
     expect(res.status).toBe(401);
   });
 
   it('should indicate that a file does not exist', async () => {
-    const member = await await T.members.one();
-    const token = await tokenFromMember(member!);
-    const res = await delete_(`files/${uuid()}`, {}, token);
+    const res = await delete_(`files/${uuid()}`, {}, F.bob.token);
     expect(res.status).toBe(404);
+  });
+});
+
+describe('POST /files/saveBuild', () => {
+  it('should save all the build files for the given site', async () => {
+    const res = await post(
+      `files/saveBuild`,
+      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world') }] },
+      F.bob.token,
+    );
+    expect(res.status).toBe(200);
+    const storedBuildFiles = await T.files
+      .where({ is_dist: true, site_id: F.bob.sites[0].id })
+      .all();
+    expect(storedBuildFiles.length).toBe(1);
+    expect(storedBuildFiles[0].data.toString()).toBe('Hello world');
+  });
+
+  it('should delete exiting built files', async () => {
+    const res = await post(
+      `files/saveBuild`,
+      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world') }] },
+      F.bob.token,
+    );
+    expect(res.status).toBe(200);
+    const res2 = await post(
+      `files/saveBuild`,
+      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world2') }] },
+      F.bob.token,
+    );
+    expect(res2.status).toBe(200);
+    const storedBuildFiles = await T.files
+      .where({ is_dist: true, site_id: F.bob.sites[0].id })
+      .all();
+    expect(storedBuildFiles.length).toBe(1);
+    expect(storedBuildFiles[0].data.toString()).toBe('Hello world2');
+  });
+
+  it('should not deploy to a site from another member', async () => {
+    const res = await post(
+      `files/saveBuild`,
+      { siteId: F.pat.sites[0].id, files: [] },
+      F.bob.token,
+    );
+    expect(res.status).toEqual(401);
   });
 });

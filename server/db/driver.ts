@@ -33,6 +33,7 @@ function select<T>(table: string) {
           await Q(sql`SELECT * FROM ${TA} WHERE ${spreadAnd(keyValues)}`),
         one: async (): Promise<T | null> =>
           (await Q<T>(sql`SELECT * FROM ${TA} WHERE ${spreadAnd(keyValues)} LIMIT 1`))[0] || null,
+        delete: async () => await (Q(sql`DELETE FROM ${TA} WHERE ${spreadAnd(keyValues)}`) as any),
       };
     },
     truncate: async () => await Q(sql`TRUNCATE TABLE ${TA} RESTART IDENTITY CASCADE`),
@@ -79,7 +80,7 @@ const extendedFiles = {
   },
   findByMemberId: async (memberId: string) => {
     return await Q<File_>(
-      sql`SELECT * FROM files WHERE site_id IN (SELECT id FROM sites WHERE member_id = ${memberId})`,
+      sql`SELECT * FROM files WHERE is_dist = FALSE AND site_id IN (SELECT id FROM sites WHERE member_id = ${memberId})`,
     );
   },
 };

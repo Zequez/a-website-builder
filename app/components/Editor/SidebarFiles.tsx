@@ -85,7 +85,7 @@ export default function SidebarFiles({
     !renameFileAlreadyExists && !!(renameFileName && renameFileName.length > 0);
 
   return (
-    <div class="flex flex-col flex-grow">
+    <div class="flex flex-col flex-grow overflow-auto">
       <div class="text-white text-center text-lg my-2">Files</div>
 
       {files

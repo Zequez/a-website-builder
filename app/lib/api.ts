@@ -8,6 +8,8 @@ import type {
   RoutePostFilesQuery,
   RoutePostFiles,
   RouteDeleteFilesId,
+  RoutePostFilesSaveBuildQuery,
+  RoutePostFilesSaveBuild,
   // Sites
   RoutePostSitesQuery,
   RoutePostSites,
@@ -150,6 +152,10 @@ export const postFile = api<RoutePostFiles, RoutePostFilesQuery>('files', 'POST'
 export const deleteFile = api<RouteDeleteFilesId, RouteDeleteFilesIdQuery>(
   ({ id }) => `files/${id}`,
   'DELETE',
+);
+export const postFilesSaveBuild = api<RoutePostFilesSaveBuild, RoutePostFilesSaveBuildQuery>(
+  'files/saveBuild',
+  'POST',
 );
 
 // Sites

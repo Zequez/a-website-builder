@@ -6,7 +6,7 @@ import path from 'path';
 
 import { T } from '@db';
 import api from './routes/api';
-import { logger } from './lib/middlewares.js';
+import { logger, errorHandler } from './lib/middlewares.js';
 import { parseUrlFile } from './lib/utils.js';
 
 const app = express();
@@ -77,7 +77,7 @@ app.all('*', async (req, res, next) => {
     const site = await T.sites.where({ local_name: subdomain }).one();
     if (!site) return next();
     const { fileName, mimeType } = parseUrlFile(url);
-    const file = await T.files.where({ site_id: site.id, name: fileName }).one();
+    const file = await T.files.where({ site_id: site.id, name: fileName, is_dist: true }).one();
     if (!file) return next();
 
     res.status(200);
@@ -90,5 +90,7 @@ app.all('*', async (req, res, next) => {
 app.all('*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
+
+app.use(errorHandler);
 
 export default app;
