@@ -89,6 +89,7 @@ export default function SidebarFiles({
   const [newFileName, setNewFileName] = useState<null | string>(null);
 
   function handleStartAddFile(section: Section) {
+    console.log('Adding to section', section);
     setAddingFileOn(section);
     setNewFileName('');
   }
@@ -127,7 +128,7 @@ export default function SidebarFiles({
                 ADD
               </button>
             </div>
-            {sectionedFiles[key].length ? (
+            {sectionedFiles[key].length || addingFileOn === section ? (
               <div class="relative text-white mx-1 font-mono py-1.5 bg-black/5  rounded-b-md flex flex-col items-start">
                 <div class="absolute inset-0 rounded-b-md border border-t-0 border-black/10 pointer-events-none"></div>
                 {sectionedFiles[key].map((file) => {
