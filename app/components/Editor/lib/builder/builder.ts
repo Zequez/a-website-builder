@@ -5,10 +5,10 @@ import yamlBuilder from './yamlBuilder';
 import htmlBuilder from './htmlBuilder';
 import unoCssBuilder from './unocssBuilder';
 
-export default async function build(files: LocalFile[]): Promise<BuildFile[] | null> {
+export default async function build(files: LocalFile[]): Promise<BuildContext> {
   const context = { files: [...files], vars: {}, errors: [] };
   yamlBuilder(context);
   htmlBuilder(context);
   await unoCssBuilder(context);
-  return Promise.resolve(context.files);
+  return Promise.resolve(context);
 }

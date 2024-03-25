@@ -101,7 +101,13 @@ export default function htmlBuilder(context: BuildContext) {
     injectComponents(Object.keys(components), content);
 
   const componentsFiles = matchComponents(context.files);
-  const componentsParsingOrder = resolveComponentsParsingOrder(componentsFiles);
+  let componentsParsingOrder: string[];
+  try {
+    componentsParsingOrder = resolveComponentsParsingOrder(componentsFiles);
+  } catch (e) {
+    context.errors.push({ e, message: 'Could not resolve components parsing order' });
+    return;
+  }
 
   const components: { [key: string]: any } = {};
   const saferEval = evalClosure.bind(null, components, context.vars);

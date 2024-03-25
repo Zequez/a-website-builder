@@ -9,7 +9,7 @@ import { LocalFile, LocalSite } from './types';
 
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
-import build from './lib/builder';
+import build, { BuildError, BuildFile } from './lib/builder';
 
 import SidebarSites from './SidebarSites';
 import SidebarFiles from './SidebarFiles';
@@ -29,7 +29,8 @@ const Editor = () => {
   const site = S.selectedSite;
   const file = S.selectedFile;
   const [editorInspector, setEditorInspector] = useLocalStorageState('editor_inspector', false);
-  const [buildFiles, setBuildFiles] = useState<{ name: string; content: string }[]>([]);
+  const [buildFiles, setBuildFiles] = useState<BuildFile[]>([]);
+  const [buildErrors, setBuildErrors] = useState<BuildError[]>([]);
 
   useEffect(() => {
     function toggleEditorInspector(ev: KeyboardEvent) {
@@ -60,15 +61,19 @@ const Editor = () => {
 
   useEffect(() => {
     if (!S.selectedSiteId || !S.selectedSiteFiles) return;
-    build(S.selectedSiteFiles).then((newBuild) => {
-      if (newBuild) {
-        setBuildFiles(newBuild);
+    build(S.selectedSiteFiles).then((buildContext) => {
+      if (buildContext.errors.length === 0) {
+        setBuildFiles(buildContext.files);
+      }
+      setBuildErrors(buildContext.errors);
+      if (buildContext.errors.length) {
+        console.log('BUILD ERRORS', buildContext.errors);
       }
     });
   }, [S.selectedSiteId, S.selectedSiteFiles]);
 
   useEffect(() => {
-    if (buildFiles && S.syncEnabled && site && memberAuth) {
+    if (buildFiles.length > 0 && S.syncEnabled && site && memberAuth) {
       postFilesSaveBuild(
         {
           siteId: site.id,
@@ -121,7 +126,7 @@ const Editor = () => {
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {editorInspector ? <Inspector S={S} /> : null}
-      <div class="w-54 bg-gray-500 flex flex-col overflow-hidden flex-shrink-0">
+      <div class="w-54 bg-gray-500 flex flex-col flex-shrink-0">
         <SidebarSites
           sites={S.sitesList}
           selectedSiteId={site?.id || null}
@@ -154,8 +159,22 @@ const Editor = () => {
         />
       </div>
 
-      <div class="flex flex-grow flex-col">
+      <div class="flex flex-grow flex-col overflow-hidden">
         <CodePanel site={site} file={openFile} onChange={onEditorContentChanges} />
+        {buildErrors.length ? (
+          <div class="bg-red-300 text-white p-2 leading-tight flex flex-col space-y-2 overflow-auto max-h-1/3">
+            {/* <div class="text-2xl">ERRORS</div> */}
+            {buildErrors.map(({ message, e, file }) => {
+              return (
+                <div class="bg-black/10 p-2 rounded-md">
+                  {message}
+                  <div>{file ? `File: ${file.name}` : null}</div>
+                  {e ? <pre>{e.message ? e.message : JSON.stringify(e, null, 2)}</pre> : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
         <div class="h-2 bg-gray-500 hover:cursor-ns-resize text-white/80 flex justify-center">
           <HGripLinesIcon class="h-3 -mt-0.5" />
         </div>

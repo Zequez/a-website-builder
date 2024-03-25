@@ -8,7 +8,7 @@ export default function yamlBuilder(context: BuildContext) {
       try {
         context.vars[varName] = loadYaml(f.content);
       } catch (e) {
-        context.errors.push('Yaml template invalid');
+        context.errors.push({ e, message: 'Yaml template invalid', file: f });
         console.error('Yaml invalid', e);
         context.vars[varName] = {};
       }

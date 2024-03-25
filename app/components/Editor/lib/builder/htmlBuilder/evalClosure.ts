@@ -1,4 +1,5 @@
 import * as preact from 'preact';
+import classnames from 'classnames';
 
 export default function (
   components: { [key: string]: any },
@@ -7,6 +8,7 @@ export default function (
 ) {
   const h = preact.createElement;
   const Fragment = preact.Fragment;
+  const cx = classnames;
   try {
     return eval(content);
   } catch (e) {
