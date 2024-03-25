@@ -32,7 +32,6 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
         {Object.entries(S.sitesSyncStatus).map(([id, status]) => {
           const localSite = localSites && localSites.find((s) => s.id === id);
           const remoteSite = remoteSites && remoteSites.find((s) => s.id === id);
-          S.filesSyncStatus;
 
           const localFiles = S.filesList.filter((f) => f.siteId === id);
           const remoteFiles = S.RFiles.list ? S.RFiles.list.filter((f) => f.siteId === id) : [];

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'p
 import MobileIcon from '~icons/fa6-solid/mobile';
 import DesktopIcon from '~icons/fa6-solid/desktop';
 import FullScreenIcon from '~icons/fa6-solid/expand';
-import { generateIframeEncodedUrl } from './lib/iframeTools';
+import { generateIframeEncodedUrl } from './lib/iframe-tools';
 import { LocalFile, LocalSite } from './types';
 import { cx, useLocalStorageState } from '@app/lib/utils';
 import { FC } from '../FC';
@@ -107,7 +107,7 @@ export default function Preview({
                     })}
                     onClick={() => setCurrentFileName(file.name)}
                   >
-                    {file.name.replace(/\.html$/, '')}
+                    {file.name === 'index.html' ? '(home)' : file.name.replace(/\.html$/, '')}
                   </button>
                 ))
             : null}

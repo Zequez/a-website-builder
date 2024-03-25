@@ -243,17 +243,27 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function createFile(siteId: string, file: { name: string; content: string }) {
-    return LFiles.set({
+    const newFile = {
       id: uuid(),
       name: file.name,
       siteId,
       content: file.content,
       updatedAt: new Date(),
       deleted: false,
-    });
+    };
+    return checkNameAvailable(newFile) ? LFiles.set(newFile) : null;
   }
 
-  function renameFile(file: { id: string; name: string }) {
+  function checkNameAvailable(file: { id: string; name: string; siteId: string }) {
+    return !LFiles.list.find(
+      (f) => f.siteId === file.siteId && f.name === file.name && f.id !== file.id,
+    );
+  }
+
+  function renameFile(file: { id: string; name: string; siteId: string }) {
+    if (!checkNameAvailable(file)) {
+      return;
+    }
     LFiles.update(file.id, { name: file.name });
   }
 

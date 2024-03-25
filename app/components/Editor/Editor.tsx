@@ -12,11 +12,12 @@ import useSites from './lib/useSites';
 import build, { BuildError, BuildFile } from './lib/builder';
 
 import SidebarSites from './SidebarSites';
-import SidebarFiles from './SidebarFiles';
+import SidebarFiles from './NewSidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
 import Inspector from './Inspector';
 import { postFilesSaveBuild } from '@app/lib/api';
+import { relocateFiles } from './lib/files-sections';
 
 function filesHash(files: { name: string; content: string }[]) {
   console.log('Hashing files', files);
@@ -58,6 +59,14 @@ const Editor = () => {
   //     // S.setSelectedSiteFiles(Object.values(existingFiles));
   //   }
   // }, [S.selectedSiteFiles]);
+
+  useEffect(() => {
+    if (!S.selectedSiteFiles || S.selectedSiteId === null) return;
+    const updates = relocateFiles(S.selectedSiteFiles);
+    updates.forEach((file) => {
+      S.renameFile({ ...file, siteId: S.selectedSiteId! });
+    });
+  }, [S.selectedSiteFiles]);
 
   useEffect(() => {
     if (!S.selectedSiteId || !S.selectedSiteFiles) return;
@@ -104,13 +113,17 @@ const Editor = () => {
 
   const handleAddFile = (name: string) => {
     if (site) {
-      const { id } = S.createFile(site.id, { name, content: '' });
-      S.selectFile(id);
+      const newFile = S.createFile(site.id, { name, content: '' });
+      if (newFile) {
+        S.selectFile(newFile.id);
+      }
     }
   };
 
   const handleRenameFile = (id: string, name: string) => {
-    S.renameFile({ id, name });
+    if (S.selectedSiteId) {
+      S.renameFile({ id, name, siteId: S.selectedSiteId });
+    }
   };
 
   const handleAttemptSyncEnabling = () => {

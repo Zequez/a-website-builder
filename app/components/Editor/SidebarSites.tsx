@@ -50,8 +50,8 @@ export default function SidebarSites({
           ),
         )}
       <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
-        <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 w-8 h-8 text-xs rounded-full">
-          <PlusIcon />
+        <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 text-sm rounded-md px-2 py-1 tracking-wider">
+          NEW SITE
         </span>
       </button>
     </div>
@@ -114,7 +114,7 @@ function SiteButton({
     <div
       class={cx('relative flex border-b border-b-black/20 h-12', {
         'bg-gray-200': !isSelected,
-        'bg-gray-300': isSelected,
+        'bg-gray-600 text-white/50 shadow-inner': isSelected,
       })}
       ref={elRef}
     >
@@ -131,7 +131,10 @@ function SiteButton({
         <>
           <button
             onClick={() => !isSelected && onOpen()}
-            class={cx('flex px-2 py-1 text-left hover:bg-gray-400 flex-grow overflow-hidden')}
+            class={cx('flex px-2 py-1 text-left flex-grow overflow-hidden', {
+              'text-white/60': isSelected,
+              'hover:bg-black/30 hover:text-white': !isSelected,
+            })}
           >
             <div class="flex-grow overflow-hidden">
               <span
@@ -161,7 +164,10 @@ function SiteButton({
       )}
       {mode === 'view' ? (
         <button
-          class="flex items-center px-1 hover:bg-gray-400 text-gray-400 hover:text-white"
+          class={cx('flex items-center px-1', {
+            'hover:bg-white/20 text-white/50 hover:text-white': isSelected,
+            'hover:bg-black/30 text-black/50 hover:text-white/50': !isSelected,
+          })}
           onClick={handleOpenMenu}
         >
           <MenuEllipsis />

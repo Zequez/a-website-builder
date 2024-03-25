@@ -30,7 +30,6 @@ export default function CodePanel({
     const adjustContainerWidth = () => {
       if (divRef.current) {
         const { width } = divRef.current.parentElement!.getBoundingClientRect();
-        console.log('PARENT WIDTH', width);
         divRef.current.style.width = width + 'px';
       }
     };

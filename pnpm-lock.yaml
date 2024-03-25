@@ -24,6 +24,7 @@ specifiers:
   '@types/pg': ^8.11.2
   '@types/uuid': ^9.0.8
   '@unocss/core': ^0.58.6
+  '@unocss/preset-mini': ^0.58.6
   '@unocss/preset-uno': ^0.58.5
   '@unocss/reset': ^0.58.5
   '@vercel/node': ^3.0.20
@@ -86,6 +87,7 @@ dependencies:
   '@types/pg': 8.11.2
   '@types/uuid': 9.0.8
   '@unocss/core': 0.58.6
+  '@unocss/preset-mini': 0.58.6
   '@unocss/preset-uno': 0.58.5
   '@unocss/reset': 0.58.5
   '@vercel/node': 3.0.20
@@ -1597,6 +1599,12 @@ packages:
       '@unocss/core': 0.58.5
     dev: false
 
+  /@unocss/extractor-arbitrary-variants/0.58.6:
+    resolution: {integrity: sha512-iSrjLEM+dtcpCmJ8myttPZ/0Dg4HKYVYpM71rNTybrX1HB/cfRsGwIHobjsvvRnve+LAxC4Hmdi8EXRd8V1xPg==}
+    dependencies:
+      '@unocss/core': 0.58.6
+    dev: false
+
   /@unocss/inspector/0.58.5:
     resolution: {integrity: sha512-cbJlIHEZ14puTtttf7sl+VZFDscV1DJiSseh9sSe0xJ/1NVBT9Bvkm09/1tnpLYAgF5gfa1CaCcjKmURgYzKrA==}
     dependencies:
@@ -1641,6 +1649,14 @@ packages:
       '@unocss/core': 0.58.5
       '@unocss/extractor-arbitrary-variants': 0.58.5
       '@unocss/rule-utils': 0.58.5
+    dev: false
+
+  /@unocss/preset-mini/0.58.6:
+    resolution: {integrity: sha512-COaM/04Z6/gawzrFcCwoyD6t0FCpuKRyljKKs3VxitoGxsN9BHKiFE3U/cPSQarpG789rmZg8D/wmLHCChSXvg==}
+    dependencies:
+      '@unocss/core': 0.58.6
+      '@unocss/extractor-arbitrary-variants': 0.58.6
+      '@unocss/rule-utils': 0.58.6
     dev: false
 
   /@unocss/preset-tagify/0.58.5:
@@ -1690,6 +1706,14 @@ packages:
     dependencies:
       '@unocss/core': 0.58.6
       magic-string: 0.30.7
+    dev: false
+
+  /@unocss/rule-utils/0.58.6:
+    resolution: {integrity: sha512-qbVDeyKzExFY/YeoIbMw/lu8PXEGJzSHrFXRumNHX5lvTu8ggAjH6p9xyvYa/YnuNU0+pFKuYxG8LNK2F8f1EQ==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@unocss/core': 0.58.6
+      magic-string: 0.30.8
     dev: false
 
   /@unocss/scope/0.58.5:
@@ -3953,6 +3977,13 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  /magic-string/0.30.8:
+    resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: false
 
   /make-dir/3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}

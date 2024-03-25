@@ -1,14 +1,14 @@
-import PlusIcon from '~icons/fa6-solid/plus';
 import CheckIcon from '~icons/fa6-solid/check';
-import TimesIcon from '~icons/fa6-solid/xmark';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
+import PlusIcon from '~icons/fa6-solid/plus';
+import TimesIcon from '~icons/fa6-solid/xmark';
 
 import { cx } from '@app/lib/utils';
-import template from './template';
-import { LocalFile } from './types';
+import { keyBy } from '@shared/utils';
 import { useRef, useState } from 'preact/hooks';
 import FloatingMenu from '../FloatingMenu';
-import { keyBy } from '@shared/utils';
+import template from './template';
+import { LocalFile } from './types';
 
 export default function SidebarFiles({
   files,
