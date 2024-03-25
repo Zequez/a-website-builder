@@ -3,8 +3,14 @@ export type BuildFile = {
   content: string;
 };
 
+export type BuildError = {
+  e?: any;
+  message: string;
+  file?: BuildFile;
+};
+
 export type BuildContext = {
   files: BuildFile[];
   vars: Record<string, any>;
-  errors: string[];
+  errors: BuildError[];
 };

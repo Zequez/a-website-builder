@@ -9,8 +9,8 @@ describe('CustomHtmlBuilder', () => {
   it.each([
     ['Hello world', 'Hello world'],
     ['<div>Hello world</div>', '<div>Hello world</div>'],
-    [`<div>Hello \${"123"} world</div>`, '<div>Hello 123 world</div>'],
-    [`\${[1,2,3].map((n) => html\`<div>\${n}</div>\`)}`, '<div>1</div><div>2</div><div>3</div>'],
+    [`<div>Hello {"123"} world</div>`, '<div>Hello 123 world</div>'],
+    [`{[1,2,3].map((n) => <div>{n}</div>)}`, '<div>1</div><div>2</div><div>3</div>'],
   ])('should convert single page %s HTML to page', (content, result) => {
     const context = createContext([
       {
@@ -23,6 +23,41 @@ describe('CustomHtmlBuilder', () => {
     expect(context.files[0].content).toEqual(`<!DOCTYPE html>${result}`);
   });
 
+  it('should not fail with an empty string', () => {
+    const context = createContext([
+      {
+        name: 'pages/index.html',
+        content: '',
+      },
+    ]);
+    htmlBuilder(context);
+    expect(context.files[0].name).toEqual('index.html');
+    expect(context.files[0].content).toEqual(`<!DOCTYPE html>`);
+  });
+
+  it('should be empty with a function that does not return a valid elemen', () => {
+    const context = createContext([
+      {
+        name: 'pages/index.html',
+        content: '() => {}',
+      },
+    ]);
+    htmlBuilder(context);
+    expect(context.files[0].content).toEqual(`<!DOCTYPE html>`);
+  });
+
+  it('should return an error with some strange code', () => {
+    const context = createContext([
+      {
+        name: 'pages/index.html',
+        content: '() => }',
+      },
+    ]);
+    htmlBuilder(context);
+    expect(context.files.length).toEqual(0);
+    expect(context.errors.length).toEqual(1);
+  });
+
   it('should automatically inject components', () => {
     const context = createContext([
       {
@@ -31,7 +66,7 @@ describe('CustomHtmlBuilder', () => {
       },
       {
         name: 'components/Html.jsx',
-        content: '({title, children}) => html`<title>${title}</title><div>${children}</div>`',
+        content: '({title, children}) => <><title>{title}</title><div>{children}</div></>',
       },
     ]);
     htmlBuilder(context);
@@ -46,7 +81,7 @@ describe('CustomHtmlBuilder', () => {
       [
         {
           name: 'pages/index.html',
-          content: '<div>${data.title}</div>',
+          content: '<div>{data.title}</div>',
         },
       ],
       {
@@ -63,8 +98,7 @@ describe('CustomHtmlBuilder', () => {
       [
         {
           name: 'pages/items.jsx',
-          content:
-            'function pages() { return data.items.map(({id, name}) => [id, html`<div>${name}</div>`])}',
+          content: '() => data.items.map(({id, name}) => [id, <div>{name}</div>])',
         },
       ],
       {
@@ -90,12 +124,11 @@ describe('CustomHtmlBuilder', () => {
       [
         {
           name: 'pages/items.jsx',
-          content:
-            'function pages() { return data.items.map(({id, name}) => [id, html`<Html title=${name}>${name}</Html>`])}',
+          content: '() => data.items.map(({id, name}) => [id, <Html title={name}>{name}</Html>])',
         },
         {
           name: 'components/Html.jsx',
-          content: '({title, children}) => html`<title>${title}</title><div>${children}</div>`',
+          content: '({title, children}) => <><title>{title}</title><div>{children}</div></>',
         },
       ],
       {
@@ -122,7 +155,7 @@ describe('CustomHtmlBuilder', () => {
     const context = createContext([
       {
         name: 'pages/items.jsx',
-        content: 'function pages() { return [["potato", html`<div>a</div>`]] }',
+        content: 'function pages() { return [["potato", <div>a</div>]] }',
       },
     ]);
     htmlBuilder(context);
@@ -139,11 +172,11 @@ describe('CustomHtmlBuilder', () => {
         },
         {
           name: 'components/Item.jsx',
-          content: '({name, url}) => html`<Link href=${url}>${name}</Link>`',
+          content: '({name, url}) => <Link href={url}>{name}</Link>',
         },
         {
           name: 'components/Link.jsx',
-          content: '({href, children}) => html`<a href="${href}">${children}</a>`',
+          content: '({href, children}) => <a href={href}>{children}</a>',
         },
       ]);
       htmlBuilder(context);

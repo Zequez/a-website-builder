@@ -1,9 +1,12 @@
+import * as preact from 'preact';
+
 export default function (
-  html: any,
   components: { [key: string]: any },
   data: { [key: string]: any },
   content: string,
 ) {
+  const h = preact.createElement;
+  const Fragment = preact.Fragment;
   try {
     return eval(content);
   } catch (e) {

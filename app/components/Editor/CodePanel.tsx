@@ -62,43 +62,56 @@ export default function CodePanel({
         // yaml(),
       ];
 
-      if (file.name.match(/\.[jt]sx?$/)) {
+      if (file.name.match(/\.[jt]sx?$/) || file.name.endsWith('.html')) {
+        extensions.push(javascript({ typescript: true, jsx: true })); //.support);
+        // extensions.push(html({}).support);
+        // extensions.push(
+        //   javascriptLanguage.configure({
+        //     wrap: parseMixed((ref, input) => {
+        //       if (ref.name != 'TaggedTemplateExpression') return null;
+        //       let { node } = ref,
+        //         tag = node.getChild('Expression'),
+        //         templ = tag?.nextSibling;
+        //       if (
+        //         !tag ||
+        //         !templ ||
+        //         tag.name != 'VariableName' ||
+        //         templ.name != 'TemplateString' ||
+        //         input.read(tag.from, tag.to) != 'html'
+        //       )
+        //         return null;
+        //       let ranges = [],
+        //         pos = templ.from + 1,
+        //         cur = templ.cursor();
+        //       if (cur.firstChild())
+        //         for (;;) {
+        //           if (cur.from > pos) ranges.push({ from: pos, to: cur.from });
+        //           pos = cur.to;
+        //           if (!cur.nextSibling()) break;
+        //         }
+        //       if (pos < templ.to - 1) ranges.push({ from: pos, to: templ.to - 1 });
+        //       return {
+        //         parser: htmlLanguage.parser,
+        //         overlay: ranges,
+        //       };
+        //     }),
+        //   }),
+        // );
+      } else if (file.name.endsWith('.html')) {
         extensions.push(javascript({ typescript: true }).support);
         extensions.push(html({}).support);
         extensions.push(
-          javascriptLanguage.configure({
+          htmlLanguage.configure({
             wrap: parseMixed((ref, input) => {
-              if (ref.name != 'TaggedTemplateExpression') return null;
-              let { node } = ref,
-                tag = node.getChild('Expression'),
-                templ = tag?.nextSibling;
-              if (
-                !tag ||
-                !templ ||
-                tag.name != 'VariableName' ||
-                templ.name != 'TemplateString' ||
-                input.read(tag.from, tag.to) != 'html'
-              )
-                return null;
-              let ranges = [],
-                pos = templ.from + 1,
-                cur = templ.cursor();
-              if (cur.firstChild())
-                for (;;) {
-                  if (cur.from > pos) ranges.push({ from: pos, to: cur.from });
-                  pos = cur.to;
-                  if (!cur.nextSibling()) break;
-                }
-              if (pos < templ.to - 1) ranges.push({ from: pos, to: templ.to - 1 });
-              return {
-                parser: htmlLanguage.parser,
-                overlay: ranges,
-              };
+              let { node } = ref;
+              // console.log(ref.name, node);
+              if (ref.name === 'Text') {
+                console.log(ref.name, input.read(ref.from, ref.to));
+              }
+              return null;
             }),
           }),
         );
-      } else if (file.name.endsWith('.html')) {
-        extensions.push(html({}));
       } else if (file.name.endsWith('.css')) {
         extensions.push(css());
       } else if (file.name.endsWith('.yaml')) {
@@ -116,6 +129,8 @@ export default function CodePanel({
         state,
         parent: divRef.current,
       });
+
+      view.focus();
     }
     return () => {
       view?.destroy();

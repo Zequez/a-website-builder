@@ -1,10 +1,6 @@
-import { html as preactHtml } from 'htm/preact';
-import { render as preactRenderToString } from 'preact-render-to-string';
 import { BuildContext, BuildFile } from '../types.d';
 import evalClosure from './evalClosure';
-
-// @ts-ignore
-window.html = preactHtml;
+import jsxTransform, { preactToString } from './jsxTransform';
 
 const openingTagMatcher = (name: string) => new RegExp(`<(${name})`, 'g');
 const closingTagMatcher = (name: string) => new RegExp(`</(${name})>`, 'g');
@@ -64,18 +60,18 @@ function injectComponents(components: string[], content: string) {
   components.forEach((componentName) => {
     contentWithInjectedComponents = contentWithInjectedComponents.replace(
       openingTagMatcher(componentName),
-      `<\$\{components.$1\}`,
+      `<components.$1`,
     );
     contentWithInjectedComponents = contentWithInjectedComponents.replace(
       closingTagMatcher(componentName),
-      `</\$\{components.$1\}>`,
+      `</components.$1>`,
     );
   });
   return contentWithInjectedComponents;
 }
 
 const MATCH_COMPONENTS_FILES = /^components\/(.*)\.jsx$/;
-const MATCH_BASIC_PAGES = /^pages\/(.*)\.html$/;
+const MATCH_BASIC_PAGES = /^pages\/(.*)\.(html|jsx|tsx)$/;
 const MATCH_ADVANCED_PAGES = /^pages\/(.*)\.jsx$/;
 
 function matchFiles(matcher: RegExp, files: BuildFile[]) {
@@ -91,7 +87,10 @@ function matchFiles(matcher: RegExp, files: BuildFile[]) {
 
 const matchComponents = matchFiles.bind(null, MATCH_COMPONENTS_FILES);
 const matchBasicPages = matchFiles.bind(null, MATCH_BASIC_PAGES);
-const matchAdvancedPages = matchFiles.bind(null, MATCH_ADVANCED_PAGES);
+
+function addDoctype(content: string) {
+  return '<!DOCTYPE html>' + content;
+}
 
 export default function htmlBuilder(context: BuildContext) {
   function removeFile(file: BuildFile) {
@@ -105,39 +104,55 @@ export default function htmlBuilder(context: BuildContext) {
   const componentsParsingOrder = resolveComponentsParsingOrder(componentsFiles);
 
   const components: { [key: string]: any } = {};
-  const saferEval = evalClosure.bind(null, preactHtml, components, context.vars);
+  const saferEval = evalClosure.bind(null, components, context.vars);
   componentsParsingOrder.forEach((name) => {
     const componentFile = componentsFiles[name];
-    const injectedContent = nsInjectComponents(componentFile.content);
-    components[name] = saferEval(injectedContent);
+    const content = nsInjectComponents(componentFile.content);
+    try {
+      const jsxCode = jsxTransform(content);
+      components[name] = saferEval(jsxCode);
+
+      // components[name] = () => null;
+    } catch (e) {
+      context.errors.push({
+        e,
+        message: `Error parsing component ${componentFile.name}`,
+        file: componentFile,
+      });
+    }
     removeFile(componentFile);
   });
 
   Object.entries(matchBasicPages(context.files)).forEach(([name, file]) => {
-    const injectedContent = nsInjectComponents(file.content);
-    const evalString = `html\`${injectedContent}\``;
-    const preactProplessComponent = saferEval(evalString);
-    const rendered = `<!DOCTYPE html>` + preactRenderToString(preactProplessComponent);
-    context.files.push({ name: `${name}.html`, content: rendered });
-    removeFile(file);
-  });
-
-  Object.entries(matchAdvancedPages(context.files)).forEach(([name, file]) => {
-    if (file.content.startsWith('function pages()')) {
-      const injectedContent = nsInjectComponents(file.content);
-      const pagesFunction = saferEval(`(${injectedContent})`);
-      const pages = pagesFunction();
-      if (!Array.isArray(pages)) {
-        context.errors.push('pages function must return an array of [pagePath, element]');
-      } else {
-        for (let [pagePath, pagePreactElement] of pages) {
-          const rendered = `<!DOCTYPE html>` + preactRenderToString(pagePreactElement);
+    let content = nsInjectComponents(file.content);
+    try {
+      const jsxCode = jsxTransform(content);
+      const probablyPreactComponent = saferEval(jsxCode);
+      const result = probablyPreactComponent();
+      if (Array.isArray(result)) {
+        for (let pageDef of result) {
+          if (typeof pageDef[0] !== 'string') {
+            context.errors.push({ message: 'Page path must be a string', file });
+            continue;
+          }
+          if (typeof pageDef[1] !== 'object') {
+            context.errors.push({ message: 'Page element must be a JSX object', file });
+            continue;
+          }
+          const pagePath = pageDef[0];
+          const pagePreactElement = pageDef[1];
+          const rendered = addDoctype(preactToString(pagePreactElement));
           const pageName = pagePath.startsWith('/')
             ? `${pagePath.slice(1)}.html`
             : `${name}/${pagePath}.html`;
           context.files.push({ name: pageName, content: rendered });
         }
+      } else {
+        const rendered = addDoctype(preactToString(result));
+        context.files.push({ name: `${name}.html`, content: rendered });
       }
+    } catch (e) {
+      context.errors.push({ e, message: 'Error parsing file ', file });
     }
     removeFile(file);
   });
