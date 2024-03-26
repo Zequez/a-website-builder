@@ -1,15 +1,19 @@
-import { createElement, Fragment } from 'preact';
+import * as preact from 'preact';
 import classnames from 'classnames';
-
-export const h = createElement;
-export { Fragment };
-export const cx = classnames;
 
 export default function (
   components: { [key: string]: any },
   data: { [key: string]: any },
   content: string,
 ) {
+  const Fragment = preact.Fragment;
+  const h = preact.createElement;
+  const cx = classnames;
+
+  if (typeof Fragment === 'undefined' || typeof h === 'undefined' || typeof cx === 'undefined') {
+    throw 'This should never happen';
+  }
+
   try {
     return eval(content);
   } catch (e) {
