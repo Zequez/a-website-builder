@@ -9,7 +9,7 @@ describe('relocateFiles', () => {
     ['index.html', 'pages/index.jsx'],
     ['script.js', 'other/script.js'],
     ['pages/foo.html', 'pages/foo.jsx'],
-  ])('should create name updates for files', (name, newName) => {
+  ])('should rename %s to %s', (name, newName) => {
     expect(relocateFiles([{ name }])[0].name).toEqual(newName);
   });
 });

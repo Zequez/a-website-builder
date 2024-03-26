@@ -20,6 +20,9 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
     return resolved;
   }
 
+  const allLocalSitesIds = localSites.map((s) => s.id);
+  const orphanFiles = S.filesList.filter((f) => !allLocalSitesIds.includes(f.siteId));
+
   return (
     <div class="fixed z-100 border-1 shadow-md border-black top-0 right-0 w-80 bg-white text-black p-2 text-sm">
       <div class="text-lg text-center">
@@ -50,22 +53,11 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
               <tr>
                 <td colspan={3}>
                   <div class="ml-2 pl-2 border-l border-solid border-black/60">
-                    <table class="w-full text-xs">
-                      {Object.entries(filesStatus).map(([fileId, status]) => (
-                        <tr>
-                          <td class="text-left">{S.filesById[fileId]?.name}</td>
-                          <td class="w-full text-center">
-                            <span class="px-2 text-xs">
-                              <SyncStatusIcon status={status} />
-                            </span>
-                          </td>
-                          <td class="text-right">
-                            {S.RFiles._byId && S.RFiles._byId[fileId]?.name}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr></tr>
-                    </table>
+                    <FilesTable
+                      filesStatus={filesStatus}
+                      localFilesById={S.filesById}
+                      remoteFilesById={S.RFiles._byId}
+                    />
                   </div>
                 </td>
               </tr>
@@ -73,6 +65,12 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
           );
         })}
       </table>
+      {orphanFiles.length ? (
+        <>
+          <div class="text-lg">Orphan Files</div>
+          <OrphanFilesTable files={orphanFiles} filesStatus={S.filesSyncStatus} />
+        </>
+      ) : null}
       <div class="text-red-500">
         {S.sitesSyncingError.map((err) => (
           <div>{err}</div>
@@ -82,5 +80,54 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function FilesTable({
+  filesStatus,
+  localFilesById,
+  remoteFilesById,
+}: {
+  filesStatus: { [key: string]: SyncStatus };
+  localFilesById: { [key: string]: LocalFile };
+  remoteFilesById: { [key: string]: LocalFile } | null;
+}) {
+  return (
+    <table class="w-full text-xs">
+      {Object.entries(filesStatus).map(([fileId, status]) => (
+        <tr>
+          <td class="text-left">{localFilesById[fileId]?.name}</td>
+          <td class="w-full text-center">
+            <span class="px-2 text-xs">
+              <SyncStatusIcon status={status} />
+            </span>
+          </td>
+          <td class="text-right">{remoteFilesById && remoteFilesById[fileId]?.name}</td>
+        </tr>
+      ))}
+    </table>
+  );
+}
+
+function OrphanFilesTable({
+  files,
+  filesStatus,
+}: {
+  files: LocalFile[];
+  filesStatus: { [key: string]: SyncStatus };
+}) {
+  return (
+    <table class="w-full text-xs">
+      {files.map((file) => (
+        <tr>
+          <td class="text-left">{file.name}</td>
+          <td class="w-full text-center">
+            <span class="px-2 text-xs">
+              <SyncStatusIcon status={filesStatus[file.id]} />
+            </span>
+          </td>
+        </tr>
+      ))}
+    </table>
   );
 }

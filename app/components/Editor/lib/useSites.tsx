@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import { LocalFile, LocalSite } from '../types';
-import { randomAlphaNumericString, uuid } from '@shared/utils';
+import { randomAlphaNumericString, uuid, btoa } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
 
@@ -120,6 +120,9 @@ export default function useSites(memberAuth: MemberAuth | null) {
             if (error) setSitesSyncingError(toArr(error));
           } else {
             LSites.remove(localSite.id);
+            LFiles.list
+              .filter((f) => f.siteId === localSite.id)
+              .forEach((f) => LFiles.remove(f.id));
           }
         } else if (status === 'local-latest') {
           if (!localSite.deleted) {
@@ -306,6 +309,13 @@ export default function useSites(memberAuth: MemberAuth | null) {
       syncFiles();
     }
   }, [syncEnabled, filesSyncStatus]);
+
+  // Remove orphaned files belonging to non-existant sites
+  useEffect(() => {
+    const allLocalSitesIds = LSites.list.map((s) => s.id);
+    const orphanFiles = LFiles.list.filter((f) => !allLocalSitesIds.includes(f.siteId));
+    orphanFiles.forEach((file) => LFiles.remove(file.id));
+  }, [LSites.list, LFiles.list]);
 
   return {
     // Sites
