@@ -24,14 +24,14 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
   const orphanFiles = S.filesList.filter((f) => !allLocalSitesIds.includes(f.siteId));
 
   return (
-    <div class="fixed z-100 border-1 shadow-md border-black top-0 right-0 w-80 bg-white text-black p-2 text-sm">
+    <div class="fixed z-100 border-1 shadow-md border-black top-0 right-0 bg-white text-black p-2 text-xs whitespace-nowrap overflow-auto">
       <div class="text-lg text-center">
         {S.isSyncingSites ? 'SITES SYNCING IN PROGRESS' : 'NOT SYNCING SITES'}
       </div>
       <div class="text-lg text-center">
         {S.isSyncingFiles ? 'FILES SYNCING IN PROGRESS' : 'NOT SYNCING FILES'}
       </div>
-      <table>
+      <table class="inline-block">
         {Object.entries(S.sitesSyncStatus).map(([id, status]) => {
           const localSite = localSites && localSites.find((s) => s.id === id);
           const remoteSite = remoteSites && remoteSites.find((s) => s.id === id);
@@ -42,13 +42,19 @@ export default function Inspector({ S }: { S: ReturnType<typeof useSites> }) {
           return (
             <>
               <tr class="">
-                <td class="text-left">{localSite?.name}</td>
-                <td class="w-full text-center">
+                <td class="text-left">
+                  <div class="max-w-30 text-ellipsis overflow-hidden" title={localSite?.name || ''}>
+                    {localSite?.name}
+                  </div>
+                </td>
+                <td class="text-center">
                   <span class="px-2">
                     <SyncStatusIcon status={status} />
                   </span>
                 </td>
-                <td class="text-right">{remoteSite?.name}</td>
+                <td class="text-right" title={remoteSite?.name || ''}>
+                  <div class="max-w-30 text-ellipsis overflow-hidden">{remoteSite?.name}</div>
+                </td>
               </tr>
               <tr>
                 <td colspan={3}>
@@ -96,13 +102,27 @@ function FilesTable({
     <table class="w-full text-xs">
       {Object.entries(filesStatus).map(([fileId, status]) => (
         <tr>
-          <td class="text-left">{localFilesById[fileId]?.name}</td>
+          <td class="text-left">
+            <div
+              class="max-w-24 text-ellipsis overflow-hidden"
+              title={localFilesById[fileId]?.name}
+            >
+              {localFilesById[fileId]?.name}
+            </div>
+          </td>
           <td class="w-full text-center">
             <span class="px-2 text-xs">
               <SyncStatusIcon status={status} />
             </span>
           </td>
-          <td class="text-right">{remoteFilesById && remoteFilesById[fileId]?.name}</td>
+          <td class="text-right">
+            <div
+              class="max-w-24 text-ellipsis overflow-hidden"
+              title={(remoteFilesById && remoteFilesById[fileId]?.name) || ''}
+            >
+              {remoteFilesById && remoteFilesById[fileId]?.name}
+            </div>
+          </td>
         </tr>
       ))}
     </table>
