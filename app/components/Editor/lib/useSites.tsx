@@ -4,7 +4,6 @@ import { randomAlphaNumericString, uuid, btoa } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
 
-import { resolveSyncStatus } from './sync';
 import useLocalResources from './useLocalResources';
 import useRemoteResources from './useRemoteResources';
 import {
@@ -14,10 +13,6 @@ import {
   RouteGetSitesQuery,
 } from '@server/routes/api/types';
 import { useLocalStorageState } from '@app/lib/utils';
-
-function toArr<T>(x: T | T[]) {
-  return Array.isArray(x) ? x : [x];
-}
 
 export default function useSites(memberAuth: MemberAuth | null) {
   const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
@@ -91,105 +86,173 @@ export default function useSites(memberAuth: MemberAuth | null) {
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
 
-  // ███████╗██╗████████╗███████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗
-  // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝    ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
-  // ███████╗██║   ██║   █████╗  ███████╗    ███████╗ ╚████╔╝ ██╔██╗ ██║██║
-  // ╚════██║██║   ██║   ██╔══╝  ╚════██║    ╚════██║  ╚██╔╝  ██║╚██╗██║██║
-  // ███████║██║   ██║   ███████╗███████║    ███████║   ██║   ██║ ╚████║╚██████╗
-  // ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+  // ███████╗██╗   ██╗███╗   ██╗ ██████╗
+  // ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+  // ███████╗ ╚████╔╝ ██╔██╗ ██║██║
+  // ╚════██║  ╚██╔╝  ██║╚██╗██║██║
+  // ███████║   ██║   ██║ ╚████║╚██████╗
+  // ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
-  const sitesSyncStatus = useMemo(
-    () => resolveSyncStatus(LSites.list, RSites.list),
-    [LSites.list, RSites.list],
-  );
-  const [isSyncingSites, setIsSyncingSites] = useState(false);
-  const [sitesSyncingError, setSitesSyncingError] = useState<string[]>([]);
-  const syncSites = useCallback(async () => {
-    if (RSites._byId && !isSyncingSites && !sitesSyncingError.length) {
-      setIsSyncingSites(true);
-      console.log('Attempting to sync sites');
-      for (let siteId in sitesSyncStatus) {
-        const status = sitesSyncStatus[siteId];
-        if (status === 'synced') continue;
-        const localSite = LSites._byId[siteId];
-        const remoteSite = RSites._byId[siteId];
-        if (status === 'local-only') {
-          // Create on remote
-          if (!localSite.deleted) {
-            const { error } = await RSites.post(localSite);
-            if (error) setSitesSyncingError(toArr(error));
-          } else {
-            LSites.remove(localSite.id);
-            LFiles.list
-              .filter((f) => f.siteId === localSite.id)
-              .forEach((f) => LFiles.remove(f.id));
-          }
-        } else if (status === 'local-latest') {
-          if (!localSite.deleted) {
-            const { error } = await RSites.put(localSite);
-            if (error) setSitesSyncingError(toArr(error));
-          } else {
-            const { error } = await RSites.delete(localSite);
-            if (error) setSitesSyncingError(toArr(error));
-            else {
-              LSites.remove(localSite.id);
-            }
-          }
-        } else if (status === 'remote-only' || status === 'remote-latest') {
-          LSites.set(remoteSite);
-        }
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncingErrors, setSyncingErrors] = useState<{
+    [key: string]: [string, LocalSite | LocalFile, unknown];
+  }>({});
+  const syncSitesAndFiles = useCallback(async () => {
+    const RS = RSites._byId;
+    const LS = LSites._byId;
+    const RF = RFiles._byId;
+    const LF = LFiles._byId;
+
+    // No syncing if remote files haven't loaded yet
+    if (!RS || !RF) return;
+
+    // No syncing while another syncing is in progress
+    if (isSyncing) return;
+    console.log('SYNC STARTING');
+    setIsSyncing(true);
+
+    function pairUp<T>(local: { [key: string]: T }, remote: { [key: string]: T }) {
+      const paired: { [key: string]: [T | null, T | null] } = {};
+      for (let id in local) {
+        const item = local[id];
+        paired[id] = [item, null];
       }
-      setIsSyncingSites(false);
-    }
-  }, [sitesSyncStatus, isSyncingSites, RSites._byId, LSites._byId]);
-
-  // ███████╗██╗██╗     ███████╗███████╗    ███████╗██╗   ██╗███╗   ██╗ ██████╗
-  // ██╔════╝██║██║     ██╔════╝██╔════╝    ██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
-  // █████╗  ██║██║     █████╗  ███████╗    ███████╗ ╚████╔╝ ██╔██╗ ██║██║
-  // ██╔══╝  ██║██║     ██╔══╝  ╚════██║    ╚════██║  ╚██╔╝  ██║╚██╗██║██║
-  // ██║     ██║███████╗███████╗███████║    ███████║   ██║   ██║ ╚████║╚██████╗
-  // ╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
-
-  const filesSyncStatus = useMemo(
-    () => resolveSyncStatus(LFiles.list, RFiles.list),
-    [LFiles.list, RFiles.list],
-  );
-  const [isSyncingFiles, setIsSyncingFiles] = useState(false);
-  const [filesSyncingError, setFilesSyncingError] = useState<string[]>([]);
-  const syncFiles = useCallback(async () => {
-    if (RFiles._byId && !isSyncingFiles && !filesSyncingError.length) {
-      setIsSyncingFiles(true);
-      console.log('Attempting to sync files');
-      for (let fileId in filesSyncStatus) {
-        const status = filesSyncStatus[fileId];
-        if (status === 'synced') continue;
-        const localFile = LFiles._byId[fileId];
-        const remoteFile = RFiles._byId[fileId];
-        if (status === 'local-only') {
-          if (!localFile.deleted) {
-            const { error } = await RFiles.post(localFile);
-            if (error) setFilesSyncingError(toArr(error));
-          } else {
-            LFiles.remove(localFile.id);
-          }
-        } else if (status === 'local-latest') {
-          if (!localFile.deleted) {
-            const { error } = await RFiles.put(localFile);
-            if (error) setFilesSyncingError(toArr(error));
-          } else {
-            const { error } = await RFiles.delete(localFile);
-            if (error) setFilesSyncingError(toArr(error));
-            else {
-              LFiles.remove(localFile.id);
-            }
-          }
-        } else if (status === 'remote-only' || status === 'remote-latest') {
-          LFiles.set(remoteFile);
-        }
+      for (let id in remote) {
+        const item = remote[id];
+        paired[id] = paired[id] ? [paired[id][0], item] : [null, item];
       }
-      setIsSyncingFiles(false);
+      return paired;
     }
-  }, [filesSyncStatus, isSyncingFiles, RFiles._byId, LFiles._byId]);
+
+    const SS = pairUp(LS, RS);
+    const FF = pairUp(LF, RF);
+
+    const A = {
+      PUT_REMOTE_SITE: (site: LocalSite) => RSites.put(site),
+      POST_REMOTE_SITE: (site: LocalSite) => RSites.post(site),
+      DELETE_REMOTE_SITE: (site: LocalSite) => RSites.delete(site),
+      DELETE_LOCAL_SITE: async (site: LocalSite) => LSites.remove(site.id),
+      SET_LOCAL_SITE: async (site: LocalSite) => LSites.set(site),
+
+      PUT_REMOTE_FILE: (file: LocalFile) => RFiles.put(file),
+      POST_REMOTE_FILE: (file: LocalFile) => RFiles.post(file),
+      DELETE_REMOTE_FILE: (file: LocalFile) => RFiles.delete(file),
+      MARK_REMOTE_FILE_AS_DELETED: (file: LocalFile) => RFiles.markAsDeleted(file),
+      DELETE_LOCAL_FILE: async (file: LocalFile) => LFiles.remove(file.id),
+      SET_LOCAL_FILE: async (file: LocalFile) => LFiles.set(file),
+    };
+
+    const queue: [keyof typeof A, LocalFile | LocalSite][] = [];
+    const Q = (action: keyof typeof A, arg: LocalSite | LocalFile) => queue.push([action, arg]);
+
+    function getTime(site: LocalSite | LocalFile) {
+      return Math.floor(site.updatedAt.getTime() / 1000);
+    }
+
+    // Sync sites
+    for (let id in SS) {
+      const [localSite, remoteSite] = SS[id];
+      if (localSite && localSite.deleted && !remoteSite) {
+        Q('DELETE_LOCAL_SITE', localSite);
+        for (let [lf, rf] of Object.values(FF)) {
+          if (lf?.siteId === id) {
+            Q('DELETE_LOCAL_FILE', lf);
+          }
+        }
+      } else if (localSite && localSite.deleted && remoteSite) {
+        Q('DELETE_REMOTE_SITE', remoteSite);
+        for (let [lf, rf] of Object.values(FF)) {
+          if (lf?.siteId === id) {
+            Q('DELETE_LOCAL_FILE', lf);
+          }
+          if (rf?.siteId === id) {
+            Q('MARK_REMOTE_FILE_AS_DELETED', rf);
+          }
+        }
+        Q('DELETE_LOCAL_SITE', localSite);
+      } else if (localSite && remoteSite) {
+        const localUpdatedAt = getTime(localSite);
+        const remoteUpdatedAt = getTime(remoteSite);
+        if (localUpdatedAt < remoteUpdatedAt) {
+          Q('SET_LOCAL_SITE', remoteSite);
+        } else if (localUpdatedAt > remoteUpdatedAt) {
+          Q('PUT_REMOTE_SITE', localSite);
+        } else {
+          // Doing nothing
+        }
+      } else if (localSite && !remoteSite) {
+        Q('POST_REMOTE_SITE', localSite);
+      } else if (!localSite && remoteSite) {
+        Q('SET_LOCAL_SITE', remoteSite);
+      }
+    }
+
+    for (let id in FF) {
+      const [localFile, remoteFile] = FF[id];
+      if (localFile && localFile.deleted && !remoteFile) {
+        Q('DELETE_LOCAL_FILE', localFile);
+      } else if (localFile && localFile.deleted && remoteFile) {
+        Q('DELETE_REMOTE_FILE', remoteFile);
+      } else if (localFile && remoteFile) {
+        const localUpdatedAt = getTime(localFile);
+        const remoteUpdatedAt = getTime(remoteFile);
+        if (localUpdatedAt < remoteUpdatedAt) {
+          Q('SET_LOCAL_FILE', remoteFile);
+        } else if (localUpdatedAt > remoteUpdatedAt) {
+          Q('PUT_REMOTE_FILE', localFile);
+        } else {
+          // Doing nothing
+        }
+      } else if (localFile && !remoteFile) {
+        Q('POST_REMOTE_FILE', localFile);
+      } else if (!localFile && remoteFile) {
+        Q('SET_LOCAL_FILE', remoteFile);
+      }
+    }
+
+    console.log('SYNC QUEUE', queue);
+    const errors: { [key: string]: [string, LocalSite | LocalFile, unknown] } = {};
+    for (let [action, arg] of queue) {
+      try {
+        const response = (await A[action](arg as any)) as any;
+        if (response && response.error) {
+          errors[arg.id] = [action, arg, response.error];
+        }
+      } catch (error) {
+        errors[arg.id] = [action, arg, error];
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      console.error('SYNC ERRORS', errors);
+      setSyncingErrors(errors);
+    } else if (Object.keys(syncingErrors).length > 0) {
+      setSyncingErrors({});
+    }
+
+    setIsSyncing(false);
+    console.log('SYNC FINISHED');
+  }, [isSyncing, LSites._byId, RSites._byId, LFiles._byId, RFiles._byId]);
+
+  useEffect(() => {
+    if (!isSyncing && syncEnabled && Object.keys(syncingErrors).length === 0) {
+      syncTimeout = setTimeout(() => {
+        syncSitesAndFiles();
+      }, 3000);
+    }
+    return () => {
+      if (syncTimeout) {
+        clearTimeout(syncTimeout);
+      }
+    };
+  }, [
+    syncEnabled,
+    syncingErrors,
+    isSyncing,
+    LSites._byId,
+    RSites._byId,
+    LFiles._byId,
+    RFiles._byId,
+  ]);
 
   // ███████╗██╗████████╗███████╗███████╗
   // ██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
@@ -217,13 +280,23 @@ export default function useSites(memberAuth: MemberAuth | null) {
   }
 
   function addSite() {
-    LSites.set({
+    const newSite = LSites.set({
       id: uuid(),
       localName: randomAlphaNumericString(),
-      name: 'New Site',
+      name: 'New site',
       updatedAt: new Date(),
       deleted: false,
     });
+    const newPage = LFiles.set({
+      id: uuid(),
+      name: 'pages/index.jsx',
+      siteId: newSite.id,
+      content: '',
+      updatedAt: new Date(),
+      deleted: false,
+    });
+    setSelectedSiteId(newSite.id);
+    setSelectedFileId(newPage.id);
   }
 
   function deleteSite(id: string) {
@@ -298,24 +371,24 @@ export default function useSites(memberAuth: MemberAuth | null) {
     }
   }, [selectedSiteId, LFiles.list]);
 
-  useEffect(() => {
-    if (syncEnabled) {
-      syncSites();
-    }
-  }, [syncEnabled, sitesSyncStatus]);
-
-  useEffect(() => {
-    if (syncEnabled) {
-      syncFiles();
-    }
-  }, [syncEnabled, filesSyncStatus]);
-
   // Remove orphaned files belonging to non-existant sites
   useEffect(() => {
     const allLocalSitesIds = LSites.list.map((s) => s.id);
     const orphanFiles = LFiles.list.filter((f) => !allLocalSitesIds.includes(f.siteId));
     orphanFiles.forEach((file) => LFiles.remove(file.id));
   }, [LSites.list, LFiles.list]);
+
+  const sitesListSortedByLastUpdatedFile = useMemo(() => {
+    return LSites.list
+      .filter((s) => !s.deleted)
+      .sort((a, b) => {
+        const aLastUpdatedFile: { updatedAt: Date } =
+          LFiles.listByLastUpdate.find((f) => f.siteId === a.id) || a;
+        const bLastUpdatedFile: { updatedAt: Date } =
+          LFiles.listByLastUpdate.find((f) => f.siteId === b.id) || b;
+        return bLastUpdatedFile.updatedAt.getTime() - aLastUpdatedFile.updatedAt.getTime();
+      });
+  }, [LSites.list, LFiles.listByLastUpdate]);
 
   return {
     // Sites
@@ -335,9 +408,9 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
     sitesById: LSites.byId,
     sitesList: LSites.list,
-    isSyncingSites,
-    sitesSyncingError,
-    sitesSyncStatus,
+    sitesListSortedByLastUpdatedFile,
+    isSyncing,
+    syncingErrors,
 
     setSiteName,
     setSiteLocalName,
@@ -354,9 +427,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
     filesById: LFiles.byId,
     filesList: LFiles.list,
-    isSyncingFiles,
-    filesSyncingError,
-    filesSyncStatus,
 
     createFile,
     renameFile,
@@ -369,3 +439,5 @@ export default function useSites(memberAuth: MemberAuth | null) {
     setSyncEnabled,
   };
 }
+
+let syncTimeout: ReturnType<typeof setTimeout> | null = null;

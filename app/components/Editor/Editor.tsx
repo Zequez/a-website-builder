@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'preact/hooks';
-import { sha256 } from 'js-sha256';
 
 import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
@@ -19,13 +18,9 @@ import Inspector from './Inspector';
 import { postFilesSaveBuild } from '@app/lib/api';
 import { relocateFiles } from './lib/files-sections';
 
-function filesHash(files: { name: string; content: string }[]) {
-  console.log('Hashing files', files);
-  return files.map(({ name, content }) => `${name}.${sha256(content)}`).join(`\n`);
-}
-
 const Editor = () => {
   const { memberAuth } = useAuth();
+  // const SS = useSitesAndFiles(memberAuth ? memberAuth.member.id : null);
   const S = useSites(memberAuth);
   const site = S.selectedSite;
   const file = S.selectedFile;
@@ -83,13 +78,15 @@ const Editor = () => {
 
   useEffect(() => {
     if (buildFiles.length > 0 && S.syncEnabled && site && memberAuth) {
-      postFilesSaveBuild(
-        {
-          siteId: site.id,
-          files: buildFiles.map(({ name, content }) => ({ name, data: btoa(content) })),
-        },
-        memberAuth.token,
-      );
+      if (S.RFiles._byId?.[site.id]) {
+        postFilesSaveBuild(
+          {
+            siteId: site.id,
+            files: buildFiles.map(({ name, content }) => ({ name, data: btoa(content) })),
+          },
+          memberAuth.token,
+        );
+      }
     }
   }, [buildFiles, S.syncEnabled, site, memberAuth]);
 
@@ -141,14 +138,14 @@ const Editor = () => {
       {editorInspector ? <Inspector S={S} /> : null}
       <div class="w-54 bg-gray-500 flex flex-col flex-shrink-0">
         <SidebarSites
-          sites={S.sitesList}
+          sites={S.sitesListSortedByLastUpdatedFile}
           selectedSiteId={site?.id || null}
           onSelect={handleSelectSite}
           onAdd={() => S.addSite()}
           onDelete={(id) => handleDeleteSite(id)}
           onLocalNameChangeAttempt={S.setSiteLocalName}
           onNameChange={S.setSiteName}
-          syncStatus={S.sitesSyncStatus}
+          syncStatus={{}}
         />
 
         {site && S.selectedSiteFiles ? (

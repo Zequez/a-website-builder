@@ -35,17 +35,23 @@ import type {
   RouteGetSitesQuery,
 } from '@server/routes/api/types';
 
-import { MemberAuth } from '@app/components/Auth';
+import type { MemberAuth } from '@app/components/Auth';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
+
+let memberAuth: MemberAuth | null = null;
+export function setAuth(newAuth: MemberAuth | null) {
+  memberAuth = newAuth;
+}
 
 function api<T, Q extends Record<string, any>>(
   path: string | ((q: Q) => string),
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
 ): ApiEndpoint<Q, T> {
-  return (query: Q, authorization: string | null | undefined = null) => {
-    const authHeader: { Authorization: string } | {} = authorization
-      ? { Authorization: `Bearer ${authorization}` }
+  return (query: Q, authorization?: string | null | undefined) => {
+    const resolvedToken = authorization || memberAuth?.token;
+    const authHeader: { Authorization: string } | {} = resolvedToken
+      ? { Authorization: `Bearer ${resolvedToken}` }
       : {};
     const resolvedPath = typeof path === 'string' ? path : path(query);
     const baseUrl = `${API_BASE_URL}/${resolvedPath}`;
@@ -94,7 +100,7 @@ async function typedSimplifiedResponse<T>(resPromise: Promise<Response>) {
 
 export type ApiEndpoint<T, K> = (
   params: T,
-  auth: string | null | undefined,
+  auth?: string | null | undefined,
 ) => TypedSimplifiedResponse<K>;
 
 export function useRemoteResource<T, K>(

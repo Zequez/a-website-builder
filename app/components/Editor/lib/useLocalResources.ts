@@ -71,6 +71,11 @@ export default function useLocalResources<T extends ResourceType>(config: UseLoc
   }
 
   const list = useMemo(() => Object.values(byId), [byId]) as T[];
+  const listByLastUpdate = useMemo(() => {
+    const list = Object.values(byId);
+    list.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    return list;
+  }, [list]);
 
-  return { byId, _byId: byId, list, update, set, remove };
+  return { byId, _byId: byId, list, listByLastUpdate, update, set, remove };
 }

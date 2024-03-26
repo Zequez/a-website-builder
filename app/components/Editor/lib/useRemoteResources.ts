@@ -103,6 +103,10 @@ export default function useRemoteResources<ApiParams, ApiData, T extends BaseRes
     return { data, error };
   }
 
+  function markAsDeleted(item: T) {
+    setUpdatedById((byId) => ({ ...byId, [item.id]: { ...item, deleted: true } }));
+  }
+
   return {
     list,
     _byId: byId,
@@ -116,6 +120,7 @@ export default function useRemoteResources<ApiParams, ApiData, T extends BaseRes
     post,
     put,
     delete: delete_,
+    markAsDeleted,
     error,
     loaded,
   };

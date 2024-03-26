@@ -1,5 +1,6 @@
 import { JSX, createContext } from 'preact';
 import { useState, useMemo, useContext } from 'preact/hooks';
+import * as api from '@app/lib/api';
 
 type TokenData = {
   id: number;
@@ -54,7 +55,9 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
   const [memberAuth, setMemberAuth] = useState<MemberAuth | null>(() => {
     try {
       const token = JSON.parse(localStorage.getItem(AUTH_LOCALSTORAGE_KEY) || '""');
-      return tokenToMemberAuth(token);
+      const newMemberAuth = tokenToMemberAuth(token);
+      api.setAuth(newMemberAuth);
+      return newMemberAuth;
     } catch (e) {
       console.error('Error reading token from localstorage; removing key');
       localStorage.removeKey(AUTH_LOCALSTORAGE_KEY);
@@ -67,12 +70,14 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
       if (!token) {
         localStorage.removeItem(AUTH_LOCALSTORAGE_KEY);
         setMemberAuth(null);
+        api.setAuth(null);
       } else {
         const newMemberAuth = tokenToMemberAuth(token);
         const member = newMemberAuth?.member;
 
         if (member && member.id && member.email && member.full_name) {
           setMemberAuth(newMemberAuth);
+          api.setAuth(newMemberAuth);
           localStorage.setItem(AUTH_LOCALSTORAGE_KEY, JSON.stringify(token));
         } else {
           console.error('Token does not contain member data; not setting token');

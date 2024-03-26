@@ -1,6 +1,10 @@
 import { transform } from 'sucrase';
 import * as preact from 'preact';
-import { render } from 'preact-render-to-string';
+
+// TODO: Using the local build of preact-render-to-string somehow interacts with the Preact theapp uses
+// And then the app breaks with an error about using hooks outside components.
+// @ts-ignore
+import { render } from 'https://cdn.jsdelivr.net/npm/preact-render-to-string@6.4.1/+esm';
 
 function tryTransform(content: string) {
   return transform(content, {
@@ -66,4 +70,5 @@ export function isPreactRenderable(value: any) {
   }
 }
 
-export const preactToString = render;
+// export const preactToString = (v: any) => '<div>Hello</div>';
+export const preactToString: (v: any) => string = render;

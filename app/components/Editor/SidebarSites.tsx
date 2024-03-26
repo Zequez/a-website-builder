@@ -34,21 +34,19 @@ export default function SidebarSites({
   return (
     <div class="flex flex-col">
       <div class="text-white text-center text-lg my-2">Sites</div>
-      {sites
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((site) =>
-          site.deleted ? null : (
-            <SiteButton
-              site={site}
-              isSelected={selectedSiteId === site.id}
-              onNameChange={(newVal) => onNameChange(site.id, newVal)}
-              onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
-              onDelete={() => onDelete(site.id)}
-              onOpen={() => onSelect(site.id)}
-              syncStatus={syncStatus[site.id]}
-            />
-          ),
-        )}
+      {sites.map((site) =>
+        site.deleted ? null : (
+          <SiteButton
+            site={site}
+            isSelected={selectedSiteId === site.id}
+            onNameChange={(newVal) => onNameChange(site.id, newVal)}
+            onLocalNameChangeAttempt={(newVal) => onLocalNameChangeAttempt(site.id, newVal)}
+            onDelete={() => onDelete(site.id)}
+            onOpen={() => onSelect(site.id)}
+            syncStatus={syncStatus[site.id]}
+          />
+        ),
+      )}
       <button class="flex items-center justify-center group mt-2 mb-4" onClick={onAdd}>
         <span class="block flex items-center justify-center text-white bg-emerald-500 group-hover:bg-emerald-400 text-sm rounded-md px-2 py-1 tracking-wider">
           NEW SITE
@@ -120,7 +118,7 @@ function SiteButton({
     >
       {mode === 'editName' || mode === 'editLocalName' ? (
         <input
-          class="block flex-grow px-2 py-1 bg-white min-w-0"
+          class="block flex-grow px-2 py-1 bg-white min-w-0 text-black/60"
           type="text"
           value={newValue}
           onKeyUp={({ key }) => key === 'Enter' && handleApplyNameChange()}

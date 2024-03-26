@@ -44,3 +44,7 @@ export const validateUuid = validate;
 
 export const btoa = encode;
 export const atob = decode;
+
+export function toArr(x: string | string[]) {
+  return Array.isArray(x) ? x : [x];
+}
