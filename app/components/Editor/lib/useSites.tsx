@@ -17,6 +17,14 @@ import { useLocalStorageState } from '@app/lib/utils';
 export default function useSites(memberAuth: MemberAuth | null) {
   const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
+  useEffect(() => {
+    console.log('SETTING THING!');
+    localStorage.setItem(
+      'storage_member_id',
+      JSON.stringify(memberAuth ? memberAuth.member.id : null),
+    );
+  }, [memberAuth]);
+
   const LSites = useLocalResources<LocalSite>({ localStoragePrefix: '__SITES__' });
   const LFiles = useLocalResources<LocalFile>({ localStoragePrefix: '__FILES__' });
 

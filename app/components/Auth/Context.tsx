@@ -29,6 +29,18 @@ export const MemberAuthContext = createContext<{
 
 const AUTH_LOCALSTORAGE_KEY = '_auth_token_';
 
+function cleanLocalFiles(memberId: number) {
+  const storageMemberIdRaw = localStorage.getItem('storage_member_id');
+  const storageMemberId = storageMemberIdRaw ? JSON.parse(storageMemberIdRaw) : null;
+  if (storageMemberId && storageMemberId !== memberId) {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('__FILES__') || key.startsWith('__SITES__')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+}
+
 function tokenDataToMember(tokenData: TokenData): Member {
   return {
     id: tokenData.id,
@@ -76,6 +88,7 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
         const member = newMemberAuth?.member;
 
         if (member && member.id && member.email && member.full_name) {
+          cleanLocalFiles(member.id);
           setMemberAuth(newMemberAuth);
           api.setAuth(newMemberAuth);
           localStorage.setItem(AUTH_LOCALSTORAGE_KEY, JSON.stringify(token));
