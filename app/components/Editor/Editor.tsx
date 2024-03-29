@@ -9,6 +9,7 @@ import { LocalFile, LocalSite } from './types';
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
 import build, { BuildError, BuildFile } from './lib/builder';
+import { btoa } from '@shared/utils';
 
 import SidebarSites from './SidebarSites';
 import SidebarFiles from './NewSidebarFiles';
