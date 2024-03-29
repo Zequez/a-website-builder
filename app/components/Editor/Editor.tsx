@@ -78,7 +78,8 @@ const Editor = () => {
 
   useEffect(() => {
     if (buildFiles.length > 0 && S.syncEnabled && site && memberAuth) {
-      if (S.RFiles._byId?.[site.id]) {
+      if (S.RSites._byId?.[site.id]) {
+        console.log('Publishing build files', buildFiles);
         postFilesSaveBuild(
           {
             siteId: site.id,
@@ -88,7 +89,7 @@ const Editor = () => {
         );
       }
     }
-  }, [buildFiles, S.syncEnabled, site, memberAuth]);
+  }, [buildFiles, S.syncEnabled, site, memberAuth, S.RSites._byId]);
 
   const handleFileClick = (id: string) => {
     S.selectFile(id);
