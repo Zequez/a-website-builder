@@ -5,6 +5,7 @@ import * as preact from 'preact';
 // And then the app breaks with an error about using hooks outside components.
 // @ts-ignore
 import { render } from 'https://cdn.jsdelivr.net/npm/preact-render-to-string@6.4.1/+esm';
+// import { render } from 'preact-render-to-string';
 
 function tryTransform(content: string) {
   return transform(content, {
