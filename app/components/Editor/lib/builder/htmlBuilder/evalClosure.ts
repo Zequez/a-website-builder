@@ -1,16 +1,17 @@
-import * as preact from 'preact';
 import classnames from 'classnames';
+// @ts-ignore
+import * as iPreact from '@ipreact';
 
-export const h = preact.createElement;
-export const Fragment = preact.Fragment;
+export const h = iPreact.h;
+export const Fragment = iPreact.Fragment;
 
 export default function (
   components: { [key: string]: any },
   data: { [key: string]: any },
   content: string,
 ) {
-  const Fragment = preact.Fragment;
-  const h = preact.createElement;
+  const Fragment = iPreact.Fragment;
+  const h = iPreact.h;
   const cx = classnames;
 
   if (typeof Fragment === 'undefined' || typeof h === 'undefined' || typeof cx === 'undefined') {

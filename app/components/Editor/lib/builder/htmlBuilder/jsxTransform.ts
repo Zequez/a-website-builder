@@ -1,11 +1,7 @@
 import { transform } from 'sucrase';
-import * as preact from 'preact';
 
-// TODO: Using the local build of preact-render-to-string somehow interacts with the Preact theapp uses
-// And then the app breaks with an error about using hooks outside components.
 // @ts-ignore
-import { render } from 'https://cdn.jsdelivr.net/npm/preact-render-to-string@6.4.1/+esm';
-// import { render } from 'preact-render-to-string';
+import * as iPreact from '@ipreact';
 
 function tryTransform(content: string) {
   return transform(content, {
@@ -58,8 +54,8 @@ export default function jsxTransform(jsxString: string): string {
 }
 
 export function evalWithPreactContext(code: string) {
-  const h = preact.createElement;
-  const Fragment = preact.Fragment;
+  const h = iPreact.h;
+  const Fragment = iPreact.Fragment;
   return eval(code);
 }
 
@@ -72,4 +68,4 @@ export function isPreactRenderable(value: any) {
 }
 
 // export const preactToString = (v: any) => '<div>Hello</div>';
-export const preactToString: (v: any) => string = render;
+export const preactToString: (v: any) => string = iPreact.render;

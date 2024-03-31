@@ -19,7 +19,8 @@
     "db:seeds": "tsx ./scripts/applySeeds.ts",
     "test": "pnpm test:server",
     "test:app": "NODE_ENV=test vitest -c vitest.config.ts -r app/",
-    "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --silent=false  -c vitest.config.ts -r server/"
+    "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --silent=false  -c vitest.config.ts -r server/",
+    "postinstall": "[ -f independent-preact/bundle.js ] || pnpm rollup -c independent-preact/rollup.config.js"
   },
   "type": "module",
   "keywords": [],
@@ -33,6 +34,7 @@
     }
   },
   "dependencies": {
+    "@babel/core": "^7.24.3",
     "@codemirror/commands": "^6.3.3",
     "@codemirror/lang-css": "^6.2.1",
     "@codemirror/lang-html": "^6.4.8",
@@ -44,6 +46,9 @@
     "@iconify-json/fa6-solid": "^1.1.20",
     "@lezer/common": "^1.2.1",
     "@preact/preset-vite": "^2.8.1",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@types/bcrypt": "^5.0.2",
@@ -79,8 +84,11 @@
     "pg": "^8.11.3",
     "preact": "^10.19.6",
     "preact-render-to-string": "^6.4.1",
+    "rollup": "^4.13.2",
+    "solid-js": "^1.8.16",
     "squid": "^0.5.2",
     "sucrase": "^3.35.0",
+    "terser": "^5.30.0",
     "thememirror": "^2.0.1",
     "tsc-alias": "^1.8.8",
     "tsx": "^4.7.1",

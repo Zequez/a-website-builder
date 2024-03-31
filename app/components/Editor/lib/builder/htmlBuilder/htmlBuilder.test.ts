@@ -1,11 +1,31 @@
 import { it, describe, expect } from 'vitest';
 import htmlBuilder from '../htmlBuilder';
+import { parse } from 'node-html-parser';
 
 function createContext(files: { name: string; content: string }[], vars = {}) {
   return { files, vars, errors: [] };
 }
 
+function getBody(html: string) {
+  const root = parse(html);
+  return root.querySelector('body')!.innerHTML;
+}
+
 describe('CustomHtmlBuilder', () => {
+  it('should add DOCTYPE, and some basic HTML tags', () => {
+    const context = createContext([
+      {
+        name: 'pages/index.html',
+        content: '<div>Hello world</div>',
+      },
+    ]);
+    htmlBuilder(context);
+    expect(context.files[0].name).toEqual('index.html');
+    expect(context.files[0].content).toMatch(/<html/);
+    expect(context.files[0].content).toMatch(/^<!DOCTYPE/);
+    expect(context.files[0].content).toMatch(/<body/);
+    expect(context.files[0].content).toMatch(/<title/);
+  });
   it.each([
     ['Hello world', 'Hello world'],
     ['<div>Hello world</div>', '<div>Hello world</div>'],
@@ -20,7 +40,7 @@ describe('CustomHtmlBuilder', () => {
     ]);
     htmlBuilder(context);
     expect(context.files[0].name).toEqual('index.html');
-    expect(context.files[0].content).toEqual(`<!DOCTYPE html>${result}`);
+    expect(getBody(context.files[0].content)).toEqual(result);
   });
 
   it('should not fail with an empty string', () => {
@@ -32,10 +52,10 @@ describe('CustomHtmlBuilder', () => {
     ]);
     htmlBuilder(context);
     expect(context.files[0].name).toEqual('index.html');
-    expect(context.files[0].content).toEqual(`<!DOCTYPE html>`);
+    expect(getBody(context.files[0].content)).toEqual(``);
   });
 
-  it('should be empty with a function that does not return a valid elemen', () => {
+  it('should be empty with a function that does not return a valid element', () => {
     const context = createContext([
       {
         name: 'pages/index.html',
@@ -43,7 +63,7 @@ describe('CustomHtmlBuilder', () => {
       },
     ]);
     htmlBuilder(context);
-    expect(context.files[0].content).toEqual(`<!DOCTYPE html>`);
+    expect(getBody(context.files[0].content)).toEqual(``);
   });
 
   it('should return an error with some strange code', () => {
@@ -90,7 +110,7 @@ describe('CustomHtmlBuilder', () => {
     );
     htmlBuilder(context);
     expect(context.files[0].name).toEqual('index.html');
-    expect(context.files[0].content).toEqual('<!DOCTYPE html><div>Wololo</div>');
+    expect(getBody(context.files[0].content)).toEqual('<div>Wololo</div>');
   });
 
   it('should convert one page to many', () => {
@@ -112,11 +132,11 @@ describe('CustomHtmlBuilder', () => {
     htmlBuilder(context);
     expect(context.files.length).toEqual(3);
     expect(context.files[0].name).toEqual('items/one.html');
-    expect(context.files[0].content).toEqual('<!DOCTYPE html><div>1 ONE</div>');
+    expect(getBody(context.files[0].content)).toEqual('<div>1 ONE</div>');
     expect(context.files[1].name).toEqual('items/two.html');
-    expect(context.files[1].content).toEqual('<!DOCTYPE html><div>2 TWO</div>');
+    expect(getBody(context.files[1].content)).toEqual('<div>2 TWO</div>');
     expect(context.files[2].name).toEqual('items/three.html');
-    expect(context.files[2].content).toEqual('<!DOCTYPE html><div>3 THREE</div>');
+    expect(getBody(context.files[2].content)).toEqual('<div>3 THREE</div>');
   });
 
   it('should convert one page to many with layout components', () => {
@@ -128,7 +148,8 @@ describe('CustomHtmlBuilder', () => {
         },
         {
           name: 'components/Html.jsx',
-          content: '({title, children}) => <><title>{title}</title><div>{children}</div></>',
+          content:
+            '({title, children}) => <body><title>{title}</title><div>{children}</div></body>',
         },
       ],
       {
@@ -142,13 +163,11 @@ describe('CustomHtmlBuilder', () => {
     htmlBuilder(context);
     expect(context.files.length).toEqual(3);
     expect(context.files[0].name).toEqual('items/one.html');
-    expect(context.files[0].content).toEqual('<!DOCTYPE html><title>1 ONE</title><div>1 ONE</div>');
+    expect(getBody(context.files[0].content)).toEqual('<title>1 ONE</title><div>1 ONE</div>');
     expect(context.files[1].name).toEqual('items/two.html');
-    expect(context.files[1].content).toEqual('<!DOCTYPE html><title>2 TWO</title><div>2 TWO</div>');
+    expect(getBody(context.files[1].content)).toEqual('<title>2 TWO</title><div>2 TWO</div>');
     expect(context.files[2].name).toEqual('items/three.html');
-    expect(context.files[2].content).toEqual(
-      '<!DOCTYPE html><title>3 THREE</title><div>3 THREE</div>',
-    );
+    expect(getBody(context.files[2].content)).toEqual('<title>3 THREE</title><div>3 THREE</div>');
   });
 
   it('should allow to programatically definepages', () => {
@@ -160,7 +179,7 @@ describe('CustomHtmlBuilder', () => {
     ]);
     htmlBuilder(context);
     expect(context.files[0].name).toEqual('items/potato.html');
-    expect(context.files[0].content).toEqual('<!DOCTYPE html><div>a</div>');
+    expect(getBody(context.files[0].content)).toEqual('<div>a</div>');
   });
 
   describe('components', () => {
@@ -181,7 +200,7 @@ describe('CustomHtmlBuilder', () => {
       ]);
       htmlBuilder(context);
       expect(context.files[0].name).toEqual('index.html');
-      expect(context.files[0].content).toEqual('<!DOCTYPE html><a href="/potato">Potato</a>');
+      expect(getBody(context.files[0].content)).toEqual('<a href="/potato">Potato</a>');
     });
   });
 });

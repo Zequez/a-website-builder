@@ -19,7 +19,8 @@
       "@db/*": ["./server/db/*"],
       "@server/*": ["./server/*"],
       "@app/*": ["./app/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@ipreact": ["./independent-preact/bundle.js"]
     },
     "outDir": "./dist/ts"
   },
