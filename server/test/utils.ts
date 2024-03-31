@@ -1,6 +1,4 @@
 import { API_PATH, PORT } from '@server/config';
-import { tokenFromMember } from '@server/lib/utils';
-import { beforeAll } from 'vitest';
 import { loadFixtures } from '@server/test/fixtures';
 
 const apiUrl = `http://localhost:${PORT}/${API_PATH}/`;
