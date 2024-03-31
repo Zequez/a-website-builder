@@ -9,7 +9,7 @@ import { LocalFile, LocalSite } from './types';
 import { useAuth } from '../Auth';
 import useSites from './lib/useSites';
 import build, { BuildError, BuildFile } from './lib/builder';
-import { btoa } from '@shared/utils';
+import { encodeB64 } from '@shared/utils';
 
 import SidebarSites from './SidebarSites';
 import SidebarFiles from './NewSidebarFiles';
@@ -84,7 +84,7 @@ const Editor = () => {
         postFilesSaveBuild(
           {
             siteId: site.id,
-            files: buildFiles.map(({ name, content }) => ({ name, data: btoa(content) })),
+            files: buildFiles.map(({ name, content }) => ({ name, data: encodeB64(content) })),
           },
           memberAuth.token,
         );

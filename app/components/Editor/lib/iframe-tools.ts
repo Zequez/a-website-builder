@@ -1,11 +1,10 @@
 import { parse } from 'node-html-parser';
-import { encode } from 'js-base64';
 import { LocalFile } from '../types';
-import { keyBy } from '@shared/utils';
+import { keyBy, encodeB64 } from '@shared/utils';
 
 export function contentToDataUrl(mime: string, content: string) {
   try {
-    return `data:${mime};base64,${encode(content)}`;
+    return `data:${mime};base64,${encodeB64(content)}`;
   } catch (e) {
     console.error('Error converting content to data url', e);
     return null;

@@ -1,6 +1,7 @@
 import { BuildContext, BuildFile } from '../types.d';
-import evalClosure from './evalClosure';
+import evalClosure, { h } from './evalClosure';
 import jsxTransform, { preactToString } from './jsxTransform';
+import HtmlComponent from './HtmlComponent';
 
 const openingTagMatcher = (name: string) => new RegExp(`<(${name})`, 'g');
 const closingTagMatcher = (name: string) => new RegExp(`</(${name})>`, 'g');
@@ -109,7 +110,7 @@ export default function htmlBuilder(context: BuildContext) {
     return;
   }
 
-  const components: { [key: string]: any } = {};
+  const components: { [key: string]: any } = { Html: HtmlComponent };
   const saferEval = evalClosure.bind(null, components, context.vars);
   componentsParsingOrder.forEach((name) => {
     const componentFile = componentsFiles[name];
@@ -129,6 +130,15 @@ export default function htmlBuilder(context: BuildContext) {
     removeFile(componentFile);
   });
 
+  function addPage(pageName: string, pagePreactElement: any) {
+    const rootIsHtml = pagePreactElement.type === 'html';
+    const finalElement = !rootIsHtml
+      ? h(components.Html, { children: pagePreactElement })
+      : pagePreactElement;
+    const rendered = addDoctype(preactToString(finalElement));
+    context.files.push({ name: pageName, content: rendered });
+  }
+
   Object.entries(matchBasicPages(context.files)).forEach(([name, file]) => {
     let content = nsInjectComponents(file.content);
     try {
@@ -147,15 +157,13 @@ export default function htmlBuilder(context: BuildContext) {
           }
           const pagePath = pageDef[0];
           const pagePreactElement = pageDef[1];
-          const rendered = addDoctype(preactToString(pagePreactElement));
           const pageName = pagePath.startsWith('/')
             ? `${pagePath.slice(1)}.html`
             : `${name}/${pagePath}.html`;
-          context.files.push({ name: pageName, content: rendered });
+          addPage(pageName, pagePreactElement);
         }
       } else {
-        const rendered = addDoctype(preactToString(result));
-        context.files.push({ name: `${name}.html`, content: rendered });
+        addPage(`${name}.html`, result);
       }
     } catch (e) {
       context.errors.push({ e, message: 'Error parsing file ', file });

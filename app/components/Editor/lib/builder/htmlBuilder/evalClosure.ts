@@ -1,6 +1,9 @@
 import * as preact from 'preact';
 import classnames from 'classnames';
 
+export const h = preact.createElement;
+export const Fragment = preact.Fragment;
+
 export default function (
   components: { [key: string]: any },
   data: { [key: string]: any },

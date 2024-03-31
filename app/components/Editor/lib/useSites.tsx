@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import { LocalFile, LocalSite } from '../types';
-import { randomAlphaNumericString, uuid, btoa } from '@shared/utils';
+import { randomAlphaNumericString, uuid, encodeB64 } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
 
@@ -69,7 +69,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
           id: file.id,
           site_id: file.siteId,
           name: file.name,
-          data: btoa(file.content),
+          data: encodeB64(file.content),
         },
         token,
       ),
@@ -78,7 +78,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
         {
           id: file.id,
           name: file.name,
-          data: btoa(file.content),
+          data: encodeB64(file.content),
         },
         token,
       ),

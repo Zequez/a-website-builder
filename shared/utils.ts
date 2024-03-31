@@ -31,7 +31,7 @@ type TokenMember = {
 };
 
 export function tokenData(token: string): TokenMember & { exp: number; iat: number } {
-  return JSON.parse(atob(token.split('.')[1]));
+  return JSON.parse(decodeB64(token.split('.')[1]));
 }
 
 export function randomAlphaNumericString() {
@@ -42,8 +42,8 @@ export const uuid = uuidv4;
 
 export const validateUuid = validate;
 
-export const btoa = encode;
-export const atob = decode;
+export const encodeB64 = encode;
+export const decodeB64 = decode;
 
 export function toArr(x: string | string[]) {
   return Array.isArray(x) ? x : [x];
