@@ -73,7 +73,6 @@ function injectComponents(components: string[], content: string) {
 
 const MATCH_COMPONENTS_FILES = /^components\/(.*)\.jsx$/;
 const MATCH_BASIC_PAGES = /^pages\/(.*)\.(html|jsx|tsx)$/;
-const MATCH_ADVANCED_PAGES = /^pages\/(.*)\.jsx$/;
 
 function matchFiles(matcher: RegExp, files: BuildFile[]) {
   const filesByName: { [key: string]: BuildFile } = {};
@@ -118,8 +117,6 @@ export default function htmlBuilder(context: BuildContext) {
     try {
       const jsxCode = jsxTransform(content);
       components[name] = saferEval(jsxCode);
-
-      // components[name] = () => null;
     } catch (e) {
       context.errors.push({
         e,
@@ -131,7 +128,8 @@ export default function htmlBuilder(context: BuildContext) {
   });
 
   function addPage(pageName: string, pagePreactElement: any) {
-    const rootIsHtml = pagePreactElement.type === 'html';
+    const rootIsHtml =
+      pagePreactElement.type === 'html' || pagePreactElement.type === components.Html;
     const finalElement = !rootIsHtml
       ? h(components.Html, { children: pagePreactElement })
       : pagePreactElement;

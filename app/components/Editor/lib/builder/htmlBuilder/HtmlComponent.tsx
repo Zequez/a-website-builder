@@ -1,4 +1,4 @@
-export default (props: any) => (
+const Html = (props: any) => (
   <html>
     <head lang={props.lang || 'en'}>
       <meta charset="UTF-8" />
@@ -9,3 +9,5 @@ export default (props: any) => (
     <body class={props.class}>{props.children}</body>
   </html>
 );
+
+export default Html;
