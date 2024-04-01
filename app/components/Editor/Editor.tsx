@@ -31,6 +31,13 @@ const Editor = () => {
   const [buildErrors, setBuildErrors] = useState<BuildError[]>([]);
 
   const unsavedFile = file ? S.UnsavedFiles.byId[file.id] : null;
+  const unsavedFilesForThisSite = useMemo(() => {
+    if (site) {
+      return S.UnsavedFiles.list.filter((f) => f.siteId === site.id);
+    } else {
+      return [];
+    }
+  }, [S.UnsavedFiles.list, site?.id]);
 
   const saveUnsavedFiles = useCallback(() => {
     console.log('Saving!');
@@ -140,6 +147,11 @@ const Editor = () => {
 
   const handleDeleteSite = (id: string) => {
     S.deleteSite(id);
+    S.UnsavedFiles.list.forEach((f) => {
+      if (f.siteId === id) {
+        S.UnsavedFiles.remove(f.id);
+      }
+    });
   };
 
   const handleDeleteFile = (id: string) => {
@@ -169,8 +181,6 @@ const Editor = () => {
       alert('You must register to enable syncing');
     }
   };
-
-  const openFile = S.selectedFile;
 
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
@@ -220,9 +230,9 @@ const Editor = () => {
               <div class="flex-grow"></div>
               <button
                 class={cx('px-2 py-1 bg-blue-400 text-white', {
-                  'opacity-20 saturate-0': S.UnsavedFiles.list.length === 0,
+                  'opacity-20 saturate-0': unsavedFilesForThisSite.length === 0,
                 })}
-                disabled={S.UnsavedFiles.list.length === 0}
+                disabled={unsavedFilesForThisSite.length === 0}
                 onClick={() => saveUnsavedFiles()}
               >
                 (Cmd+S) Save all & Preview
