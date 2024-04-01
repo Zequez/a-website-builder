@@ -1,6 +1,6 @@
 import { useAuth } from './Auth';
 import Header from './Header';
-import bluePlanet from '../images/blue-planet.jpeg';
+import bluePlanet2 from '../images/blue-planet-2.jpeg';
 import alienShapesTalking from '../images/alien-shapes-talking.jpeg';
 import { cx } from '@app/lib/utils';
 import MembersExplorer from './MembersExplorer';
@@ -25,6 +25,7 @@ const possibilities = [
   'Neighbourhoods',
   'E-books',
   'Libraries',
+  'Governance',
 ];
 
 const ValuePropositionPage = () => {
@@ -32,23 +33,29 @@ const ValuePropositionPage = () => {
 
   return (
     <div class="flex flex-col bg-gray-100 text-black/80 min-h-screen">
-      <Header isAuth={!!memberAuth} signOut={signOut} />
-      <div class="pt-8">
-        <div class="flex space-x-4 h-70 pb-16 w-screen-md mx-auto">
-          <div class="flex flex-col h-full items-center justify-center">
-            <h2 class="text-2xl mb-2">
-              Get involved in an <strong>open web creation platform</strong> owned by the people who
-              use it
-            </h2>
-            <p class="text-black/50">
-              Hojaweb is a members-driven project that aims to bring us together in creating our own
-              web and apps with shared tools and knowledge
-            </p>
+      <div class="">
+        <div class="relative h-120 overflow-hidden">
+          <Header class="z-20" isAuth={!!memberAuth} signOut={signOut} />
+          <div class=" relative z-20 flex space-x-8 h-80 pb-16 w-screen-md mx-auto text-white">
+            <div class="flex flex-col h-full w-1/2 items-center justify-center">
+              <div class="bg-black/30 p-4 rounded-md">
+                <h2 class="text-2xl mb-2">
+                  Get involved in an <strong>open web creation platform</strong> owned by the people
+                  who use it
+                </h2>
+                <p class="opacity-75">
+                  Hojaweb is a members-driven project that aims to bring us together in creating our
+                  own web and apps with shared tools and knowledge
+                </p>
+              </div>
+            </div>
           </div>
           <img
-            class="h-full rounded-2xl shadow-lg scale-x-[-100%]"
-            src={bluePlanet}
-            style={{ filter: 'brightness(250%) contrast(100%)' }}
+            src={bluePlanet2}
+            class="w-full z-10 absolute top-0 left-0"
+            style={{
+              filter: 'brightness(250%) contrast(100%)',
+            }}
           />
         </div>
         <PossibilitiesCloud possibilities={possibilities} />
