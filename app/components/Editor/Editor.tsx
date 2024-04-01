@@ -142,6 +142,11 @@ const Editor = () => {
     S.deleteSite(id);
   };
 
+  const handleDeleteFile = (id: string) => {
+    S.deleteFile(id);
+    S.UnsavedFiles.remove(id);
+  };
+
   const handleAddFile = (name: string) => {
     if (site) {
       const newFile = S.createFile(site.id, { name, content: '' });
@@ -191,7 +196,7 @@ const Editor = () => {
             onAddFile={handleAddFile}
             onRenameFile={handleRenameFile}
             onApplyTemplate={(template) => S.applyTemplate(site.id, template)}
-            onDeleteFile={(fileId) => S.deleteFile(fileId)}
+            onDeleteFile={handleDeleteFile}
           />
         ) : (
           <div class="flex-grow"></div>
