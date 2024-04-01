@@ -1,0 +1,15 @@
+.pulse-opacity {
+  animation: pulse-opacity 1s infinite;
+}
+
+@keyframes pulse-opacity {
+  0% {
+    opacity: 0.50;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.50;
+  }
+}

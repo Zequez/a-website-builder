@@ -27,6 +27,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
   const LSites = useLocalResources<LocalSite>({ localStoragePrefix: '__SITES__' });
   const LFiles = useLocalResources<LocalFile>({ localStoragePrefix: '__FILES__' });
+  const UnsavedFiles = useLocalResources<LocalFile>({ localStoragePrefix: '__UNSAVED_FILES__' });
 
   const fetchParams = useMemo(
     () => (memberAuth ? { member_id: memberAuth.member.id } : null),
@@ -431,6 +432,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     // Files
     LFiles,
     RFiles,
+    UnsavedFiles,
 
     selectedFileId,
     selectFile: setSelectedFileId,

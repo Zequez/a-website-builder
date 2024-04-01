@@ -19,6 +19,7 @@ export default function SidebarFiles({
   onApplyTemplate,
   onRenameFile,
   onDeleteFile,
+  unsavedFilesIds,
 }: {
   files: LocalFile[];
   selectedFileId: string | null;
@@ -27,6 +28,7 @@ export default function SidebarFiles({
   onApplyTemplate: (template: { name: string; content: string }[]) => void;
   onRenameFile: (fileId: string, newFileName: string) => void;
   onDeleteFile: (fileId: string) => void;
+  unsavedFilesIds: string[];
 }) {
   // const [newFileName, setNewFileName] = useState<null | string>(null);
   // const [renameFileId, setRenameFileId] = useState<null | string>(null);
@@ -143,6 +145,7 @@ export default function SidebarFiles({
                       name={file.name}
                       cleanName={cleanName}
                       onSelect={() => onOpenFile(file.id)}
+                      isUnsaved={unsavedFilesIds.includes(file.id)}
                       onRename={
                         isFixedFile
                           ? null
@@ -225,6 +228,7 @@ function FileButton({
   onDelete,
   name,
   cleanName,
+  isUnsaved,
 }: {
   isSelected: boolean;
   onSelect: () => void;
@@ -232,6 +236,7 @@ function FileButton({
   onDelete: (() => void) | null;
   name: string;
   cleanName: string;
+  isUnsaved: boolean;
 }) {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const elRef = useRef<HTMLDivElement>(null);
@@ -265,6 +270,11 @@ function FileButton({
   return (
     <>
       <div class="relative z-20 w-full" title={name} ref={elRef}>
+        {isUnsaved ? (
+          <div class="absolute inset-0 flex items-center justify-right text-[10px] pointer-events-none tracking-widest font-thin">
+            <span class="bg-red-500/20 text-white/50 rounded-md px-1 py-0.25 mr-6">Unsaved</span>
+          </div>
+        ) : null}
         <div
           class={cx('w-full flex h-6', {
             'hover:bg-black/10': !isSelected,
