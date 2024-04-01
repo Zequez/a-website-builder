@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 
 import { useAuth, AuthModal } from './components/Auth';
 import Editor from './components/Editor';
-import HomePage from './pages/HomePage';
+import HomePage from './components/HomePage';
 
 type Page = 'editor' | 'home' | 'notFound';
 
