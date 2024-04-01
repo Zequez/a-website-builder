@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
 
-import { appUrl, cx, useLocalStorageState } from '@app/lib/utils';
+import { cx, useLocalStorageState } from '@app/lib/utils';
 import { LocalFile, LocalSite } from './types';
 
 import { useAuth } from '../Auth';
@@ -317,7 +317,7 @@ function BottomButtons({
         </div>
       </button>
 
-      <a class={bottomButtonStyle('bg-blue-300 text-black/60')} href={appUrl('/')}>
+      <a class={bottomButtonStyle('bg-blue-300 text-black/60')} href={'/'}>
         &larr; Back home
       </a>
     </>

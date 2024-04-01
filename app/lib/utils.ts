@@ -33,7 +33,19 @@ export function useLocalStorageState<T>(key: string, initialValue: T) {
   return [state, setState] as const;
 }
 
-export const appUrl = (path: string) => {
-  const onAppPath = window.location.pathname.startsWith('/app');
-  return onAppPath ? `/app${path === '/' ? '' : path}` : path;
+export const strToHue = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % 360;
 };
+
+export function shuffleArray(arr: any[]) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
