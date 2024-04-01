@@ -1,6 +1,6 @@
 import { createGenerator } from '@unocss/core';
 import presetUno from '@unocss/preset-uno';
-import sanitize from '@unocss/reset/sanitize/sanitize.css?inline';
+import reset from '@unocss/reset/tailwind.css?inline';
 import { BuildContext } from './types.d';
 
 const generator = createGenerator({
@@ -21,7 +21,7 @@ export default async function unoCssBuilder(context: BuildContext) {
     }
   });
 
-  context.files.push({ name: 'style.css', content: sanitize + css + cssFilesContents.join('\n') });
+  context.files.push({ name: 'style.css', content: reset + css + cssFilesContents.join('\n') });
   const cssStyleTag = `<link rel="stylesheet" href="/style.css"/>`;
   context.files.forEach((file) => {
     if (file.name.endsWith('.html')) {

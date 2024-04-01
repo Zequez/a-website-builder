@@ -299,7 +299,10 @@ export default function useSites(memberAuth: MemberAuth | null) {
       id: uuid(),
       name: 'pages/index.jsx',
       siteId: newSite.id,
-      content: '',
+      content: `<Html title="Website Title" icon="⭐️" class="bg-yellow-200 text-black/60 font-sans text-center m4">
+  <h1 class="uppercase tracking-wider font-semibold text-4xl mb-4">Hello world</h1>
+  <p>This is a simple website</p>
+</Html>`,
       updatedAt: new Date(),
       deleted: false,
     });
