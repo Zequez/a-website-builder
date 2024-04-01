@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import { LocalFile, LocalSite } from '../types';
-import { randomAlphaNumericString, uuid, encodeB64 } from '@shared/utils';
+import { randomAlphaNumericString, uuid, encodeB64, decodeB64 } from '@shared/utils';
 import { MemberAuth } from '@app/components/Auth';
 import * as api from '@app/lib/api';
 
@@ -58,7 +58,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
       files.map((f) => ({
         id: f.id,
         name: f.name,
-        content: atob(f.data),
+        content: decodeB64(f.data),
         updatedAt: new Date(f.updated_at),
         siteId: f.site_id,
         deleted: false,

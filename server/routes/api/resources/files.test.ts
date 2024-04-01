@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { T } from '@db';
-import { randomAlphaNumericString, uuid } from '@shared/utils';
+import { randomAlphaNumericString, uuid, encodeB64, decodeB64 } from '@shared/utils';
 import { post, put, delete_, get, fixtures as F } from '@server/test/utils';
 
 describe('GET /files', () => {
@@ -19,7 +19,7 @@ describe('PUT /files/:id', () => {
     const currentFile = (await T.files.all())[0];
     const res = await put(`files/${currentFile.id}`, {
       name: randomNewData,
-      data: btoa(randomNewData),
+      data: encodeB64(randomNewData),
     });
     expect(res.status).toBe(401);
   });
@@ -31,7 +31,7 @@ describe('PUT /files/:id', () => {
       `files/${currentFile.id}`,
       {
         name: randomNewData,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.pat.token,
     );
@@ -46,7 +46,7 @@ describe('PUT /files/:id', () => {
       `files/${currentFile.id}`,
       {
         name: randomNewData,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -63,7 +63,7 @@ describe('PUT /files/:id', () => {
       `files/${currentFile.id}`,
       {
         name: '',
-        data: btoa(randomAlphaNumericString()),
+        data: encodeB64(randomAlphaNumericString()),
       },
       F.bob.token,
     );
@@ -82,7 +82,7 @@ describe('PUT /files/:id', () => {
       `files/${currentFile!.id}`,
       {
         name: existingFileName,
-        data: btoa(randomAlphaNumericString()),
+        data: encodeB64(randomAlphaNumericString()),
       },
       F.bob.token,
     );
@@ -95,7 +95,7 @@ describe('PUT /files/:id', () => {
       `files/${currentFile!.id}`,
       {
         name: currentFile!.name,
-        data: btoa(randomAlphaNumericString()),
+        data: encodeB64(randomAlphaNumericString()),
       },
       F.bob.token,
     );
@@ -110,7 +110,7 @@ describe('POST /files', () => {
       'files',
       {
         name: randomAlphaNumericString(),
-        data: btoa(randomAlphaNumericString()),
+        data: encodeB64(randomAlphaNumericString()),
         site_id: F.bob.sites[0].id,
         id: newUuid,
       },
@@ -126,7 +126,7 @@ describe('POST /files', () => {
     const randomNewData = randomAlphaNumericString();
     const res = await post('files', {
       name: randomNewData,
-      data: btoa(randomNewData),
+      data: encodeB64(randomNewData),
     });
     expect(res.status).toBe(401);
   });
@@ -137,7 +137,7 @@ describe('POST /files', () => {
       'files',
       {
         name: randomNewData,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -151,7 +151,7 @@ describe('POST /files', () => {
       {
         site_id: uuid(),
         name: randomNewData,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -166,7 +166,7 @@ describe('POST /files', () => {
       {
         site_id: site.id,
         name: randomNewData,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.pat.token,
     );
@@ -181,7 +181,7 @@ describe('POST /files', () => {
       {
         name: '',
         site_id: site!.id,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -196,7 +196,7 @@ describe('POST /files', () => {
       {
         name: randomNewData,
         site_id: site!.id,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -206,7 +206,7 @@ describe('POST /files', () => {
       {
         name: randomNewData,
         site_id: site!.id,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -221,7 +221,7 @@ describe('POST /files', () => {
       {
         name: randomNewData,
         site_id: site!.id,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
@@ -231,11 +231,23 @@ describe('POST /files', () => {
       {
         name: randomNewData.toUpperCase(),
         site_id: site!.id,
-        data: btoa(randomNewData),
+        data: encodeB64(randomNewData),
       },
       F.bob.token,
     );
     expect(res2.status).toBe(409);
+  });
+
+  it('should correctly encode and decode files data with emojis and other stuff', async () => {
+    const id = uuid();
+    const res = await post(
+      'files',
+      { id, name: randomAlphaNumericString(), site_id: F.bob.sites[0]!.id, data: encodeB64('🌮') },
+      F.bob.token,
+    );
+    expect(res.status).toBe(201);
+    const file = await T.files.get(id);
+    expect(decodeB64(Buffer.from(file!.data).toString('base64'))).toBe('🌮');
   });
 });
 
@@ -262,7 +274,10 @@ describe('POST /files/saveBuild', () => {
   it('should save all the build files for the given site', async () => {
     const res = await post(
       `files/saveBuild`,
-      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world') }] },
+      {
+        siteId: F.bob.sites[0].id,
+        files: [{ name: 'index.html', data: encodeB64('Hello world') }],
+      },
       F.bob.token,
     );
     expect(res.status).toBe(200);
@@ -276,13 +291,19 @@ describe('POST /files/saveBuild', () => {
   it('should delete exiting built files', async () => {
     const res = await post(
       `files/saveBuild`,
-      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world') }] },
+      {
+        siteId: F.bob.sites[0].id,
+        files: [{ name: 'index.html', data: encodeB64('Hello world') }],
+      },
       F.bob.token,
     );
     expect(res.status).toBe(200);
     const res2 = await post(
       `files/saveBuild`,
-      { siteId: F.bob.sites[0].id, files: [{ name: 'index.html', data: btoa('Hello world2') }] },
+      {
+        siteId: F.bob.sites[0].id,
+        files: [{ name: 'index.html', data: encodeB64('Hello world2') }],
+      },
       F.bob.token,
     );
     expect(res2.status).toBe(200);
