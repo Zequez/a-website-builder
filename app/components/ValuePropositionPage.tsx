@@ -1,3 +1,4 @@
+import CheckCircle from '~icons/fa6-solid/circle-check';
 import { useAuth } from './Auth';
 import Header from './Header';
 import bluePlanet2 from '../images/blue-planet-2.jpeg';
@@ -67,15 +68,15 @@ const ValuePropositionPage = () => {
           />
           <div class="flex flex-col h-full items-center justify-center">
             <h2 class="text-2xl mb-2">
-              Get access to <strong>consulting</strong> with the core team on technical{' '}
+              Join and access <strong>consulting</strong> with the core team to create{' '}
               <strong class="bg-clip-text text-transparent bg-gradient-to-r from-lime-400 to-cyan-500">
-                possibilities
-              </strong>
+                Possibility
+              </strong>{' '}
+              together
             </h2>
             <p class="text-black/50">
-              You can ask the team any question you want, if you can imagine it, it can be
-              integrated into the system and tailored to you; the web is an ever evolving sandbox,
-              and once new features are unlocked, they are available to everyone
+              We are counting on your questions and requests to drive the system to where it's
+              needed. Tailor-fit solutions can be made for you and unlocked for everybody.
             </p>
           </div>
         </div>
@@ -84,46 +85,67 @@ const ValuePropositionPage = () => {
         </div>
         <div class="pb-16 bg-slate-200">
           <div class="max-w-screen-lg mx-auto pt-8">
-            <div class="text-center text-[60px] font-bold mb-8 text-slate-400 tracking-wider">
+            <div
+              class="text-center text-[70px] font-bold mb-8 text-slate-400 tracking-wider"
+              style={{
+                textShadow:
+                  '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff, 0 0 50px #fff, 0 0 60px #fff, 0 0 70px #fff',
+              }}
+            >
               JOIN
             </div>
             <div class="flex justify-evenly text-center">
-              <ValuePropositionColumn name="Unregistered">
+              <ValuePropositionColumn name="Visitor" icon="👤">
+                <p class="mb-4 text-center  opacity-75">
+                  Use all available tools without an account
+                </p>
                 <ul class="list-disc-inside">
-                  <li>Create offline websites</li>
-                  <li>Export build</li>
+                  <ValuePropItem>Create offline websites</ValuePropItem>
+                  <ValuePropItem>Export build</ValuePropItem>
                 </ul>
               </ValuePropositionColumn>
-              <ValuePropositionColumn name="Guest">
+              <ValuePropositionColumn name="Guest" icon="🧍">
+                <p class="mb-4 text-center  opacity-75">Sign up for an account</p>
                 <ul class="list-disc-inside">
-                  <li>Limited sites and files on server</li>
-                  <li>Deploy sites on limited domains</li>
-                  <li>Media files using linked Google Drive</li>
-                  <li>Export build web</li>
+                  <ValuePropItem>Limited sites and files on server</ValuePropItem>
+                  <ValuePropItem>Deploy sites on limited domains</ValuePropItem>
+                  <ValuePropItem>Media files using linked Google Drive</ValuePropItem>
+                  <ValuePropItem>Export build web</ValuePropItem>
                 </ul>
               </ValuePropositionColumn>
-              <ValuePropositionColumn name="Power Team">
+              <ValuePropositionColumn name="Power Team" icon="🌼">
+                <p class="mb-4 text-center  opacity-75">
+                  Sign up for an account and pledge to pay-as-much-as-you-can monthly or yearly
+                  contribution
+                </p>
                 <ul class="list-disc-inside">
-                  <li>Unlimited sites and files on server (within reason)</li>
-                  <li>Deploy sites on any available domain</li>
-                  <li>Media files using linked Google Drive</li>
-                  <li>Direct access to possibility consulting with core team</li>
-                  <li>Technical support by core team</li>
-                  <li>Invitation to members Telegram group</li>
-                  <li>Components library publishing access</li>
-                  <li>Invite unlimited guests to collaborate on projects</li>
-                  <li>
+                  <ValuePropItem>
+                    You help financing system upkeep costs and core team roles
+                  </ValuePropItem>
+                  <ValuePropItem>Unlimited sites and files on server (within reason)</ValuePropItem>
+                  <ValuePropItem>Deploy sites on any available domain</ValuePropItem>
+                  <ValuePropItem>Media files uploading using linked Google Drive</ValuePropItem>
+                  <ValuePropItem>Possibility consulting with core team</ValuePropItem>
+                  <ValuePropItem>Technical support by core team</ValuePropItem>
+                  <ValuePropItem>Invitation to members Telegram group</ValuePropItem>
+                  <ValuePropItem>Components library publishing access</ValuePropItem>
+                  <ValuePropItem>Invite unlimited guests to collaborate on projects</ValuePropItem>
+                  <ValuePropItem>
                     Access to development portal for voting on features, components and templates
                     proposals
-                  </li>
+                  </ValuePropItem>
                 </ul>
               </ValuePropositionColumn>
-              <ValuePropositionColumn name="Power Team" power>
+              <ValuePropositionColumn name="Power Team" power icon="⚡️">
+                <p class="mb-4 text-center opacity-75">
+                  Sign up for an account and pledge more than $50 per month
+                </p>
                 <ul class="list-disc-inside">
-                  <li>All on Power Team plus...</li>
-                  <li>Involvement as core financer</li>
-                  <li>Involvement on team meetings scheduling</li>
-                  <li>Invitation to core team Telegram group</li>
+                  <ValuePropItem>Huge impact on the system growth</ValuePropItem>
+                  <ValuePropItem>All on Power Team plus...</ValuePropItem>
+                  <ValuePropItem>Involvement as core financer</ValuePropItem>
+                  <ValuePropItem>Involvement on team meetings scheduling</ValuePropItem>
+                  <ValuePropItem>Invitation to core team Telegram group</ValuePropItem>
                 </ul>
               </ValuePropositionColumn>
             </div>
@@ -134,19 +156,33 @@ const ValuePropositionPage = () => {
   );
 };
 
+const ValuePropItem = ({ children }: { children: any }) => {
+  return (
+    <li class="flex items-center justify-center mb-2">
+      <div class="mr-2">
+        <CheckCircle class="w-6" />
+      </div>
+      <div class="line-height-tight flex-grow">{children}</div>
+    </li>
+  );
+};
+
 const ValuePropositionColumn = ({
+  icon,
   name,
   children,
   power = false,
 }: {
+  icon: string;
   name: string;
   children: any;
   power?: boolean;
 }) => {
   return (
     <div class="w-1/4 border-r-[1px] border-black/10 last:border-none px-4">
+      <div class="text-[60px] -mb-2">{icon}</div>
       <div
-        class={cx('text-xl text-slate-500 tracking-wider mb-4', {
+        class={cx('text-xl text-slate-500 tracking-wider mb-2', {
           'font-black bg-clip-text text-transparent bg-gradient-to-r from-lime-400 to-cyan-500':
             power,
         })}
@@ -154,7 +190,7 @@ const ValuePropositionColumn = ({
         {name}
         {power ? (
           <sup class="font-black bg-clip-text text-transparent bg-gradient-to-r from-lime-400 to-cyan-500">
-            2
+            x
           </sup>
         ) : null}
       </div>
