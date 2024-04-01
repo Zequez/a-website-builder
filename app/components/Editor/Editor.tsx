@@ -18,6 +18,7 @@ import CodePanel from './CodePanel';
 // import Inspector from './Inspector';
 import { postFilesSaveBuild } from '@app/lib/api';
 import { relocateFiles } from './lib/files-sections';
+import Sidebar from './Sidebar';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
@@ -169,7 +170,7 @@ const Editor = () => {
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {/*editorInspector ? <Inspector S={S} /> : null*/}
-      <div class="w-54 bg-gray-500 flex flex-col flex-shrink-0">
+      <Sidebar>
         <SidebarSites
           sites={S.sitesListSortedByLastUpdatedFile}
           selectedSiteId={site?.id || null}
@@ -201,7 +202,7 @@ const Editor = () => {
           syncEnabled={S.syncEnabled}
           onToggleSync={handleAttemptSyncEnabling}
         />
-      </div>
+      </Sidebar>
 
       <div class="flex flex-grow flex-col overflow-hidden">
         <CodePanel site={site} file={unsavedFile || file} onChange={onEditorContentChanges} />

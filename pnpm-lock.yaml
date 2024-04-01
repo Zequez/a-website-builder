@@ -13,6 +13,7 @@ specifiers:
   '@iconify-json/fa6-solid': ^1.1.20
   '@lezer/common': ^1.2.1
   '@preact/preset-vite': ^2.8.1
+  '@preact/signals': ^1.2.3
   '@rollup/plugin-babel': ^6.0.4
   '@rollup/plugin-node-resolve': ^15.2.3
   '@rollup/plugin-terser': ^0.4.4
@@ -84,6 +85,7 @@ dependencies:
   '@iconify-json/fa6-solid': 1.1.20
   '@lezer/common': 1.2.1
   '@preact/preset-vite': 2.8.1_kz5p7ulfautimwwexpnnrg436q
+  '@preact/signals': 1.2.3_preact@10.19.6
   '@rollup/plugin-babel': 6.0.4_ej5taevzqfwndp35sk4rh6w3aq
   '@rollup/plugin-node-resolve': 15.2.3_rollup@4.13.2
   '@rollup/plugin-terser': 0.4.4_rollup@4.13.2
@@ -1092,6 +1094,19 @@ packages:
     transitivePeerDependencies:
       - preact
       - supports-color
+    dev: false
+
+  /@preact/signals-core/1.6.0:
+    resolution: {integrity: sha512-O/XGxwP85h1F7+ouqTMOIZ3+V1whfaV9ToIVcuyGriD4JkSD00cQo54BKdqjvBJxbenvp7ynfqRHEwI6e+NIhw==}
+    dev: false
+
+  /@preact/signals/1.2.3_preact@10.19.6:
+    resolution: {integrity: sha512-M2DXse3Wi8HwjI1d2vQWOLJ3lHogvqTsJYvl4ofXRXgMFQzJ7kmlZvlt5i8x5S5VwgZu0ghru4HkLqOoFfU2JQ==}
+    peerDependencies:
+      preact: 10.x
+    dependencies:
+      '@preact/signals-core': 1.6.0
+      preact: 10.19.6
     dev: false
 
   /@prefresh/babel-plugin/0.5.1:
