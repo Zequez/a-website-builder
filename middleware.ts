@@ -1,3 +1,5 @@
+import rootHostnames from './server/root-hostnames';
+
 export const config = {
   matcher: [
     /*
@@ -10,13 +12,6 @@ export const config = {
     '/((?!_api_/|_member_site_/|_app_assets_/).*)',
   ],
 };
-
-const rootHostnames = [
-  'hoja.localhost',
-  'lol.localhost',
-  'hojaweb.xyz',
-  'a-website-builder-zequez.vercel.app',
-];
 
 const locahostRewriteHostname = 'localhost';
 

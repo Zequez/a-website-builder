@@ -5,7 +5,6 @@ import mime from 'mime';
 import { File_, Member } from '@db';
 import { IncomingHttpHeaders } from 'http';
 import { FileB64 } from '@server/db/driver';
-import { BASE_HOSTNAME } from '@server/config';
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),

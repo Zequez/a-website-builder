@@ -8,7 +8,6 @@ type Page = 'editor' | 'home' | 'notFound';
 
 function routePage() {
   let pathname = window.location.pathname;
-  if (pathname.startsWith('/app')) pathname = pathname.replace(/^\/app/, '');
   if (pathname === '') pathname = '/';
   switch (pathname) {
     case '/':

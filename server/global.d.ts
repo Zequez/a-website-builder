@@ -5,6 +5,9 @@ declare global {
   namespace Express {
     interface Request {
       tokenMember?: TokenMember;
+      resolvedUrl: URL;
+      subDomain: string | null;
+      rootDomain: string;
     }
   }
 

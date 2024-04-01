@@ -1,5 +1,5 @@
 import './config';
-import { isDev, API_PATH, APP_STATIC_PATH, BASE_HOSTNAME, BASE_HOSTNAME2 } from './config';
+import { isDev, API_PATH, APP_STATIC_PATH } from './config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -8,6 +8,7 @@ import { T } from '@db';
 import api from './routes/api';
 import { logger, errorHandler } from './lib/middlewares.js';
 import { parseUrlFile } from './lib/utils.js';
+import hostnameParsingMiddleware from './lib/hostnameParsingMiddleware';
 
 const app = express();
 
@@ -15,54 +16,17 @@ if (isDev) {
   app.use(cors());
 }
 
-function logErrors(err: any, req: any, res: any, next: any) {
-  console.error(err.stack);
-  next(err);
-}
-app.use(logErrors);
-
 app.use(logger(API_PATH));
 app.use(`/${API_PATH}`, api);
-
-const vercelMiddlewareMemberSite = '/_member_site_/';
+app.use(hostnameParsingMiddleware);
 
 const appDist = express.static(APP_STATIC_PATH);
 
-const VALID_BASE_HOSTNAMES = [BASE_HOSTNAME, BASE_HOSTNAME2];
-
-export function getSubdomain(url: URL) {
-  const subdomain = url.hostname.replace(new RegExp(`\\.${BASE_HOSTNAME}$`), '');
-  if (subdomain === url.hostname) return null;
-  return subdomain;
-}
-
 app.all('*', async (req, res, next) => {
-  const forwardedHostFromVercel = req.headers['x-forwarded-host'];
-  const headersHost = req.headers['host'];
-  const resolvedHost = forwardedHostFromVercel || headersHost;
-  if (!resolvedHost) throw 'No host?';
-  if (!req.url) throw 'No URL?';
+  const url = req.resolvedUrl;
 
-  const url = new URL(`${req.url}`, `https://${resolvedHost}`);
-
-  let validHostname: null | string = null;
-  let subdomain: null | string = null;
-  for (let hostname of VALID_BASE_HOSTNAMES) {
-    if (hostname === url.hostname) {
-      validHostname = hostname;
-    } else if (url.hostname.endsWith(hostname)) {
-      subdomain = url.hostname.replace(new RegExp(`\\.${hostname}$`), '');
-      validHostname = hostname;
-    }
-  }
-
-  if (!validHostname)
-    return res.status(400).json({
-      error: `Invalid hostname. Valid hostnames are: ${VALID_BASE_HOSTNAMES.join(' or ')}`,
-    });
-
-  if (!subdomain) {
-    console.log(req.url);
+  if (!req.subDomain) {
+    // On Vercel it serves the app directly without going through here
     // Serve static app
     if (req.url === '/editor') {
       return res.sendFile(path.resolve(path.join(APP_STATIC_PATH, 'index.html')));
@@ -70,11 +34,8 @@ app.all('*', async (req, res, next) => {
 
     return appDist(req, res, next);
   } else {
-    if (url.pathname.startsWith(vercelMiddlewareMemberSite)) {
-      url.pathname = url.pathname.replace(vercelMiddlewareMemberSite, '/');
-    }
     console.log('Site new URL ', url.toString());
-    const site = await T.sites.where({ local_name: subdomain }).one();
+    const site = await T.sites.where({ local_name: req.subDomain }).one();
     if (!site) return next();
     const { fileName, mimeType } = parseUrlFile(url);
     const file = await T.files.where({ site_id: site.id, name: fileName, is_dist: true }).one();
