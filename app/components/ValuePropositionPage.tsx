@@ -2,10 +2,9 @@ import { useAuth } from './Auth';
 import Header from './Header';
 import bluePlanet from '../images/blue-planet.jpeg';
 import alienShapesTalking from '../images/alien-shapes-talking.jpeg';
-import PossibilitiesCanvas from './PossibilitiesCanvas';
-import { cx, strToHue, shuffleArray } from '@app/lib/utils';
-import { useMemo, useState } from 'preact/hooks';
+import { cx } from '@app/lib/utils';
 import MembersExplorer from './MembersExplorer';
+import PossibilitiesCloud from './PossibilitiesCloud';
 
 const possibilities = [
   'Virtual stores',
@@ -24,14 +23,12 @@ const possibilities = [
   'Spreadsheets',
   'Games',
   'Neighbourhoods',
+  'E-books',
+  'Libraries',
 ];
 
 const ValuePropositionPage = () => {
   const { memberAuth, signOut } = useAuth();
-
-  const shuffledPossibilities = useMemo(() => {
-    return shuffleArray(possibilities);
-  }, []);
 
   return (
     <div class="flex flex-col bg-gray-100 text-black/80 min-h-screen">
@@ -40,8 +37,8 @@ const ValuePropositionPage = () => {
         <div class="flex space-x-4 h-70 pb-16 w-screen-md mx-auto">
           <div class="flex flex-col h-full items-center justify-center">
             <h2 class="text-2xl mb-2">
-              Invest in an <strong>open web creation platform</strong> owned by the people who use
-              it
+              Get involved in an <strong>open web creation platform</strong> owned by the people who
+              use it
             </h2>
             <p class="text-black/50">
               Hojaweb is a members-driven project that aims to bring us together in creating our own
@@ -54,24 +51,7 @@ const ValuePropositionPage = () => {
             style={{ filter: 'brightness(250%) contrast(100%)' }}
           />
         </div>
-        <div class="bg-black/5 relative border-b-2 border-t-2 border-solid border-black/5 mb-16">
-          <div class="w-screen-md mx-auto relative z-20">
-            <div class="flex flex-wrap items-center justify-center space-x-4 pt-4 text-xl">
-              {shuffledPossibilities.map((p) => (
-                <div
-                  class="bg-black/5 text-white border-1 border-solid px-4 py-1 mb-4 rounded-md shadow-lg"
-                  style={{
-                    backgroundColor: `hsl(${strToHue(p)}, 65%, 75%)`,
-                    borderColor: `hsl(${strToHue(p)}, 65%, 60%)`,
-                  }}
-                >
-                  {p}
-                </div>
-              ))}
-            </div>
-          </div>
-          <PossibilitiesCanvas />
-        </div>
+        <PossibilitiesCloud possibilities={possibilities} />
         <div class="flex space-x-4 h-70 pb-16 w-screen-md mx-auto">
           <img
             class="h-full rounded-2xl shadow-lg"
@@ -87,7 +67,8 @@ const ValuePropositionPage = () => {
             </h2>
             <p class="text-black/50">
               You can ask the team any question you want, if you can imagine it, it can be
-              integrated into the system and tailored to you; the web is an ever evolving sandbox
+              integrated into the system and tailored to you; the web is an ever evolving sandbox,
+              and once new features are unlocked, they are available to everyone
             </p>
           </div>
         </div>
@@ -131,7 +112,7 @@ const ValuePropositionPage = () => {
                 </ul>
               </ValuePropositionColumn>
               <ValuePropositionColumn name="Power Team" power>
-                <ul>
+                <ul class="list-disc-inside">
                   <li>All on Power Team plus...</li>
                   <li>Involvement as core financer</li>
                   <li>Involvement on team meetings scheduling</li>
