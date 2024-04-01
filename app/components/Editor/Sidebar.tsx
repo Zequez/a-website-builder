@@ -1,4 +1,3 @@
-import AnglesLeft from '~icons/fa6-solid/angles-left';
 import Thumbtack from '~icons/fa6-solid/thumbtack';
 import Bars from '~icons/fa6-solid/bars';
 import { signal, effect } from '@preact/signals';
@@ -78,7 +77,7 @@ const Sidebar = ({ children }: { children: any }) => {
                 <Bars />
               </div>
               {!MOBILE_MODE ? (
-                <div class="absolute bg-red/30 inset-y-0 z-10 w-12 left-[100%]"></div>
+                <div class="absolute bg-red/0 inset-y-0 z-10 w-4 left-[100%]"></div>
               ) : null}
             </>
           ) : null}
