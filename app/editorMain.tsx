@@ -1,7 +1,7 @@
 import './styles';
 import { render } from 'preact';
-import App from './App';
 import { AuthWrapper } from './components/Auth';
+import Editor from './components/Editor';
 
 if (import.meta.env.DEV) {
   const hostnameParts = location.hostname.split('.');
@@ -16,7 +16,7 @@ const container = document.getElementById('root');
 if (!(container instanceof HTMLElement)) throw 'No root';
 render(
   <AuthWrapper>
-    <App />
+    <Editor />
   </AuthWrapper>,
   container,
 );

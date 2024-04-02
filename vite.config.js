@@ -7,6 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig(({ mode }) => {
   return {
+    appType: 'mpa',
     plugins: [preact(), UnoCSS(), Icons({ compiler: 'jsx' }), tsconfigPaths()],
     root: resolve(__dirname, 'app'),
     base: '/', //mode === 'production' ? '/app/' : '/',
@@ -16,6 +17,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'app/index.html'),
+          editor: resolve(__dirname, 'app/editor/index.html'),
         },
         output: {
           assetFileNames: '_app_assets_/[name]-[hash][extname]',

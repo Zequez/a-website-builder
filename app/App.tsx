@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 
-import { useAuth, AuthModal } from './components/Auth';
-import Editor from './components/Editor';
-import HomePage from './components/HomePage';
+import { AuthModal } from './components/Auth';
 import ValuePropositionPage from './components/ValuePropositionPage';
 
 type Page = 'editor' | 'home' | 'notFound';
@@ -48,7 +46,6 @@ const App = () => {
   return (
     <>
       {page === 'home' ? <ValuePropositionPage /> : null}
-      {page === 'editor' ? <Editor /> : null}
       {showAuthModal ? <AuthModal onClose={closeAuthModal} /> : null}
     </>
   );

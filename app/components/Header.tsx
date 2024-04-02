@@ -42,7 +42,7 @@ const Header = ({
           {isAuth ? 'Account' : 'Access'}
         </Button>
         {isAuth ? (
-          <Button class="bg-emerald-500" href={'/editor'}>
+          <Button class="bg-emerald-500" href={'/editor/'}>
             Editor
           </Button>
         ) : null}
