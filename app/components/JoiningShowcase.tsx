@@ -18,7 +18,9 @@ export default function JoiningShowcase() {
           style={{
             textShadow:
               '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff, 0 0 50px #fff, 0 0 60px #fff, 0 0 70px #fff',
-            animation: titleIsVisible ? 'fade-scale-in .75s ease-in forwards' : null,
+            ...(titleIsVisible
+              ? { animation: 'fade-scale-in .75s ease-in forwards' }
+              : { opacity: 0 }),
           }}
         >
           JOIN
