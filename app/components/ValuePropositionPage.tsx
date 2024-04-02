@@ -86,6 +86,12 @@ const ValuePropositionPage = () => {
           <MembersExplorer />
         </div>
         <JoiningShowcase />
+        <div class="flex items-center justify-center max-w-screen-md mx-auto bg-red-200 rounded-md p-2 text-white mt-4">
+          <div class="bg-black/10 w-full text-center rounded-md p-2">
+            Disclaimer: this sign up form is under constrution and here for getting feedback from
+            peers use the one on top of the page. Looks pretty cool though.
+          </div>
+        </div>
         <ProgressiveSignUp />
       </div>
     </div>

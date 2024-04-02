@@ -12,6 +12,7 @@ specifiers:
   '@codemirror/state': ^6.4.1
   '@codemirror/view': ^6.26.0
   '@iconify-json/fa6-brands': ^1.1.18
+  '@iconify-json/fa6-regular': ^1.1.18
   '@iconify-json/fa6-solid': ^1.1.20
   '@lezer/common': ^1.2.1
   '@preact/preset-vite': ^2.8.1
@@ -35,6 +36,7 @@ specifiers:
   '@unocss/preset-mini': ^0.58.6
   '@unocss/preset-uno': ^0.58.5
   '@unocss/reset': ^0.58.5
+  '@unocss/transformer-variant-group': 0.59.0-beta.1
   '@vercel/node': ^3.0.20
   '@vercel/postgres': ^0.7.2
   '@vitest/browser': ^1.4.0
@@ -86,6 +88,7 @@ dependencies:
   '@codemirror/state': 6.4.1
   '@codemirror/view': 6.26.0
   '@iconify-json/fa6-brands': 1.1.18
+  '@iconify-json/fa6-regular': 1.1.18
   '@iconify-json/fa6-solid': 1.1.20
   '@lezer/common': 1.2.1
   '@preact/preset-vite': 2.8.1_kz5p7ulfautimwwexpnnrg436q
@@ -109,6 +112,7 @@ dependencies:
   '@unocss/preset-mini': 0.58.6
   '@unocss/preset-uno': 0.58.5
   '@unocss/reset': 0.58.5
+  '@unocss/transformer-variant-group': 0.59.0-beta.1
   '@vercel/node': 3.0.20
   '@vercel/postgres': 0.7.2
   bcrypt: 5.1.1
@@ -875,6 +879,12 @@ packages:
 
   /@iconify-json/fa6-brands/1.1.18:
     resolution: {integrity: sha512-vmeJP06Xbj0XbVGiBHg0q8H3M894d4bGXKCmiHt6JqUdpiGcIV7r96N+BOU4ZS1+hvpV57fTfXlFPiUfxAIfkg==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: false
+
+  /@iconify-json/fa6-regular/1.1.18:
+    resolution: {integrity: sha512-+lLtiTHf02rxeC/9R6vzJi9eGcuubzeHfTt/HWvDnovz2Kt5NEntW8foUSLeLo7kPU7RNvea68lt7QM9HYFloQ==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: false
@@ -1708,6 +1718,10 @@ packages:
     resolution: {integrity: sha512-m87iuENM/PLqLKnfE2mJbpfzj7NQ99LP2go0r+x5X4kXKppyGRJNQg6RIW3AqTS22jup1YPgd62UNXvvRtHtww==}
     dev: false
 
+  /@unocss/core/0.59.0-beta.1:
+    resolution: {integrity: sha512-a5loAfM7G5sDqARBGaQzwitURY0+JiGLIezLuVnB2OzmEubI53OwOr18Nb27gceWu7yLybQFY0xJfD7Dh7Tm+A==}
+    dev: false
+
   /@unocss/extractor-arbitrary-variants/0.58.5:
     resolution: {integrity: sha512-KJQX0OJKzy4YjJo09h2la2Q+cn5IJ1JdyPVJJkzovHnv7jSBWzsfct+bj/6a+SJ4p4JBIqEJz3M/qxHv4EPJyA==}
     dependencies:
@@ -1870,6 +1884,12 @@ packages:
     resolution: {integrity: sha512-SjUwGzKK5CVqn7Gg+3v3hV47ZUll7GcGu0vR3RCLO4gqEfFlZWMTHml1Sl2sY1WAca2iVcDRu+dp0RLxRG/dUA==}
     dependencies:
       '@unocss/core': 0.58.5
+    dev: false
+
+  /@unocss/transformer-variant-group/0.59.0-beta.1:
+    resolution: {integrity: sha512-1iholDRA207b7/Ip4DGez9aNN20xwiQInn/Q6/ipJa9V1UwkvbeN7pVsjnOlcKVwo5VKqiEugJRUJZvFGLDnAA==}
+    dependencies:
+      '@unocss/core': 0.59.0-beta.1
     dev: false
 
   /@unocss/vite/0.58.5_rollup@4.13.2+vite@5.1.4:

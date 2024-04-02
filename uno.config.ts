@@ -2,8 +2,10 @@
 import { defineConfig } from 'unocss';
 import { parseColor, theme } from '@unocss/preset-mini';
 import { colorToString } from '@unocss/preset-mini/utils';
+import transformerVariantGroup from '@unocss/transformer-variant-group';
 
 export default defineConfig({
+  transformers: [transformerVariantGroup()],
   rules: [
     [
       'text-shadow-1',
@@ -39,6 +41,17 @@ export default defineConfig({
         // slice `hover:` prefix and passed to the next variants and rules
         matcher: matcher.slice(6),
         selector: (s) => `${s}:hover, ${s}:focus`,
+      };
+    },
+    (matcher) => {
+      const variant = 'placeholder-shown';
+      if (!matcher.includes(variant)) return matcher;
+      const isNot = matcher.startsWith('not-');
+      return {
+        // slice `hover:` prefix and passed to the next variants and rules
+        matcher: isNot ? matcher.slice(variant.length + 5) : matcher.slice(variant.length + 1),
+        selector: (input) =>
+          isNot ? `${input}:not(:placeholder-shown)` : `${input}:placeholder-shown`,
       };
     },
   ],
