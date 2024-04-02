@@ -3,25 +3,27 @@ import { useRef } from 'preact/hooks';
 import CheckCircle from '~icons/fa6-solid/circle-check';
 
 export default function JoiningShowcase() {
-  const divRef = useRef<HTMLDivElement>(null);
-  const isVisible = useIsVisible(divRef);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const titleIsVisible = useIsVisible(titleRef);
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  const showcaseIsVisible = useIsVisible(showcaseRef, 0.1);
   const columnStyle = (delay: number) =>
-    isVisible ? { animation: `fade-in 0.5s ease-in ${0.1 * delay}s forwards` } : {};
+    showcaseIsVisible ? { animation: `fade-in 0.5s ease-in ${0.1 * delay}s forwards` } : {};
   return (
     <div class="pb-16 bg-slate-200">
       <div class="max-w-screen-lg mx-auto pt-8">
         <div
-          ref={divRef}
+          ref={titleRef}
           class="text-center text-[70px] font-bold mb-8 text-slate-400 tracking-wider"
           style={{
             textShadow:
               '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff, 0 0 50px #fff, 0 0 60px #fff, 0 0 70px #fff',
-            animation: isVisible ? 'fade-scale-in .75s ease-in forwards' : null,
+            animation: titleIsVisible ? 'fade-scale-in .75s ease-in forwards' : null,
           }}
         >
           JOIN
         </div>
-        <div class="flex justify-evenly text-center">
+        <div class="flex justify-evenly text-center" ref={showcaseRef}>
           <ValuePropositionColumn name="Visitor" icon="👤" class="delay-0" style={columnStyle(0)}>
             <p class="mb-4 text-center  opacity-75">Use all available tools without an account</p>
             <ul class="list-disc-inside">

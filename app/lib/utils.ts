@@ -71,13 +71,13 @@ export function useCanvasAnimation(
   return canvasRef;
 }
 
-export const useIsVisible = (elementRef: Ref<HTMLElement>) => {
+export const useIsVisible = (elementRef: Ref<HTMLElement>, threshold = 0.25) => {
   const [isVisible, setIsVisible] = useState(false);
 
   const OPTIONS = {
     root: null,
     rootMargin: '0px 0px 0px 0px',
-    threshold: 0.25,
+    threshold,
   };
 
   useEffect(() => {
