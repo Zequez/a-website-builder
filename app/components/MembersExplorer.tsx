@@ -63,12 +63,14 @@ export default function MembersExplorer() {
               roles={[
                 'System Admin',
                 'Research & Development',
+                'Design',
                 'Possibilities Consulting',
                 'Funds Admin',
               ]}
               website="https://ezequiel.hojaweb.xyz"
               telegram="zequez"
               profileSrc="https://cdn1.cdn-telegram.org/file/k0E8_i5WXn6IgiArm4CEiHsao6sDyzFArgONUYY_YRDg7emWe6cVcrOxWl5K5yGMSqhKS7asuMqbObUwJ6hOcUyWOEWdPRj0mE6yjixpFKrbObOzdWYOXIA39t4m9atCXhofGTVQykyRoKZ4_KA4dW0_Nt5UI_7w9t1qtCDpu1weXlAGkUlcwYseKura88CwFFyHGgVs2X4_reKCQjNIkW5QnJCtdT93i2UctM7dM3Eel7YuV3wbkjXF2Exos6APfhcN0KfaPIV7IjHsKHuXDhBhRUgQoU6HAUocT2FF2HumvQwrdv7lzA9poEjeZDhsImsDCfjhTB4-5g1enHm3IA.jpg"
+              hoursCommitment={20}
             />
           </>
         ) : selectedTab === 2 ? (
@@ -87,6 +89,7 @@ export default function MembersExplorer() {
                   website=""
                   telegram=""
                   profileSrc={gravatarUrl(m.email)}
+                  hoursCommitment={0}
                 />
               ),
             )
@@ -103,21 +106,23 @@ const MemberRow = ({
   website,
   telegram,
   profileSrc,
+  hoursCommitment,
 }: {
   name: string;
   roles: string[];
   website: string;
   telegram: string;
   profileSrc: string;
+  hoursCommitment: number;
 }) => {
   return (
-    <div class="p-2 h-24 bg-slate-100 flex border-b border-black/20">
+    <div class="p-2  bg-slate-100 flex border-b border-black/20">
       <div class="mr-4">
         <img class="h-20 w-20 rounded-full shadow-sm" src={profileSrc} />
       </div>
-      <div class="text-black/70 flex flex-col space-y-1">
+      <div class="text-black/70 flex flex-col space-y-1 flex-grow">
         <div class="text-lg tracking-wider">{name}</div>
-        <div class="flex space-x-1">
+        <div class="flex relative -top-0.5 flex-wrap">
           {roles.map((tag) => (
             <MemberRoleTag tag={tag} />
           ))}
@@ -143,6 +148,15 @@ const MemberRow = ({
               {website.replace(/^https?:\/\//, '')}
             </a>
           ) : null}
+          <div class="flex-grow"></div>
+          {hoursCommitment ? (
+            <div class="text-sm flex items-center">
+              <span class="opacity-50 mr-2">Commitment</span>
+              <span class="bg-emerald-500 border border-emerald-600 text-white px-1 py-0.25 rounded-md">
+                ~{hoursCommitment}hs / week
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -152,7 +166,7 @@ const MemberRow = ({
 const MemberRoleTag = ({ tag }: { tag: string }) => {
   return (
     <span
-      class="rounded-md text-white uppercase text-xs px-2 py-0.5 font-semibold border"
+      class="rounded-md text-white uppercase text-xs px-2 py-0.5 font-semibold border mr-1 mb-1"
       style={{
         backgroundColor: `hsl(${strToHue(tag)}, 70%, 60%)`,
         borderColor: `hsl(${strToHue(tag)}, 70%, 50%)`,
