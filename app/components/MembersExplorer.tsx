@@ -163,8 +163,8 @@ const MemberRow = ({
         </div>
       </div>
       {roles.length ? (
-        <div class="bg-slate-200 px-2">
-          <div class="text-center -mt-3 mb-4">
+        <div class="bg-black/2 border-t-2 border-slate-200 px-2">
+          <div class="text-center -mt-3.5 mb-4">
             <div class="inline-block px-2 rounded-md font-semibold uppercase text-white/60 bg-slate-600 border border-slate-700">
               Roles
             </div>
