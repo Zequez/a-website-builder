@@ -121,7 +121,6 @@ const ValuePropositionColumn = ({
   class?: string;
   style?: any;
 }) => {
-  console.log('STYLE', style);
   return (
     <div
       class={cx(
