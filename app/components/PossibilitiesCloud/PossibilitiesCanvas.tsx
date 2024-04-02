@@ -87,5 +87,9 @@ export default function PossibilitiesCanvas() {
     };
   });
 
-  return <canvas class="absolute top-0 w-full h-full z-10" ref={canvasRef}></canvas>;
+  return (
+    <div class="absolute top-0 left-0 w-full h-full z-10 overflow-hidden">
+      <canvas class="w-full h-full" ref={canvasRef}></canvas>
+    </div>
+  );
 }

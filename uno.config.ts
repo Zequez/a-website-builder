@@ -4,9 +4,24 @@ import { parseColor, theme } from '@unocss/preset-mini';
 import { colorToString } from '@unocss/preset-mini/utils';
 import transformerVariantGroup from '@unocss/transformer-variant-group';
 
+const FLEX_ALIGNS = {
+  c: 'center',
+  e: 'flex-end',
+  s: 'flex-start',
+  _: 'stretch',
+};
+
 export default defineConfig({
   transformers: [transformerVariantGroup()],
   rules: [
+    [
+      /^flex([cse])([cse])$/,
+      ([, c1, c2]) => ({
+        display: 'flex',
+        'align-items': FLEX_ALIGNS[c1],
+        'justify-content': FLEX_ALIGNS[c2],
+      }),
+    ],
     [
       'text-shadow-1',
       {
@@ -55,6 +70,16 @@ export default defineConfig({
       };
     },
   ],
+  theme: {
+    breakpoints: {
+      xs: '360px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
+  },
 });
 
 const getSpread = (s) =>

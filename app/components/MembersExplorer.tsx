@@ -1,11 +1,30 @@
-import TelegramIcon from '~icons/fa6-brands/telegram';
-import { useEffect, useState } from 'preact/hooks';
-import { cx, gravatarUrl, strToHue } from '@app/lib/utils';
 import * as api from '@app/lib/api';
+import { cx, gravatarUrl, strToHue } from '@app/lib/utils';
 import { SanitizedMember } from '@db';
+import { useEffect, useState } from 'preact/hooks';
+import TelegramIcon from '~icons/fa6-brands/telegram';
 import Spinner from './Spinner';
 
-export default function MembersExplorer() {
+const CORE_TEAM = [
+  {
+    name: 'Ezequiel Schwartzman',
+    roles: [
+      'System Admin',
+      'Research & Development',
+      'Design',
+      'UX',
+      'Possibilities Consulting',
+      'Funds Admin',
+      'Ambassador',
+    ],
+    website: 'https://ezequiel.hojaweb.xyz',
+    telegram: 'zequez',
+    profileSrc: gravatarUrl('zequez@gmail.com'),
+    hoursCommitment: 20,
+  },
+];
+
+export default function MembersExplorer({ class: _class }: { class?: string }) {
   const [selectedTab, setSelectedTab] = useState(0);
 
   const [membersStatus, setMembersStatus] = useState<
@@ -34,9 +53,14 @@ export default function MembersExplorer() {
   }, [selectedTab, membersStatus]);
 
   return (
-    <div class="flex flex-col w-full rounded-md overflow-hidden bg-slate-300 border-2 border-transparent">
-      <div class="h-12 flex bg-gradient-to-b from-slate-200 to-slate-100 border-b-2 border-slate-200">
-        <div class="flex space-x-[1px] pr-[1px] bg-slate-300">
+    <div
+      class={cx(
+        'flex flex-col w-full md:rounded-md overflow-hidden bg-slate-300 border-2 border-transparent border-b-black/10',
+        _class,
+      )}
+    >
+      <div class="h-12 flex bg-gradient-to-b from-slate-200 to-slate-100 border-b-2 border-slate-200 ">
+        <div class="flex space-x-[1px] pr-[1px] bg-slate-300 line-height-tight text-sm sm:text-base">
           {['Core Team', 'Power Team', 'Guests'].map((text, i) => (
             <button
               class={cx(
@@ -58,22 +82,7 @@ export default function MembersExplorer() {
       <div class="flex flex-col h-72 overflow-auto">
         {selectedTab === 0 ? (
           <>
-            <MemberRow
-              name="Ezequiel Schwartzman"
-              roles={[
-                'System Admin',
-                'Research & Development',
-                'Design',
-                'UX',
-                'Possibilities Consulting',
-                'Funds Admin',
-                'Ambassador',
-              ]}
-              website="https://ezequiel.hojaweb.xyz"
-              telegram="zequez"
-              profileSrc="https://cdn1.cdn-telegram.org/file/k0E8_i5WXn6IgiArm4CEiHsao6sDyzFArgONUYY_YRDg7emWe6cVcrOxWl5K5yGMSqhKS7asuMqbObUwJ6hOcUyWOEWdPRj0mE6yjixpFKrbObOzdWYOXIA39t4m9atCXhofGTVQykyRoKZ4_KA4dW0_Nt5UI_7w9t1qtCDpu1weXlAGkUlcwYseKura88CwFFyHGgVs2X4_reKCQjNIkW5QnJCtdT93i2UctM7dM3Eel7YuV3wbkjXF2Exos6APfhcN0KfaPIV7IjHsKHuXDhBhRUgQoU6HAUocT2FF2HumvQwrdv7lzA9poEjeZDhsImsDCfjhTB4-5g1enHm3IA.jpg"
-              hoursCommitment={20}
-            />
+            <MemberRow {...CORE_TEAM[0]} />
           </>
         ) : selectedTab === 2 ? (
           membersStatus === 'loading' ? (
@@ -96,7 +105,9 @@ export default function MembersExplorer() {
               ),
             )
           ) : null
-        ) : null}
+        ) : (
+          <div class="flexcc h-full text-4xl text-slate-4">Be the first</div>
+        )}
       </div>
     </div>
   );
@@ -118,49 +129,63 @@ const MemberRow = ({
   hoursCommitment: number;
 }) => {
   return (
-    <div class="p-2  bg-slate-100 flex border-b border-black/20">
-      <div class="mr-4 flex-shrink-0">
-        <img class="h-20 w-20 rounded-full shadow-sm" src={profileSrc} />
-      </div>
-      <div class="text-black/70 flex flex-col space-y-1 flex-grow">
-        <div class="text-lg tracking-wider">{name}</div>
-        <div class="flex relative -top-0.5 flex-wrap">
-          {roles.map((tag) => (
-            <MemberRoleTag tag={tag} />
-          ))}
+    <div class="flex flex-col pt-2  bg-slate-100 border-b border-black/20 text-black/70">
+      <div class="flex mb-2 px-2">
+        <div class="mr-4 flex-shrink-0">
+          <img class="h-20 w-20 rounded-full shadow-sm" src={profileSrc} />
         </div>
-        <div class="flex space-x-2">
-          {telegram ? (
-            <a
-              class="flex items-center group hover:text-sky-5 underline underline-sky-2"
-              href={`https://t.me/${telegram}`}
-              target="_blank"
-            >
-              <TelegramIcon />
-              <span class="inline-block text-right w-0 group-hover:w-[72px] overflow-hidden transition-width">
-                Telegram
-              </span>
-            </a>
-          ) : null}
-          {website ? (
-            <a
-              href={website}
-              class="font-mono text-black/30 hover:text-sky-5 underline underline-sky-2"
-            >
-              {website.replace(/^https?:\/\//, '')}
-            </a>
-          ) : null}
-          <div class="flex-grow"></div>
-          {hoursCommitment ? (
-            <div class="text-sm flex items-center">
-              <span class="opacity-50 mr-2">Commitment</span>
-              <span class="bg-emerald-500 border border-emerald-600 text-white px-1 py-0.25 rounded-md">
-                ~{hoursCommitment}hs / week
-              </span>
+        <div class="flexcs flex-grow overflow-hidden">
+          <div>
+            <div class=" text-lg tracking-wider">{name}</div>
+            <div class="flex flex-grow flex-shrink-0 space-x-2">
+              {telegram ? (
+                <a
+                  class="flexcc group hover:text-sky-5 underline underline-sky-2"
+                  href={`https://t.me/${telegram}`}
+                  target="_blank"
+                >
+                  <TelegramIcon />
+                  <span class="inline-block text-right w-0 group-hover:w-[72px] overflow-hidden transition-width">
+                    Telegram
+                  </span>
+                </a>
+              ) : null}
+              {website ? (
+                <a
+                  href={website}
+                  class="font-mono text-black/30 hover:text-sky-5 underline underline-sky-2"
+                >
+                  {website.replace(/^https?:\/\//, '')}
+                </a>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
+      {roles.length ? (
+        <div class="bg-slate-200 px-2">
+          <div class="text-center -mt-3 mb-4">
+            <div class="inline-block px-2 rounded-md font-semibold uppercase text-white/60 bg-slate-600 border border-slate-700">
+              Roles
+            </div>
+          </div>
+          <div class="flexcc flex-wrap relative -top-0.5 ">
+            {roles.map((tag) => (
+              <MemberRoleTag tag={tag} />
+            ))}
+          </div>
+          <div class="col-span-8 row-span-1 flex flex-wrap justify-end w-full">
+            {hoursCommitment ? (
+              <div class="text-sm flex items-center justify-end whitespace-nowrap  mb-2">
+                <span class="opacity-50 mr-2">Commitment</span>
+                <span class="bg-emerald-500 border border-emerald-600 text-white px-1 py-0.25 rounded-md">
+                  ~{hoursCommitment}hs / week
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

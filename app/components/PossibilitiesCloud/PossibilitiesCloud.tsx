@@ -14,9 +14,9 @@ export default function PossibilitiesCloud({ possibilities }: { possibilities: s
   }, []);
 
   return (
-    <div class="mb-16 bg-slate-700">
+    <div class="bg-slate-700">
       <div
-        class="text-center  py-2 bg-gradient-to-b from-white/0 to-white/5 border-b-2 border-black/10"
+        class="text-center px-1 py-2 bg-gradient-to-b from-white/0 to-white/5 border-b-2 border-black/10"
         ref={titleRef}
       >
         <div class="overflow-hidden">
@@ -45,8 +45,8 @@ export default function PossibilitiesCloud({ possibilities }: { possibilities: s
           </p>
         </div>
       </div>
-      <div ref={cloudRef} class="relative mb-16">
-        <div class="w-screen-md mx-auto relative z-20">
+      <div ref={cloudRef} class="relative px-1">
+        <div class="max-w-screen-md mx-auto relative z-20">
           <div class="flex flex-wrap items-center justify-center space-x-4 pt-4 text-xl">
             {shuffledPossibilities.map((p) => (
               <div

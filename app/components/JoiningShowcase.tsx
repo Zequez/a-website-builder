@@ -25,7 +25,7 @@ export default function JoiningShowcase() {
         >
           JOIN
         </div>
-        <div class="flex justify-evenly text-center" ref={showcaseRef}>
+        <div class="grid grid-cols-4 justify-evenly text-center" ref={showcaseRef}>
           <ValuePropositionColumn name="Visitor" icon="👤" class="delay-0" style={columnStyle(0)}>
             <p class="mb-4 text-center  opacity-75">Use all available tools without an account</p>
             <ul class="list-disc-inside">
@@ -38,7 +38,7 @@ export default function JoiningShowcase() {
             <ul class="list-disc-inside">
               <ValuePropItem>Limited sites and files on server</ValuePropItem>
               <ValuePropItem>Deploy sites on limited domains</ValuePropItem>
-              <ValuePropItem>Media files using linked Google Drive</ValuePropItem>
+              <ValuePropItem>Media files uploading using linked Google Drive</ValuePropItem>
               <ValuePropItem>Export build web</ValuePropItem>
             </ul>
           </ValuePropositionColumn>
@@ -49,21 +49,22 @@ export default function JoiningShowcase() {
             style={columnStyle(2)}
           >
             <p class="mb-4 text-center  opacity-75">
-              Sign up for an account and pledge to pay-as-much-as-you-can monthly or yearly
+              Sign up and pledge to pay-as-much-as-you-consider-appropiate monthly or yearly
               contribution
             </p>
             <ul class="list-disc-inside">
               <ValuePropItem>
                 You help financing system upkeep costs and core team roles
               </ValuePropItem>
-              <ValuePropItem>Unlimited sites and files on server (within reason)</ValuePropItem>
+              <ValuePropItem>
+                You can have as many sites and files on server as you want
+              </ValuePropItem>
               <ValuePropItem>Deploy sites on any available domain</ValuePropItem>
               <ValuePropItem>Media files uploading using linked Google Drive</ValuePropItem>
-              <ValuePropItem>Possibility consulting with core team</ValuePropItem>
-              <ValuePropItem>Technical support by core team</ValuePropItem>
+              <ValuePropItem>Possibility consulting and support by core team</ValuePropItem>
               <ValuePropItem>Invitation to members Telegram group</ValuePropItem>
-              <ValuePropItem>Components library publishing access</ValuePropItem>
-              <ValuePropItem>Invite unlimited guests to collaborate on projects</ValuePropItem>
+              {/* <ValuePropItem>Components library publishing access</ValuePropItem> */}
+              {/* <ValuePropItem>Invite unlimited guests to collaborate on projects</ValuePropItem> */}
               <ValuePropItem>
                 Access to development portal for voting on features, components and templates
                 proposals
@@ -78,14 +79,14 @@ export default function JoiningShowcase() {
             style={columnStyle(3)}
           >
             <p class="mb-4 text-center opacity-75">
-              Sign up for an account and pledge more than $50 per month
+              Sign up with a large pledge and have a large impact
             </p>
             <ul class="list-disc-inside">
-              <ValuePropItem>Huge impact on the system growth</ValuePropItem>
-              <ValuePropItem>All on Power Team plus...</ValuePropItem>
-              <ValuePropItem>Involvement as core financer</ValuePropItem>
-              <ValuePropItem>Involvement on team meetings scheduling</ValuePropItem>
-              <ValuePropItem>Invitation to core team Telegram group</ValuePropItem>
+              <ValuePropItem>Catalyze acceleration of growth</ValuePropItem>
+              <ValuePropItem>Have the core team members attention</ValuePropItem>
+              <ValuePropItem>Be involved as core financer</ValuePropItem>
+              <ValuePropItem>Be involved in team meetings scheduling</ValuePropItem>
+              <ValuePropItem>Be invited to private team Telegram groups</ValuePropItem>
             </ul>
           </ValuePropositionColumn>
         </div>
@@ -96,11 +97,11 @@ export default function JoiningShowcase() {
 
 const ValuePropItem = ({ children }: { children: any }) => {
   return (
-    <li class="flex items-center justify-center mb-2">
+    <li class="flex items-start justify-center mb-2">
       <div class="mr-2">
-        <CheckCircle class="w-6" />
+        <CheckCircle class="w-4 xs:w-6" />
       </div>
-      <div class="line-height-tight flex-grow">{children}</div>
+      <div class="line-height-tight flex-grow text-sm xs:text-base">{children}</div>
     </li>
   );
 };
@@ -123,7 +124,10 @@ const ValuePropositionColumn = ({
   console.log('STYLE', style);
   return (
     <div
-      class={cx('w-1/4 border-r-[1px] border-black/10 last:border-none px-4 opacity-0', _class)}
+      class={cx(
+        'col-span-2 sm:col-span-1 border-r-[1px] border-black/10 last:border-none px-2 xs:px-4 opacity-0',
+        _class,
+      )}
       style={style}
     >
       <div class="text-[60px] -mb-2">{icon}</div>

@@ -26,7 +26,7 @@ const Header = ({
           </span>
           <div class="z-10 absolute inset-0 bg-gradient-to-r from-amber-400 to-sky-400 blur-md"></div>
         </div>
-        <div class="ml-4 text-white font-bold uppercase text-sm tracking-widest line-height-tight">
+        <div class="ml-2 xs:ml-4 text-white font-bold uppercase tracking-widest line-height-tight text-xs sm:text-sm">
           Web creation
           <br />
           club
@@ -34,15 +34,15 @@ const Header = ({
       </div>
       <div class="flex space-x-2 justify-center  items-center flex-grow h-10 mb-2">
         {isAuth ? (
-          <Button _class="bg-red-400" onClick={signOut}>
+          <Button class="bg-red-500" onClick={signOut}>
             Logout
           </Button>
         ) : null}
-        <Button _class="bg-blue-400 " href="#auth">
+        <Button class="bg-blue-500 " href="#auth">
           {isAuth ? 'Account' : 'Access'}
         </Button>
         {isAuth ? (
-          <Button _class="bg-emerald-400" href={'/editor'}>
+          <Button class="bg-emerald-500" href={'/editor'}>
             Editor
           </Button>
         ) : null}
