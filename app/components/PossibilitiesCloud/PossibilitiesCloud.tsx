@@ -17,9 +17,9 @@ export default function PossibilitiesCloud({ possibilities }: { possibilities: s
           class="text-3xl opacity-90 uppercase font-semibold tracking-wider"
           style={{ textShadow: '0 2px 0 rgba(0,0,0,0.25)' }}
         >
-          Infinite possibilities to discover
+          Explore Possibilities
         </h2>
-        <p class="opacity-50">Collaborating together in a system that works for us</p>
+        <p class="opacity-50">Collaborating in a system that works for us</p>
       </div>
       <div ref={divRef} class="relative mb-16">
         <div class="w-screen-md mx-auto relative z-20">
