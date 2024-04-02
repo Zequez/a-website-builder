@@ -34,17 +34,17 @@ export default function MembersExplorer() {
   }, [selectedTab, membersStatus]);
 
   return (
-    <div class="flex flex-col w-full rounded-md overflow-hidden bg-slate-300 border border-black/3">
-      <div class="h-12 flex bg-slate-200 border-b border-black/15">
-        <div class="flex space-x-[1px] bg-slate-600">
+    <div class="flex flex-col w-full rounded-md overflow-hidden bg-slate-300 border-2 border-transparent">
+      <div class="h-12 flex bg-gradient-to-b from-slate-200 to-slate-100 border-b-2 border-slate-200">
+        <div class="flex space-x-[1px] pr-[1px] bg-slate-300">
           {['Core Team', 'Power Team', 'Guests'].map((text, i) => (
             <button
               class={cx(
-                'text-center flex items-center px-4 border-solid font-light tracking-wider text-shadow-1',
+                'text-center flex items-center px-4 border-solid font-light tracking-wider font-semibold',
                 {
-                  'border bg-slate-500 shadow-md shadow-inset text-white/90 border-black/20 pt-0.5':
+                  'border-2 border-b-0 bg-slate-500 shadow-md shadow-inset text-white/90 border-black/20 pt-0.5 text-shadow-1':
                     i === selectedTab,
-                  'border border-transparent text-white/50 hover:text-white/90 bg-gradient-to-b from-slate-500 to-slate-600 hover:to-slate-500':
+                  'border-2 border-white/10 border-b-0 text-black/60 bg-gradient-to-b from-slate-200 to-slate-300 hover:to-slate-200':
                     i !== selectedTab,
                 },
               )}
@@ -64,8 +64,10 @@ export default function MembersExplorer() {
                 'System Admin',
                 'Research & Development',
                 'Design',
+                'UX',
                 'Possibilities Consulting',
                 'Funds Admin',
+                'Ambassador',
               ]}
               website="https://ezequiel.hojaweb.xyz"
               telegram="zequez"
@@ -117,7 +119,7 @@ const MemberRow = ({
 }) => {
   return (
     <div class="p-2  bg-slate-100 flex border-b border-black/20">
-      <div class="mr-4">
+      <div class="mr-4 flex-shrink-0">
         <img class="h-20 w-20 rounded-full shadow-sm" src={profileSrc} />
       </div>
       <div class="text-black/70 flex flex-col space-y-1 flex-grow">
