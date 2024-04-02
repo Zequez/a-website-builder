@@ -27,11 +27,6 @@ app.all('*', async (req, res, next) => {
 
   if (!req.subDomain) {
     // On Vercel it serves the app directly without going through here
-    // Serve static app
-    if (req.url === '/editor') {
-      return res.sendFile(path.resolve(path.join(APP_STATIC_PATH, 'index.html')));
-    }
-
     return appDist(req, res, next);
   } else {
     console.log('Site new URL ', url.toString());
