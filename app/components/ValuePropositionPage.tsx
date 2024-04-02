@@ -83,7 +83,7 @@ const ValuePropositionPage = () => {
           </p>
         </div>
       </div>
-      <MembersExplorer class="max-w-screen-md mx-auto" />
+      <MembersExplorer class="max-w-screen-md mx-auto md:mb-16" />
       <JoiningShowcase />
       <div class="px-4">
         <div class="flex items-center justify-center max-w-screen-md mx-auto bg-red-200 rounded-md p-2 text-white mt-4">
