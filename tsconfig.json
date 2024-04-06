@@ -15,6 +15,7 @@
       "./node_modules/unplugin-icons/types/preact.d.ts"
     ],
     "paths": {
+      "#root/*": ["./*"],
       "@db": ["./server/db"],
       "@db/*": ["./server/db/*"],
       "@server/*": ["./server/*"],
@@ -29,8 +30,9 @@
     "app/**/*",
     "vitest.setup.ts",
     "vitest.hooks.ts",
-    "scripts/**/*"
-, "shared/jwt.ts"  ],
+    "scripts/**/*",
+    "shared/jwt.ts"
+  ],
   "exclude": ["node_modules"],
   "tsc-alias": {
     "resolveFullPaths": true,

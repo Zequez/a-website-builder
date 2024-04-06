@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 
 import { AuthModal } from './components/Auth';
+import ProgressiveSignUp from './components/ProgressiveSignUp';
 import ValuePropositionPage from './components/ValuePropositionPage';
 
-type Page = 'editor' | 'home' | 'notFound';
+type Page = 'editor' | 'home' | 'join' | 'notFound';
 
 function routePage() {
   let pathname = window.location.pathname;
@@ -13,6 +14,8 @@ function routePage() {
       return 'home';
     case '/editor':
       return 'editor';
+    case '/join':
+      return 'join';
     default:
       return 'notFound';
   }
@@ -46,6 +49,7 @@ const App = () => {
   return (
     <>
       {page === 'home' ? <ValuePropositionPage /> : null}
+      {page === 'join' ? <ProgressiveSignUp /> : null}
       {showAuthModal ? <AuthModal onClose={closeAuthModal} /> : null}
     </>
   );

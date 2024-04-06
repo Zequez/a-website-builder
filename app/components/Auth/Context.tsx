@@ -1,6 +1,7 @@
 import { JSX, createContext } from 'preact';
-import { useState, useMemo, useContext } from 'preact/hooks';
+import { useState, useMemo, useContext, useEffect } from 'preact/hooks';
 import * as api from '@app/lib/api';
+import AuthModal from './AuthModal';
 
 type TokenData = {
   id: number;
@@ -64,6 +65,14 @@ function tokenToMemberAuth(token: string): MemberAuth | null {
 }
 
 export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
+  if (import.meta.env.SSR) {
+    return (
+      <MemberAuthContext.Provider value={{ memberAuth: null, setToken: () => null }}>
+        {children}
+      </MemberAuthContext.Provider>
+    );
+  }
+
   const [memberAuth, setMemberAuth] = useState<MemberAuth | null>(() => {
     try {
       const token = JSON.parse(localStorage.getItem(AUTH_LOCALSTORAGE_KEY) || '""');
@@ -100,8 +109,33 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
     return { memberAuth, setToken };
   }, [memberAuth]);
 
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  function closeAuthModal() {
+    setShowAuthModal(false);
+    window.location.hash = '';
+  }
+
+  useEffect(() => {
+    function parseHash() {
+      const hash = window.location.hash.slice(1);
+      if (hash === 'auth') {
+        setShowAuthModal(true);
+      }
+    }
+
+    parseHash();
+
+    window.addEventListener('hashchange', parseHash);
+    return () => {
+      window.removeEventListener('hashchange', parseHash);
+    };
+  }, []);
+
   return (
-    <MemberAuthContext.Provider value={memberAuthContext}>{children}</MemberAuthContext.Provider>
+    <MemberAuthContext.Provider value={memberAuthContext}>
+      {children}
+      {showAuthModal ? <AuthModal onClose={closeAuthModal} /> : null}
+    </MemberAuthContext.Provider>
   );
 };
 

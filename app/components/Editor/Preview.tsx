@@ -9,8 +9,6 @@ import { cx, useLocalStorageState } from '@app/lib/utils';
 import { FC } from '../FC';
 import { keyBy } from '@shared/utils';
 
-const FULLSCREEN_PORTAL_EL = document.getElementById('fullscreen-preview');
-
 export default function Preview({
   site,
   buildFiles,
@@ -146,7 +144,7 @@ export default function Preview({
   );
 
   return mode === 'fullscreen'
-    ? createPortal(componentRender, FULLSCREEN_PORTAL_EL!)
+    ? createPortal(componentRender, fullScreenPortalEl!)
     : componentRender;
 }
 
