@@ -20,13 +20,13 @@ export type RoutePostAuthSignUp = {
 };
 export type RoutePostAuthSignUpQuery = {
   email: string;
-  passphrase: string;
-  fullName: string;
+  password: string;
+  subscribedToNewsletter: boolean;
 };
 router.post('/signUp', jsonParser, async (req, res) => {
-  const { email, passphrase, fullName } = req.body as RoutePostAuthSignUpQuery;
+  const { email, password, subscribedToNewsletter } = req.body as RoutePostAuthSignUpQuery;
 
-  if (!email || !passphrase || !fullName) {
+  if (!email || !password) {
     return res.status(400).json({ error: 'Bad request' });
   }
 
@@ -35,8 +35,8 @@ router.post('/signUp', jsonParser, async (req, res) => {
   if (member) return res.status(409).json({ error: 'User already exists' });
 
   const errors: string[] = [];
-  if (passphrase.length < 6) {
-    errors.push('Passphrase must be at least 6 characters');
+  if (password.length < 6) {
+    errors.push('Password must be at least 6 characters');
   }
   if (!validateEmail(email)) {
     errors.push('Invalid email');
@@ -45,8 +45,8 @@ router.post('/signUp', jsonParser, async (req, res) => {
 
   const insertedMember = await T.members.insert({
     email,
-    passphrase: await hashPass(passphrase),
-    full_name: fullName,
+    passphrase: await hashPass(password),
+    subscribed_to_newsletter: !!subscribedToNewsletter,
   });
 
   res.status(201).json({

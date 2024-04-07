@@ -96,7 +96,7 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
         const newMemberAuth = tokenToMemberAuth(token);
         const member = newMemberAuth?.member;
 
-        if (member && member.id && member.email && member.full_name) {
+        if (member && member.id && member.email) {
           cleanLocalFiles(member.id);
           setMemberAuth(newMemberAuth);
           api.setAuth(newMemberAuth);
@@ -146,5 +146,5 @@ export const useAuth = () => {
     setToken(null);
   }
 
-  return { memberAuth, signOut };
+  return { memberAuth, signOut, setToken };
 };

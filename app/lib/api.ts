@@ -84,19 +84,27 @@ function api<T, Q extends Record<string, any>>(
 }
 
 async function typedSimplifiedResponse<T>(resPromise: Promise<Response>) {
-  const res = await resPromise;
-  const data = await res.json();
-  if (res.status === 200 || res.status === 201) {
-    return { status: res.status, data, error: null } as {
-      status: 200 | 201;
-      data: T;
-      error: null;
-    };
-  } else {
-    return { status: res.status, data: null, error: data.error || data } as {
-      status: 400 | 401 | 404 | 500;
-      data: null;
-      error: string | string[];
+  try {
+    const res = await resPromise;
+    const data = await res.json();
+    if (res.status === 200 || res.status === 201) {
+      return { status: res.status, data, error: null } as {
+        status: 200 | 201;
+        data: T;
+        error: null;
+      };
+    } else {
+      return { status: res.status, data: null, error: data.error || data } as {
+        status: 400 | 401 | 404 | 500;
+        data: null;
+        error: string | string[];
+      };
+    }
+  } catch (e) {
+    return {
+      status: 500,
+      data: null,
+      error: ['Something went wrong, please contact admin or try again later'],
     };
   }
 }
