@@ -1,16 +1,21 @@
+import { StyleTransition, CSSTransition } from 'preact-transitioning';
+
 import Eye from '~icons/fa6-solid/eye';
 import EyeSlash from '~icons/fa6-solid/eye-slash';
 import Google from '~icons/fa6-brands/google';
 import SquareCheck from '~icons/fa6-solid/square-check';
 import Square from '~icons/fa6-regular/square';
 import CircleNotch from '~icons/fa6-solid/circle-notch';
+import Heart from '~icons/fa6-solid/heart';
 
 import { cx } from '@app/lib/utils';
 import { signal, computed, effect } from '@preact/signals';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { emailAvailability, signUp } from '@app/lib/api';
 import { toArr, validateEmail } from '@shared/utils';
 import { useAuth } from '../Auth';
+import AccountPanel from './AccountPanel';
+import Button from './Button';
 
 const email = signal('');
 const password = signal('');
@@ -69,14 +74,29 @@ const validations = {
 };
 
 export default function ProgressiveSignUp() {
-  const { memberAuth, setToken } = useAuth();
+  let { memberAuth, setToken } = useAuth();
+  const [justSignedUpAnimation, setJustSignedUpAnimation] = useState(false);
   const [justSignedUp, setJustSignedUp] = useState(false);
   const [signUpErrors, setSignUpErrors] = useState<any[]>([]);
   const showPassword = !!(email.value || password.value);
   const emailAndPass = !!(email.value && password.value);
   const [formIsBeingSubmitted, setFormIsBeingSubmitted] = useState(false);
 
-  console.log('SIGN UP ERRORS', signUpErrors);
+  // Tiny fix for memberAuth being always null on SSG
+  // If we use it on first render the hydration messes up
+  const [hidrationDone, setHidrationDone] = useState(false);
+  if (!hidrationDone) memberAuth = null;
+  useEffect(() => {
+    setHidrationDone(true);
+  }, []);
+
+  // useEffect(() => {
+  //   window.addEventListener('keydown', (ev) => {
+  //     if (ev.key === '-') {
+  //       setJustSignedUpAnimation((v) => !v);
+  //     }
+  //   });
+  // }, []);
 
   async function submitSignUp() {
     if (formIsFullyValid.value) {
@@ -90,23 +110,44 @@ export default function ProgressiveSignUp() {
         setSignUpErrors(toArr(error));
       } else if (data) {
         setJustSignedUp(true);
+        setJustSignedUpAnimation(true);
         setSignUpErrors([]);
         setToken(data.token);
+        setTimeout(() => {
+          setJustSignedUpAnimation(false);
+        }, 4000);
       }
       setFormIsBeingSubmitted(false);
     }
   }
 
   return (
-    <div class="w-full max-w-80 mx-auto pb-20 flex items-center  flex flex-col p-2">
-      <div class="text-size-[70px] h-20 mb-4">📝</div>
-      <div class="text-2xl text-black/40 pb-4 mb-4">
-        {justSignedUp ? 'Your account' : 'Sign up'}
+    <div
+      class="w-full max-w-80 mx-auto pt-8 pb-20 flex items-center  flex flex-col p-2"
+      onKeyUp={(ev) => {
+        if (ev.key === 'Enter') {
+          submitSignUp();
+        }
+      }}
+    >
+      <div class="relative text-center h-60 w-full">
+        <SignUpFadeTransitionGroup in={justSignedUpAnimation}>
+          <div class="text-size-[70px] h-20 animate-heartbeat text-red-400">
+            <Heart />
+          </div>
+          <div class="text-2xl text-black/40">Thank you for signing up</div>
+        </SignUpFadeTransitionGroup>
+        <SignUpFadeTransitionGroup in={!justSignedUpAnimation}>
+          <div class="text-size-[70px] h-20">📝</div>
+          <div class="text-2xl text-black/40">
+            {justSignedUp && !justSignedUpAnimation ? 'Account details' : 'Sign up'}
+          </div>
+        </SignUpFadeTransitionGroup>
       </div>
 
       {memberAuth ? (
         justSignedUp ? (
-          <div>Thank you for signing up</div>
+          <AccountPanel memberAuth={memberAuth} />
         ) : (
           <div class="text-black/60 text-lg text-center">
             <div class="mb-2">You are already signed up</div>
@@ -194,48 +235,22 @@ export default function ProgressiveSignUp() {
   );
 }
 
-// ██████╗ ██╗   ██╗████████╗████████╗ ██████╗ ███╗   ██╗
-// ██╔══██╗██║   ██║╚══██╔══╝╚══██╔══╝██╔═══██╗████╗  ██║
-// ██████╔╝██║   ██║   ██║      ██║   ██║   ██║██╔██╗ ██║
-// ██╔══██╗██║   ██║   ██║      ██║   ██║   ██║██║╚██╗██║
-// ██████╔╝╚██████╔╝   ██║      ██║   ╚██████╔╝██║ ╚████║
-// ╚═════╝  ╚═════╝    ╚═╝      ╚═╝    ╚═════╝ ╚═╝  ╚═══╝
-
-const Button = ({
-  children,
-  disabled,
-  class: _class,
-  onClick,
-  href,
-}: {
-  children: any;
-  disabled?: boolean;
-  class?: string | Record<string, boolean>;
-  onClick?: () => void;
-  href?: string;
-}) => {
-  const El = href ? 'a' : 'button';
-  return (
-    <El
-      disabled={disabled}
-      onClick={onClick}
-      href={href}
-      class={cx(
-        `flex w-full text-black/60 justify-center items-center bg-slate-2
-            border border-slate-3 rounded-md px-4 py-2 shadow-md cursor-pointer
-            hover:(bg-slate-6 text-white/60)
-            disabled:(opacity-40 saturate-0 pointer-events-none)
-            outline-slate-4
-            font-semibold
-            active:(shadow-none scale-98)
-            `,
-        _class,
-      )}
-    >
+const SignUpFadeTransitionGroup = ({ children, in: _in }: { children: any; in: boolean }) => (
+  <StyleTransition
+    in={_in}
+    duration={1500}
+    styles={{
+      enter: { opacity: 0 },
+      enterActive: { opacity: 1 },
+      exit: { opacity: 1 },
+      exitActive: { opacity: 0 },
+    }}
+  >
+    <div class="absolute inset-0 flex flex-col space-y-4 items-center justify-center transition-opacity duration-1500">
       {children}
-    </El>
-  );
-};
+    </div>
+  </StyleTransition>
+);
 
 // ████████╗███████╗██╗  ██╗████████╗    ██╗███╗   ██╗██████╗ ██╗   ██╗████████╗
 // ╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝    ██║████╗  ██║██╔══██╗██║   ██║╚══██╔══╝

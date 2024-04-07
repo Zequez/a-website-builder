@@ -37,7 +37,7 @@ const ValuePropositionPage = () => {
   return (
     <div class="flex flex-col bg-gray-100 text-black/80 min-h-screen">
       <div class="relative overflow-hidden">
-        <Header class="z-20" isAuth={!!memberAuth} signOut={signOut} />
+        <Header class="z-20" translucent={true} isAuth={!!memberAuth} signOut={signOut} />
         <div class="relative z-20 flex max-w-screen-md mx-auto text-white">
           <div class="flexcc flex-col h-full . xs:w-6/8 sm:w-1/2 px-2 . xs:px-4  py-2 sm:py-8 md:py-16 lg:py-24">
             <div class="bg-black/30 p-4 rounded-md">

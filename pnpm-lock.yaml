@@ -170,6 +170,9 @@ dependencies:
   preact-render-to-string:
     specifier: ^6.4.1
     version: 6.4.1(preact@10.19.6)
+  preact-transitioning:
+    specifier: ^1.4.1
+    version: 1.4.1(preact@10.19.6)
   rollup:
     specifier: ^4.13.2
     version: 4.13.2
@@ -4922,6 +4925,14 @@ packages:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
     dev: false
 
+  /preact-merge-refs@1.0.2(preact@10.19.6):
+    resolution: {integrity: sha512-e0P9XELyn1/L/mNsZfyGXks3TIt35aqaAZw6QPxlKa2UUwWOMNmSdgjW4VDbWtP61wjgsLywscOK6w3PUgdp4w==}
+    peerDependencies:
+      preact: '>=10.0.0'
+    dependencies:
+      preact: 10.19.6
+    dev: false
+
   /preact-render-to-string@6.4.1(preact@10.19.6):
     resolution: {integrity: sha512-oHKIFIv+/N0i3fNRF4ANMr2I93maycuXK78ERJ0vUW+nz6MXXMO6mTOFxp3itvSVBS/GXtLAy2jio3ZPeD8lZQ==}
     peerDependencies:
@@ -4929,6 +4940,15 @@ packages:
     dependencies:
       preact: 10.19.6
       pretty-format: 3.8.0
+    dev: false
+
+  /preact-transitioning@1.4.1(preact@10.19.6):
+    resolution: {integrity: sha512-zWmus0IcBpiqA/kN7dj6RoZ54/KYH10lN6ckARX1VDTLPdtPd2UhtBa3sWTV+eCKINz3R7kIcfznRSxAc5QuOA==}
+    peerDependencies:
+      preact: '>=10.0.0'
+    dependencies:
+      preact: 10.19.6
+      preact-merge-refs: 1.0.2(preact@10.19.6)
     dev: false
 
   /preact@10.19.6:
