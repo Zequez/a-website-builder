@@ -27,6 +27,9 @@ import type {
   RoutePostAuthSignInQuery,
   RouteGetAuthMeQuery,
   RoutePostAuthChangePassQuery,
+  RouteGetEmailAvailabilityQuery,
+  RouteGetEmailAvailability,
+  // Misc
   RouteGetMembersQuery,
   RouteDeleteFilesIdQuery,
   RouteGetFiles,
@@ -142,6 +145,10 @@ export const me = api<RouteGetAuthMe, RouteGetAuthMeQuery>('auth/me', 'GET');
 export const changePass = api<RoutePostAuthChangePass, RoutePostAuthChangePassQuery>(
   'auth/changePass',
   'POST',
+);
+export const emailAvailability = api<RouteGetEmailAvailability, RouteGetEmailAvailabilityQuery>(
+  'auth/emailAvailability',
+  'GET',
 );
 
 // Members

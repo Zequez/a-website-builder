@@ -132,4 +132,17 @@ router.post('/changePass', jsonParser, async (req, res) => {
   res.status(200).json({});
 });
 
+export type RouteGetEmailAvailabilityQuery = {
+  email: string;
+};
+export type RouteGetEmailAvailability = {
+  available: boolean;
+};
+router.get('/emailAvailability', async (req, res) => {
+  const { email } = req.query;
+  const member = await T.members.where({ email }).one();
+  if (!member) return res.status(200).json({ available: true });
+  return res.status(200).json({ available: false });
+});
+
 export default router;

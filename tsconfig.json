@@ -15,7 +15,6 @@
       "./node_modules/unplugin-icons/types/preact.d.ts"
     ],
     "paths": {
-      "#root/*": ["./*"],
       "@db": ["./server/db"],
       "@db/*": ["./server/db/*"],
       "@server/*": ["./server/*"],

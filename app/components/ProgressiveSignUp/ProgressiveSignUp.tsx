@@ -6,206 +6,182 @@ import Square from '~icons/fa6-regular/square';
 import CircleNotch from '~icons/fa6-solid/circle-notch';
 
 import { cx } from '@app/lib/utils';
-import { signal, effect } from '@preact/signals';
+import { signal, computed, effect } from '@preact/signals';
 import { useState } from 'preact/hooks';
+import { emailAvailability } from '@app/lib/api';
+import { validateEmail } from '@shared/utils';
 
 const email = signal('');
 const password = signal('');
-const emailErrors = signal<string[]>([]);
 const subscribeToNewsletter = signal(false);
-const emailIsDirty = signal(false);
-const passwordIsDirty = signal(false);
-const emailIsBeingChecked = signal(false);
 
-effect(() => {
-  if (!passwordIsDirty.value) {
-    passwordIsDirty.value = !!password.value;
-  }
+const fullyValidInputs = signal<{ email: boolean; password: boolean }>({
+  email: false,
+  password: false,
 });
 
-function validateEmailShape(text: string) {
-  if (text.match('@')) {
-    emailErrors.value = [];
-    return true;
-  } else {
-    emailErrors.value = ['Please enter a valid email'];
-    return false;
-  }
-}
+const setFullyValidInputFor = (key: 'email' | 'password') => (fullyValid: boolean) => {
+  fullyValidInputs.value = { ...fullyValidInputs.value, [key]: fullyValid };
+};
 
-// effect(async () => {
-//   if (emailIsDirty.value) {
-//     const v1 = validateEmailShape(email.value);
-//     if (v1 === true) {
-//       emailErrors.value = [];
-//     } else {
-//       emailErrors.value = [v1];
-//     }
-//   }
-// });
+const emailIsFullyValid = computed(() => {
+  return fullyValidInputs.value.email;
+});
 
-const EMAILS = ['zequez@gmail.com'];
-
-async function validateEmailAvailability(text: string) {
-  emailIsBeingChecked.value = true;
-  setTimeout(() => {
-    emailIsBeingChecked.value = false;
-    if (EMAILS.includes(text)) {
-      emailErrors.value = ['Email is already in use'];
-    } else {
-      emailErrors.value = [];
+const formIsFullyValid = computed(() => {
+  let isValid = true;
+  for (const key in fullyValidInputs.value) {
+    const val = fullyValidInputs.value[key as keyof typeof fullyValidInputs.value];
+    if (!val) {
+      isValid = false;
+      break;
     }
-  }, 2000);
-}
+  }
+  return isValid;
+});
 
-// type Validator =
-//   | ((text: string) => boolean | string)
-//   | ((text: string) => Promise<boolean | string>);
+const validations = {
+  email: {
+    sync: (email: string) => {
+      if (validateEmail(email)) {
+        return [];
+      } else {
+        return ['Please enter a valid email'];
+      }
+    },
 
-// function validateEmail(validators: Validator[]) {
-//   for (const validator of validators) {
-//     const error = validator(email.value);
-//     if (error) {
-//       return error;
-//     }
+    async: async (email: string) => {
+      const { data } = await emailAvailability({ email });
+      if (!data) return ['Error checking email availability'];
+      return data.available ? [] : ['Email is already in use'];
+    },
+  },
+  password: {
+    sync: (password: string) => {
+      if (password.length >= 6) {
+        return [];
+      } else {
+        return ['Password has to be at least 6 characters'];
+      }
+    },
+  },
+};
+
+// type Validation = {sync: (val: string) => any[], async: (val: string) => Promise<any[]>}
+
+// class FormValidator {
+//   validations: {[key: string]: Validation};
+//   constructor (validations: {[key: string]: Validation}) {
+//     this.validations = validations;
 //   }
 // }
 
 export default function ProgressiveSignUp() {
   const showPassword = !!(email.value || password.value);
-  const confirmEnabled = !!(email.value && password.value);
   const emailAndPass = !!(email.value && password.value);
 
+  function submitSignUp() {}
+
   return (
-    <div class="h-120 pb-20 flex items-center justify-center flex flex-col space-y-4">
-      <div class="text-size-[70px] h-20">📝</div>
-      <div class="text-2xl text-black/40 pb-4">Sign up</div>
-      <div class="relative w-70">
+    <div class="h-120 max-w-80 mx-auto pb-20 flex items-center  flex flex-col">
+      <div class="text-size-[70px] h-20 mb-4">📝</div>
+      <div class="text-2xl text-black/40 pb-4 mb-4">Sign up</div>
+
+      <div class="w-full b b-black/10 p-4 bg-slate-500/5 rounded-md mb-4">
         <TextInput
-          disabled={emailIsBeingChecked.value}
           value={email.value}
-          onChange={(v) => {
-            email.value = v;
-            if (emailIsDirty.value) {
-              validateEmailShape(email.value);
-            }
-          }}
+          validations={validations.email}
+          onFullyValid={setFullyValidInputFor('email')}
           label="Email"
-          onBlur={() => {
-            if (email.value) {
-              emailIsDirty.value = true;
-              if (validateEmailShape(email.value)) {
-                validateEmailAvailability(email.value);
-              }
-            }
-          }}
-          loading={emailIsBeingChecked.value}
+          onChange={(val) => (email.value = val)}
+          loadingLabel="Checking..."
+          class="mb-4"
+          autoFocus
         />
-        {emailErrors.value.length ? (
-          <div class="text-red-400 mt-1">
-            {emailErrors.value.map((err) => (
-              <div>{err}</div>
-            ))}
+        {!showPassword ? (
+          <div class={cx('w-full flex flex-col items-center mb-4', {})}>
+            <div class="mb-4 text-black/60">or</div>
+            <Button disabled={showPassword}>
+              <Google class="mr-2" /> Sign up with Google
+            </Button>
+          </div>
+        ) : (
+          <div class={cx('relative flex flex-col mb-4', {})}>
+            <TextInput
+              class="mb-4"
+              type="password"
+              value={password.value}
+              onChange={(v) => (password.value = v)}
+              label="Password"
+              validations={validations.password}
+              onFullyValid={setFullyValidInputFor('password')}
+            />
+            {emailAndPass ? (
+              <label class="flex text-black/50 items-center h-10 cursor-pointer mb-4">
+                <input
+                  class="h-0 w-0 opacity-0 peer"
+                  type="checkbox"
+                  checked={subscribeToNewsletter.value}
+                  onChange={({ currentTarget }) =>
+                    (subscribeToNewsletter.value = currentTarget.checked)
+                  }
+                />
+                <div class="peer-focus:bg-slate-500/50 rounded-md -ml-2 px-2">
+                  {subscribeToNewsletter.value ? (
+                    <SquareCheck class="h-8 " />
+                  ) : (
+                    <Square class="h-8" />
+                  )}
+                </div>{' '}
+                Sign up for newsletter
+              </label>
+            ) : null}
+            <Button disabled={!formIsFullyValid.value}>Create account</Button>
+          </div>
+        )}
+      </div>
+      <div class="w-full px-4">
+        {!emailAndPass ? (
+          <div class="flex flex-col flex-items-center">
+            <div class="mb-4 text-black/60">or</div>
+            <Button disabled={!emailIsFullyValid.value}>Just sign up for newsletter</Button>
           </div>
         ) : null}
-        <div
-          class={cx('absolute left-4 top-1/1 text-sm', {
-            'opacity-0': showPassword,
-            'opacity-50': !showPassword,
-          })}
-        >
-          ...and password
-        </div>
-      </div>
-      <div class="h-28 relative w-70">
-        <div
-          class={cx('absolute top-0 w-full flex flex-col items-center', {
-            'opacity-0 z-10': showPassword,
-            'opacity-100 z-20': !showPassword,
-          })}
-        >
-          <div class="py-4 text-black/60">or</div>
-          <button
-            disabled={showPassword}
-            class={`flex w-full text-black/60 justify-center items-center bg-slate-2
-            hover:(bg-slate-6 text-white/60)
-            border border-slate-3 rounded-md px-4 py-2 shadow-md font-semibold
-            active:(shadow-none scale-98)
-            `}
-          >
-            <Google class="mr-2" /> Sign up with Google
-          </button>
-        </div>
-        <div
-          class={cx('relative flex flex-col transition-opacity mb-4', {
-            'opacity-0 z-10': !showPassword,
-            'opacity-100 z-20': showPassword,
-          })}
-        >
-          <TextInput
-            class="mb-4"
-            type="password"
-            value={password.value}
-            onChange={(v) => (password.value = v)}
-            label="Password"
-          />
-          <button
-            disabled={!confirmEnabled}
-            class={cx(
-              `relative flex w-full text-black/60 justify-center items-center bg-slate-2
-            border border-slate-3 rounded-md px-4 py-2 shadow-md
-            hover:(bg-slate-6 text-white/60)
-            disabled:(opacity-40 saturate-0 pointer-events-none)
-            font-semibold
-            transition-transform
-            active:(shadow-none scale-98)
-            `,
-              {
-                'translate-y-14': emailAndPass,
-              },
-            )}
-          >
-            Create account
-          </button>
-        </div>
-        <div class={cx('relative z-30 transition-transform', { '-translate-y-14': emailAndPass })}>
-          {emailAndPass ? (
-            <label class="flex text-black/50 items-center h-10 cursor-pointer">
-              <input
-                class="h-0 w-0 opacity-0"
-                type="checkbox"
-                checked={subscribeToNewsletter.value}
-                onChange={({ currentTarget }) =>
-                  (subscribeToNewsletter.value = currentTarget.checked)
-                }
-              />
-              {subscribeToNewsletter.value ? (
-                <SquareCheck class="h-8 mr-2" />
-              ) : (
-                <Square class="h-8 mr-2" />
-              )}{' '}
-              Sign up for newsletter
-            </label>
-          ) : (
-            <button
-              disabled={!email.value && !emailAndPass}
-              class={`flex w-full text-black/60 justify-center items-center bg-slate-2
-            border border-slate-3 rounded-md px-4 py-2 shadow-md
-            hover:(bg-slate-6 text-white/60)
-            disabled:(opacity-40 saturate-0 pointer-events-none)
-            font-semibold
-            active:(shadow-none scale-98)
-            `}
-            >
-              Sign up for newsletter
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
 }
 
+const Button = ({
+  children,
+  disabled,
+  class: _class,
+}: {
+  children: any;
+  disabled?: boolean;
+  class?: string | Record<string, boolean>;
+}) => {
+  return (
+    <button
+      disabled={disabled}
+      class={cx(
+        `flex w-full text-black/60 justify-center items-center bg-slate-2
+            border border-slate-3 rounded-md px-4 py-2 shadow-md
+            hover:(bg-slate-6 text-white/60)
+            disabled:(opacity-40 saturate-0 pointer-events-none)
+            outline-slate-4
+            font-semibold
+            active:(shadow-none scale-98)
+            `,
+        _class,
+      )}
+    >
+      {children}
+    </button>
+  );
+};
+
+let didFocus = false;
 const TextInput = ({
   value,
   onChange,
@@ -215,6 +191,10 @@ const TextInput = ({
   onBlur,
   disabled,
   loading,
+  loadingLabel,
+  validations,
+  onFullyValid,
+  autoFocus,
 }: {
   value: string;
   onChange: (val: string) => void;
@@ -224,51 +204,107 @@ const TextInput = ({
   onBlur?: () => void;
   disabled?: boolean;
   loading?: boolean;
+  loadingLabel?: string;
+  validations?: { sync?: (val: string) => any[]; async?: (val: string) => Promise<any[]> };
+  onFullyValid?: (isFullyValid: boolean) => void;
+  autoFocus?: boolean;
 }) => {
   const [showPass, setShowPass] = useState(false);
+  const [isModifiedAndBlurred, setIsModifiedAndBlurred] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [isLoadingAsyncValidation, setIsLoadingAsyncValidation] = useState(false);
+
+  const showErrors = isModifiedAndBlurred && validationErrors.length > 0;
 
   return (
     <div class={cx('relative w-full', _class)}>
-      <input
-        aria-label={label}
-        placeholder=" "
-        class={cx(
-          'peer border border-black/10 bg-white shadow-sm rounded-md h-10 w-full px-3 outline-slate-4',
-          {
+      <div class="relative w-full">
+        <input
+          ref={(el) => {
+            if (!didFocus && autoFocus) {
+              el?.focus();
+              didFocus = true;
+            }
+          }}
+          aria-label={label}
+          placeholder=" "
+          class={cx('peer border  shadow-sm rounded-md h-10 w-full px-3', {
             'pr-10': _type === 'password',
-          },
-        )}
-        type={showPass ? 'text' : _type}
-        name={label}
-        value={value}
-        onChange={({ currentTarget }) => onChange(currentTarget.value)}
-        onBlur={onBlur}
-        disabled={disabled}
-      />
-      <label
-        for={label}
-        class={`
+            'border-red-500 bg-red-500/10 outline-red-500': validationErrors.length > 0,
+            'border-black/10 bg-white outline-slate-4': validationErrors.length === 0,
+          })}
+          type={showPass ? 'text' : _type}
+          name={label}
+          value={value}
+          onChange={({ currentTarget }) => {
+            const newValue = currentTarget.value;
+            onChange(newValue);
+            if (validations?.sync) {
+              const errors = validations.sync(newValue);
+              setValidationErrors(errors);
+              if (!validations.async) {
+                onFullyValid?.(errors.length === 0);
+              }
+            }
+            if (validations?.async) {
+              onFullyValid?.(false);
+            }
+          }}
+          onBlur={async ({ currentTarget }) => {
+            const isModifiedAndBlurred = value !== '';
+            setIsModifiedAndBlurred(isModifiedAndBlurred);
+            if (isModifiedAndBlurred) {
+              if (validations?.async) {
+                if (validationErrors.length === 0) {
+                  setIsLoadingAsyncValidation(true);
+                  const errors = await validations.async(value);
+                  setValidationErrors(errors);
+                  onFullyValid?.(errors.length === 0);
+                  setIsLoadingAsyncValidation(false);
+                }
+              }
+            }
+          }}
+          disabled={disabled || isLoadingAsyncValidation}
+        />
+        <label
+          for={label}
+          class={cx(
+            `
           absolute top-1/2 transition-all bg-white px-1 rounded-md -translate-y-1/2 left-3 text-black/40 pointer-events-none
           peer-not-placeholder-shown:(top-0 text-white bg-slate-6 scale-90)
-          peer-focus:(top-0 text-white bg-slate-6 scale-90)`}
-      >
-        {label}
-      </label>
-      {_type === 'password' && (
-        <button onClick={() => setShowPass(!showPass)}>
-          {showPass ? (
-            <Eye class="absolute right-2 top-1/2 -translate-y-1/2 text-black/40" />
-          ) : (
-            <EyeSlash class="absolute right-2 top-1/2 -translate-y-1/2 text-black/40" />
+          peer-focus:(top-0 text-white bg-slate-6 scale-90)`,
+            {
+              'peer-focus:bg-red-500! peer-not-placeholder-shown:bg-red-500!': showErrors,
+            },
           )}
-        </button>
-      )}
-      {loading && (
-        <div class="absolute right-2 top-1/2 text-black opacity-40 -translate-y-1/2">
-          <CircleNotch class="spin" />
-          <div class="absolute translate-x-1/1 -right-4 -top-0.5 pulse-opacity">Checking...</div>
+        >
+          {label}
+        </label>
+        {_type === 'password' && (
+          <button
+            onClick={() => setShowPass(!showPass)}
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-black/40 outline-slate-4"
+          >
+            {showPass ? <Eye /> : <EyeSlash />}
+          </button>
+        )}
+        {isLoadingAsyncValidation && (
+          <div class="absolute right-2 top-1/2 text-black opacity-40 -translate-y-1/2">
+            <CircleNotch class="spin" />
+            <div class="absolute translate-x-1/1 -right-4 -top-0.5 pulse-opacity">
+              {loadingLabel}
+            </div>
+          </div>
+        )}
+      </div>
+      {isModifiedAndBlurred && validationErrors.length ? (
+        <div class="text-red-500 mt-1">
+          {validationErrors.map((error) => (
+            <div>{error}</div>
+          ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
