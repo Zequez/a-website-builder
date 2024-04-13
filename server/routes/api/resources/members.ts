@@ -15,7 +15,8 @@ router.get('/members', async (req, res) => {
 export type RouteGetMembersIdQuery = { id: number };
 export type RouteGetMembersId = Omit<Member, 'passphrase'> & { sites: SiteWithFiles[] };
 router.get('/members/:id', async (req, res) => {
-  const member = await T.members.withSites(req.params.id);
+  // const member = await T.members.withSites(req.params.id);
+  const member = await T.members.get(req.params.id);
   if (!member) return res.status(404).json({ error: 'Member not found' });
   return res.status(200).json({
     ...sanitizeMember(member),

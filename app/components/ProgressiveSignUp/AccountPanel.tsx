@@ -2,6 +2,7 @@ import { cx } from '@app/lib/utils';
 import { MemberAuth } from '../Auth';
 import { useState } from 'preact/hooks';
 import Button from './Button';
+import AccountDetails from './AccountDetails';
 
 export default function AccountPanel({
   memberAuth,
@@ -16,7 +17,7 @@ export default function AccountPanel({
     <div class={cx('flexsc ', _class)}>
       <div class="b-0 b-b sm:b b-slate-200 w-full max-w-screen-sm bg-slate-50 sm:rounded-md overflow-hidden">
         <div class="bg-slate-100 h-12 flex line-height-tight text-black/60 b-b b-slate-200">
-          {['Account details', 'Power pledge', 'Resources usage'].map((t, i) => (
+          {['Account details', 'Power Flow', 'Resources usage'].map((t, i) => (
             <TabButton active={tab === i} onClick={() => setTab(i)}>
               {t}
             </TabButton>
@@ -34,26 +35,26 @@ export default function AccountPanel({
   );
 }
 
-const AccountDetails = ({ memberAuth }: { memberAuth: MemberAuth }) => {
-  return (
-    <div class="flex">
-      <div class="b-r b-slate-200 p-4">
-        <h2 class="text-lg font-semibold">Account</h2>
-        <div>{memberAuth.member.email}</div>
-        <div>Password</div>
-        <div>Subscribed to newsletter</div>
-        <div>Member tag</div>
-      </div>
-      <div class="p-4">
-        <h2 class="text-lg font-semibold">Details</h2>
-        <div>Full name</div>
-        <div>Profile image</div>
+// const AccountDetails = ({ memberAuth }: { memberAuth: MemberAuth }) => {
+//   return (
+//     <div class="flex">
+//       <div class="b-r b-slate-200 p-4">
+//         <h2 class="text-lg font-semibold">Account</h2>
+//         <div>{memberAuth.member.email}</div>
+//         <div>Password</div>
+//         <div>Subscribed to newsletter</div>
+//         <div>Member tag</div>
+//       </div>
+//       <div class="p-4">
+//         <h2 class="text-lg font-semibold">Details</h2>
+//         <div>Full name</div>
+//         <div>Profile image</div>
 
-        <div>Telegram handle</div>
-      </div>
-    </div>
-  );
-};
+//         <div>Telegram handle</div>
+//       </div>
+//     </div>
+//   );
+// };
 
 const MOCK_CONTRIBUTIONS = [
   ['25 Feb 2023', 25, 'USD'],

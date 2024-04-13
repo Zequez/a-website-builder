@@ -1,11 +1,14 @@
 export type Member = {
   id: number;
   email: string;
-  full_name: string;
+  full_name: string | null;
   is_admin: string;
   active: boolean;
   passphrase: string;
   created_at: string;
+  subscribed_to_newsletter: boolean;
+  telegram_handle: string | null;
+  tag: string | null;
 };
 
 export type Site = {

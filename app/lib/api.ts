@@ -117,7 +117,7 @@ export type ApiEndpoint<T, K> = (
 export function useRemoteResource<T, K>(
   apiEndpoint: ApiEndpoint<T, K>,
   params: T | null,
-  auth: MemberAuth | null | undefined,
+  auth?: MemberAuth | null | undefined,
 ) {
   const [remoteResource, setRemoteResource] = useState<K | null>(null);
   const [fetchError, setFetchError] = useState<string | string[] | null>(null);
@@ -137,7 +137,7 @@ export function useRemoteResource<T, K>(
         }
       })();
     }
-  }, [auth, params]);
+  }, [auth, JSON.stringify(params)]);
 
   return fetchError === null
     ? { data: remoteResource, error: null }

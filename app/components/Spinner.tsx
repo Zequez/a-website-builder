@@ -1,9 +1,9 @@
 const Spinner = () => (
-  <div class="spinner border-lime-300!">
-    <div class="border-t-lime-300!"></div>
-    <div class="border-t-lime-500!"></div>
-    <div class="border-t-lime-600!"></div>
-    <div class="bg-lime-400!"></div>
+  <div class="spinner border-slate-300!">
+    <div class="border-t-slate-300!"></div>
+    <div class="border-t-slate-500!"></div>
+    <div class="border-t-slate-600!"></div>
+    <div class="bg-slate-400!"></div>
   </div>
 );
 
