@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'preact/hooks';
 import BoltLightningIcon from '~icons/fa6-solid/bolt-lightning';
 import UserIcon from '~icons/fa6-solid/user';
-import { MemberAuth } from '../Auth';
+import { MemberAuth } from '../../Auth';
 import { getAvailability, getMember, patchMember, useRemoteResource } from '@app/lib/api';
-import Spinner from '../Spinner';
-import TextInput from './TextInput';
-import CheckboxInput from './CheckboxInput';
+import Spinner from '../../Spinner';
+import TextInput from '../TextInput';
+import CheckboxInput from '../CheckboxInput';
 import { cx, gravatarUrl } from '@app/lib/utils';
-import Button from './Button';
+import Button from '../Button';
 import { validate } from 'uuid';
 import { RoutePatchMembersIdQuery } from '@server/routes/api/types';
 import { toArr } from '@shared/utils';

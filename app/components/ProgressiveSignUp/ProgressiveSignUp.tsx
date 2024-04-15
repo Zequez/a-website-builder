@@ -10,7 +10,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { emailAvailability, signUp } from '@app/lib/api';
 import { toArr, validateEmail } from '@shared/utils';
 import { useAuth } from '../Auth';
-import AccountPanel from './AccountPanel';
+import AccountPanel from './AccountPanel/AccountPanel';
 import Button from './Button';
 import TextInput from './TextInput';
 import CheckboxInput from './CheckboxInput';

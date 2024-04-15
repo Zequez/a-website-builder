@@ -1,7 +1,7 @@
 import { cx } from '@app/lib/utils';
-import { MemberAuth } from '../Auth';
+import { MemberAuth } from '../../Auth';
 import { useState } from 'preact/hooks';
-import Button from './Button';
+import Button from '../Button';
 import AccountDetails from './AccountDetails';
 
 export default function AccountPanel({
