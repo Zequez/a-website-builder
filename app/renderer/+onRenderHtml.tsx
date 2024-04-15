@@ -35,6 +35,9 @@ async function onRenderHtml(pageContext: any) {
       </head>
       <body>
         ${dangerouslySkipEscape(pageHtml)}
+        <div id="floating-menus"></div>
+        <div id="fullscreen-preview"></div>
+        <div id="solid-root"></div>
       </body>
     </html>`;
 

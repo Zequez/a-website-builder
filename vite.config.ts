@@ -3,10 +3,30 @@ import { defineConfig } from 'vite';
 import UnoCSS from 'unocss/vite';
 import preact from '@preact/preset-vite';
 import Icons from 'unplugin-icons/vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import vike from 'vike/plugin';
+import babel from '@babel/core';
+import solidPlugin from 'vite-plugin-solid';
 
 const projectRootDir = resolve(__dirname);
+
+const fileRegex = /PowerFlow\.tsx$/;
+
+function transformSolidJsPlugin() {
+  return {
+    name: 'transform-file',
+    enforce: 'pre',
+
+    transform(src, id) {
+      if (fileRegex.test(id)) {
+        console.log(src);
+        const { code } = babel.transformSync(src, { presets: ['babel-preset-solid'] })!;
+        console.log(code);
+        return code;
+        // return src.replace(/solid-js\/jsx-dev-runtime/g, 'solid-js/h/jsx-dev-runtime');
+      }
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   return {
@@ -24,8 +44,9 @@ export default defineConfig(({ mode }) => {
     },
     appType: 'mpa',
     plugins: [
+      solidPlugin({ include: [/PowerFlow\.tsx/] }),
       vike({ prerender: true }),
-      preact(),
+      preact({ exclude: [/PowerFlow\.tsx/] }),
       UnoCSS(),
       Icons({ compiler: 'jsx' }),
       // tsconfigPaths(),
