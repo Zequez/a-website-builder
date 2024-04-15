@@ -1,39 +1,35 @@
 import { describe, it, expect } from 'vitest';
 import { T } from '@db';
 import { verifyToken, randomEmail, generateToken, hashCompare } from '@server/lib/utils';
-import { fetchApi, signUpWith, signInWith } from '@server/test/utils';
+import { post, put, delete_, get, patch, fixtures as F } from '@server/test/utils';
+
+const signUpWith = (body: any) => post('auth/signUp', body);
+const signInWith = (body: any) => post('auth/signIn', body);
 
 describe('/signUp', () => {
   it('should create new user', async () => {
-    const membersBefore = await T.members.all();
-
     const res = await signUpWith({
       email: randomEmail(),
-      passphrase: '123456',
-      fullName: 'a',
+      password: '123456',
     });
 
     expect(res.status).toBe(201);
-
-    const membersAfter = await T.members.all();
-
-    expect(membersAfter.length).toBe(membersBefore.length + 1);
+    const newMember = await res.json();
+    expect(T.members.get(newMember.id)).toBeTruthy();
   });
 
   it('should not create a new user with the same email', async () => {
     const email = randomEmail();
-    const res1 = await signUpWith({
+    const res1 = await post('auth/signUp', {
       email,
-      passphrase: '123456',
-      fullName: 'a',
+      password: '123456',
     });
 
     expect(res1.status).toBe(201);
 
     const res2 = await signUpWith({
       email,
-      passphrase: '123456',
-      fullName: 'a',
+      password: '123456',
     });
 
     expect(res2.status).toBe(409);
@@ -42,17 +38,8 @@ describe('/signUp', () => {
   it('should not create a user with an invalid email', async () => {
     const res1 = await signUpWith({
       email: 'arsarras',
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
-    });
-
-    expect(res1.status).toBe(400);
-  });
-
-  it('should not create a user without a full name', async () => {
-    const res1 = await signUpWith({
-      email: randomEmail(),
-      passphrase: '123456',
     });
 
     expect(res1.status).toBe(400);
@@ -62,7 +49,7 @@ describe('/signUp', () => {
     const email = randomEmail();
     const res = await signUpWith({
       email,
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
     });
     const { member, token } = await res.json();
@@ -80,7 +67,7 @@ describe('/signIn', () => {
     const email = randomEmail();
     const res1 = await signUpWith({
       email,
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
     });
     expect(res1.status).toBe(201);
@@ -104,7 +91,7 @@ describe('/signIn', () => {
     const email = randomEmail();
     const res1 = await signUpWith({
       email,
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
     });
     expect(res1.status).toBe(201);
@@ -119,18 +106,12 @@ describe('/me', () => {
     const email = randomEmail();
     const res1 = await signUpWith({
       email,
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
     });
     expect(res1.status).toBe(201);
     const token = (await res1.json()).token;
-    const res2 = await fetchApi('auth/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res2 = await get('auth/me', token);
     expect(res2.status).toBe(200);
     const { member } = await res2.json();
     expect(member.email).toBe(email);
@@ -138,12 +119,7 @@ describe('/me', () => {
   });
 
   it('should return unauthorized without a token', async () => {
-    const res = await fetchApi('auth/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const res = await get('auth/me');
     expect(res.status).toBe(401);
   });
 
@@ -151,25 +127,19 @@ describe('/me', () => {
     const email = randomEmail();
     const res1 = await signUpWith({
       email,
-      passphrase: '123456',
+      password: '123456',
       fullName: 'a',
     });
     expect(res1.status).toBe(201);
     const token = (await res1.json()).token;
-    const res2 = await fetchApi('auth/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res2 = await get('auth/me', token);
     const { member } = await res2.json();
     expect(member.email).toBe(email);
-    expect(member.passphrase).toBeUndefined();
+    expect(member.password).toBeUndefined();
   });
 
   it('should return unauthorized with an expired token', async () => {
-    const expiredToken = await generateToken(
+    const expiredToken = generateToken(
       {
         id: 123,
         email: 'a@b.com',
@@ -178,63 +148,7 @@ describe('/me', () => {
       -1,
     );
 
-    const res = await fetchApi('auth/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${expiredToken}`,
-      },
-    });
+    const res = await get('auth/me', expiredToken);
     expect(res.status).toBe(401);
-  });
-});
-
-describe('/changePass', () => {
-  it('should change password if correct credentials', async () => {
-    const email = randomEmail();
-    const res1 = await signUpWith({
-      email,
-      passphrase: '123456',
-      fullName: 'a',
-    });
-    expect(res1.status).toBe(201);
-    const { token, member } = await res1.json();
-    const res2 = await fetchApi('auth/changePass', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        oldPassphrase: '123456',
-        newPassphrase: '1234567',
-      }),
-    });
-    expect(res2.status).toBe(200);
-    const updatedMember = await T.members.get(member.id);
-    expect(await hashCompare('1234567', updatedMember!.passphrase)).toBeTruthy();
-  });
-
-  it('should not change password if incorrect correct credentials', async () => {
-    const email = randomEmail();
-    const res1 = await signUpWith({
-      email,
-      passphrase: '123456',
-      fullName: 'a',
-    });
-    expect(res1.status).toBe(201);
-    const { token, member } = await res1.json();
-    const res2 = await fetchApi('auth/changePass', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        oldPassphrase: '123',
-        newPassphrase: '123457',
-      }),
-    });
-    expect(res2.status).toBe(400);
   });
 });

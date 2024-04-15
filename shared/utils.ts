@@ -38,6 +38,8 @@ export function randomAlphaNumericString() {
   return Math.random().toString(36).slice(2);
 }
 
+export const randANS = randomAlphaNumericString;
+
 export const uuid = uuidv4;
 
 export const validateUuid = validate;
@@ -47,4 +49,8 @@ export const decodeB64 = decode;
 
 export function toArr(x: string | string[]) {
   return Array.isArray(x) ? x : [x];
+}
+
+export function wait(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }

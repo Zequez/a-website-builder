@@ -1,10 +1,4 @@
-// ██████╗ ██╗   ██╗████████╗████████╗ ██████╗ ███╗   ██╗
-// ██╔══██╗██║   ██║╚══██╔══╝╚══██╔══╝██╔═══██╗████╗  ██║
-// ██████╔╝██║   ██║   ██║      ██║   ██║   ██║██╔██╗ ██║
-// ██╔══██╗██║   ██║   ██║      ██║   ██║   ██║██║╚██╗██║
-// ██████╔╝╚██████╔╝   ██║      ██║   ╚██████╔╝██║ ╚████║
-// ╚═════╝  ╚═════╝    ╚═╝      ╚═╝    ╚═════╝ ╚═╝  ╚═══╝
-
+import CircleNotch from '~icons/fa6-solid/circle-notch';
 import { cx } from '@app/lib/utils';
 
 const Button = ({
@@ -13,12 +7,16 @@ const Button = ({
   class: _class,
   onClick,
   href,
+  loading,
+  loadingLabel,
 }: {
   children: any;
   disabled?: boolean;
   class?: string | Record<string, boolean>;
   onClick?: () => void;
   href?: string;
+  loading?: boolean;
+  loadingLabel?: string;
 }) => {
   const El = href ? 'a' : 'button';
   return (
@@ -38,7 +36,12 @@ const Button = ({
         _class,
       )}
     >
-      {children}
+      {loading ? loadingLabel : children}
+      {loading && (
+        <div class="absolute right-2 top-1/2 text-black opacity-40 -translate-y-1/2 whitespace-nowrap">
+          <CircleNotch class="spin inline-block" />
+        </div>
+      )}
     </El>
   );
 };

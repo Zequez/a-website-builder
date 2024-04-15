@@ -1,5 +1,5 @@
 import { File_, Member, T } from '@db';
-import { tokenFromMember } from '@server/lib/utils';
+import { hashPass, tokenFromMember } from '@server/lib/utils';
 
 export async function apply() {
   await T.members.truncate();
@@ -8,13 +8,13 @@ export async function apply() {
 
   const bob = await T.members.insert({
     email: 'bob@example.com',
-    passphrase: 'bob123',
+    passphrase: await hashPass('bob123'),
     full_name: 'Bob Example',
   });
 
   const pat = await T.members.insert({
     email: 'pat@example.com',
-    passphrase: 'pat123',
+    passphrase: await hashPass('pat123'),
     full_name: 'Pat Example',
   });
 

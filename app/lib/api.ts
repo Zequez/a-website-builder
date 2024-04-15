@@ -1,41 +1,45 @@
-import type {
+import {
   // Members
-  RouteGetMembersId,
-  RouteGetMembers,
+  type RouteGetMembersId,
+  type RouteGetMembers,
   // Files
-  RoutePutFilesIdQuery,
-  RoutePutFilesId,
-  RoutePostFilesQuery,
-  RoutePostFiles,
-  RouteDeleteFilesId,
-  RoutePostFilesSaveBuildQuery,
-  RoutePostFilesSaveBuild,
+  type RoutePutFilesIdQuery,
+  type RoutePutFilesId,
+  type RoutePostFilesQuery,
+  type RoutePostFiles,
+  type RouteDeleteFilesId,
+  type RoutePostFilesSaveBuildQuery,
+  type RoutePostFilesSaveBuild,
   // Sites
-  RoutePostSitesQuery,
-  RoutePostSites,
-  RoutePutSitesIdQuery,
-  RoutePutSitesId,
-  RouteDeleteSitesId,
-  RouteDeleteSitesIdQuery,
+  type RoutePostSitesQuery,
+  type RoutePostSites,
+  type RoutePutSitesIdQuery,
+  type RoutePutSitesId,
+  type RouteDeleteSitesId,
+  type RouteDeleteSitesIdQuery,
   // Authentication
-  RoutePostAuthSignIn,
-  RoutePostAuthSignUp,
-  RouteGetAuthMe,
-  RoutePostAuthChangePass,
-  RouteGetMembersIdQuery,
-  RoutePostAuthSignUpQuery,
-  RoutePostAuthSignInQuery,
-  RouteGetAuthMeQuery,
-  RoutePostAuthChangePassQuery,
-  RouteGetEmailAvailabilityQuery,
-  RouteGetEmailAvailability,
+  type RoutePostAuthSignIn,
+  type RoutePostAuthSignUp,
+  type RouteGetAuthMe,
+  type RoutePostAuthChangePass,
+  type RouteGetMembersIdQuery,
+  type RoutePostAuthSignUpQuery,
+  type RoutePostAuthSignInQuery,
+  type RouteGetAuthMeQuery,
+  type RoutePostAuthChangePassQuery,
+  type RouteGetEmailAvailabilityQuery,
+  type RouteGetEmailAvailability,
   // Misc
-  RouteGetMembersQuery,
-  RouteDeleteFilesIdQuery,
-  RouteGetFiles,
-  RouteGetFilesQuery,
-  RouteGetSites,
-  RouteGetSitesQuery,
+  type RouteGetMembersQuery,
+  type RouteDeleteFilesIdQuery,
+  type RouteGetFiles,
+  type RouteGetFilesQuery,
+  type RouteGetSites,
+  type RouteGetSitesQuery,
+  type RoutePatchMembersId,
+  type RoutePatchMembersIdQuery,
+  RouteGetMembersAvailability,
+  RouteGetMembersAvailabilityQuery,
 } from '@server/routes/api/types';
 
 import type { MemberAuth } from '@app/components/Auth';
@@ -49,7 +53,7 @@ export function setAuth(newAuth: MemberAuth | null) {
 
 function api<T, Q extends Record<string, any>>(
   path: string | ((q: Q) => string),
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
 ): ApiEndpoint<Q, T> {
   return (query: Q, authorization?: string | null | undefined) => {
     const resolvedToken = authorization || memberAuth?.token;
@@ -118,6 +122,7 @@ export function useRemoteResource<T, K>(
   apiEndpoint: ApiEndpoint<T, K>,
   params: T | null,
   auth?: MemberAuth | null | undefined,
+  effect?: (resource: K | null, error: string | string[] | null) => void,
 ) {
   const [remoteResource, setRemoteResource] = useState<K | null>(null);
   const [fetchError, setFetchError] = useState<string | string[] | null>(null);
@@ -131,17 +136,19 @@ export function useRemoteResource<T, K>(
           : apiEndpoint(params, auth.token));
         if (data !== null) {
           setRemoteResource(data);
+          effect?.(data, null);
         } else {
           console.error('Error fetching remote resource', error);
           setFetchError(error);
+          effect?.(null, error);
         }
       })();
     }
   }, [auth, JSON.stringify(params)]);
 
   return fetchError === null
-    ? { data: remoteResource, error: null }
-    : { data: null, error: fetchError };
+    ? { data: remoteResource, error: null, setResource: setRemoteResource }
+    : { data: null, error: fetchError, setResource: setRemoteResource };
 }
 
 export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedResponse<T>>;
@@ -163,6 +170,14 @@ export const emailAvailability = api<RouteGetEmailAvailability, RouteGetEmailAva
 export const getMembers = api<RouteGetMembers, RouteGetMembersQuery>('members', 'GET');
 export const getMember = api<RouteGetMembersId, RouteGetMembersIdQuery>(
   ({ id }) => `members/${id}`,
+  'GET',
+);
+export const patchMember = api<RoutePatchMembersId, RoutePatchMembersIdQuery>(
+  ({ id }) => `members/${id}`,
+  'PATCH',
+);
+export const getAvailability = api<RouteGetMembersAvailability, RouteGetMembersAvailabilityQuery>(
+  'members/availability',
   'GET',
 );
 

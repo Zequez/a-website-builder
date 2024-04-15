@@ -2,9 +2,12 @@ import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mime from 'mime';
-import { File_, Member } from '@db';
 import { IncomingHttpHeaders } from 'http';
+import { stringify } from 'querystring';
+import { File_, Member } from '@db';
 import { FileB64 } from '@server/db/driver';
+
+export const QS = stringify;
 
 export const colorConsole = {
   green: (text: string, ...other: any) => console.log('\x1b[32m%s\x1b[0m', text, ...other),
@@ -71,7 +74,7 @@ export function updateFileToB64(file: File_): FileB64 {
 export type TokenMember = {
   id: number;
   email: string;
-  fullName: string;
+  fullName: string | null;
 };
 
 export function generateToken(member: TokenMember, expIn = 60 * 60 * 24 * 30) {

@@ -67,6 +67,19 @@ const extendedMembers = {
     (sites as SiteWithFiles[]).forEach((s) => (s.files = filesBySiteId[s.id] || []));
     return { ...member, sites };
   },
+  isUnique: async (
+    id: number | string | null,
+    col: 'email' | 'telegram_handle' | 'tag',
+    val: string,
+  ) => {
+    return !(
+      await Q(
+        id
+          ? sql`SELECT * FROM members WHERE ${sql.raw(col)} = ${val} AND id != ${id} LIMIT 1`
+          : sql`SELECT * FROM members WHERE ${sql.raw(col)} = ${val} LIMIT 1`,
+      )
+    )[0];
+  },
 };
 
 const extendedFiles = {

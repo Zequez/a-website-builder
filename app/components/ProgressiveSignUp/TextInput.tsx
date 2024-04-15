@@ -1,5 +1,5 @@
 import { cx } from '@app/lib/utils';
-import { useState } from 'preact/hooks';
+import { useCallback, useRef, useState } from 'preact/hooks';
 import Eye from '~icons/fa6-solid/eye';
 import EyeSlash from '~icons/fa6-solid/eye-slash';
 import CircleNotch from '~icons/fa6-solid/circle-notch';
@@ -40,11 +40,123 @@ const TextInput = ({
   details?: string;
 }) => {
   const [showPass, setShowPass] = useState(false);
-  const [isModifiedAndBlurred, setIsModifiedAndBlurred] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(false);
+  const [becameStill, setBecameStill] = useState(false);
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
-  const [isLoadingAsyncValidation, setIsLoadingAsyncValidation] = useState(false);
+  const [asyncValidationPending, setAsyncValidationPending] = useState(false);
+  const [isLoadingAsyncValidation, setIsLoadingAsyncValidation] = useState<string | null>(null);
+  const [asyncSucceedValues, setAsyncSucceedValues] = useState<string[]>([value]);
+  const stillnessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const asyncValidationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const asyncValidationRejectPromiseRef = useRef<(() => void) | null>(null);
 
-  const showErrors = isModifiedAndBlurred && validationErrors.length > 0;
+  const showErrors = ((isTouched && isBlurred) || becameStill) && validationErrors.length > 0;
+
+  function handleOnChange(inputVal: string) {
+    if (becameStill) setBecameStill(false);
+    if (stillnessTimeoutRef.current) {
+      clearTimeout(stillnessTimeoutRef.current);
+    }
+    if (!isTouched) setIsTouched(true);
+    setTimeout(() => {
+      setBecameStill(true);
+      stillnessTimeoutRef.current = null;
+    }, 1500);
+
+    processValidation(inputVal, false);
+  }
+
+  async function processValidation(inputVal: string, fromBlur: boolean) {
+    if (validations) {
+      if (isLoadingAsyncValidation === inputVal) {
+        return;
+      }
+
+      let isFullyValid = true;
+
+      const val = validations.force ? validations.force(inputVal) : inputVal;
+
+      if (!fromBlur) {
+        onChange(val);
+      }
+
+      if (validations.sync) {
+        const errors = validations.sync(val);
+        setValidationErrors(errors);
+        isFullyValid = errors.length === 0;
+        if (!isFullyValid && asyncValidationRejectPromiseRef.current) {
+          asyncValidationRejectPromiseRef.current();
+          setAsyncValidationPending(false);
+        }
+      }
+
+      if (isFullyValid && validations.async) {
+        onFullyValid?.(false);
+        setAsyncValidationPending(true);
+        try {
+          const errors = await debouncedAsyncValidation(val, fromBlur);
+          console.log('Setting validation errors', errors);
+          setValidationErrors(errors);
+          setAsyncValidationPending(false);
+          isFullyValid = errors.length === 0;
+        } catch (e) {
+          console.log('Async validation cancelled');
+          return;
+        }
+      } else {
+        setAsyncValidationPending(false);
+      }
+
+      onFullyValid?.(isFullyValid);
+    }
+  }
+
+  const debouncedAsyncValidation = async (inputVal: string, instant: boolean) => {
+    return new Promise<any[]>((resolve, reject) => {
+      if (asyncValidationTimeoutRef.current) {
+        clearTimeout(asyncValidationTimeoutRef.current);
+        asyncValidationTimeoutRef.current = null;
+      }
+
+      if (asyncValidationRejectPromiseRef.current) {
+        asyncValidationRejectPromiseRef.current();
+        asyncValidationRejectPromiseRef.current = null;
+      }
+
+      function cancel() {
+        if (asyncValidationTimeoutRef.current) {
+          clearTimeout(asyncValidationTimeoutRef.current);
+        }
+
+        reject();
+        setIsLoadingAsyncValidation(null);
+        asyncValidationRejectPromiseRef.current = null;
+      }
+
+      if (asyncSucceedValues.indexOf(inputVal) !== -1) {
+        resolve([]);
+      } else {
+        asyncValidationRejectPromiseRef.current = cancel;
+
+        asyncValidationTimeoutRef.current = setTimeout(
+          async () => {
+            setIsLoadingAsyncValidation(inputVal);
+            const asyncErrorsResult = await validations!.async!(inputVal);
+            if (asyncErrorsResult.length === 0) {
+              setAsyncSucceedValues(asyncSucceedValues.concat([inputVal]));
+            }
+            if (asyncValidationRejectPromiseRef.current === cancel) {
+              asyncValidationRejectPromiseRef.current = null;
+              resolve(asyncErrorsResult);
+              setIsLoadingAsyncValidation(null);
+            }
+          },
+          instant ? 0 : 1000,
+        );
+      }
+    });
+  };
 
   return (
     <div class={cx('relative w-full', _class)}>
@@ -61,46 +173,27 @@ const TextInput = ({
           placeholder=" "
           class={cx('peer border  shadow-sm rounded-md h-10 w-full px-3', {
             'pr-10': _type === 'password',
-            'border-red-500 bg-red-500/10 outline-red-500': validationErrors.length > 0,
-            'border-black/10 bg-white outline-slate-4': validationErrors.length === 0,
-            'opacity-50': disabled || loading || isLoadingAsyncValidation,
+            'border-amber-500 bg-amber-500/10 outline-amber-500': asyncValidationPending,
+            'border-red-500 bg-red-500/10 outline-red-500':
+              validationErrors.length > 0 && !asyncValidationPending,
+            'border-black/10 bg-white outline-slate-4':
+              validationErrors.length === 0 && !asyncValidationPending,
+            'opacity-50': disabled || loading,
           })}
           type={showPass ? 'text' : _type}
           name={label}
           value={value}
-          onChange={({ currentTarget }) => {
-            console.log(validations?.force?.(currentTarget.value));
-            const newValue = validations?.force
-              ? validations.force(currentTarget.value)
-              : currentTarget.value;
-            onChange(newValue);
-            if (validations?.sync) {
-              const errors = validations.sync(newValue);
-              setValidationErrors(errors);
-              if (!validations.async) {
-                onFullyValid?.(errors.length === 0);
-              }
-            }
-            if (validations?.async) {
-              onFullyValid?.(false);
-            }
-          }}
+          onChange={({ currentTarget }) => handleOnChange(currentTarget.value)}
           onBlur={async ({ currentTarget }) => {
-            const isModifiedAndBlurred = value !== '';
-            setIsModifiedAndBlurred(isModifiedAndBlurred);
-            if (isModifiedAndBlurred) {
-              if (validations?.async) {
-                if (validationErrors.length === 0) {
-                  setIsLoadingAsyncValidation(true);
-                  const errors = await validations.async(value);
-                  setValidationErrors(errors);
-                  onFullyValid?.(errors.length === 0);
-                  setIsLoadingAsyncValidation(false);
-                }
-              }
+            if (!isBlurred) {
+              const isModifiedAndBlurred = value !== '';
+              setIsBlurred(isModifiedAndBlurred);
+            }
+            if (isBlurred) {
+              processValidation(currentTarget.value, true);
             }
           }}
-          disabled={disabled || isLoadingAsyncValidation}
+          disabled={disabled}
         />
         <label
           for={label}
@@ -110,8 +203,11 @@ const TextInput = ({
           peer-not-placeholder-shown:(top-0 text-white bg-slate-6 scale-90)
           peer-focus:(top-0 text-white bg-slate-6 scale-90)`,
             {
-              'peer-focus:bg-red-500! peer-not-placeholder-shown:bg-red-500!': showErrors,
-              'opacity-50': disabled || loading || isLoadingAsyncValidation,
+              'peer-focus:bg-amber-500! peer-not-placeholder-shown:bg-amber-500!':
+                asyncValidationPending,
+              'peer-focus:bg-red-500! peer-not-placeholder-shown:bg-red-500!':
+                showErrors && !asyncValidationPending,
+              'opacity-50': disabled || loading,
             },
           )}
         >
@@ -134,7 +230,7 @@ const TextInput = ({
           </div>
         )}
       </div>
-      {isModifiedAndBlurred && validationErrors.length ? (
+      {showErrors && validationErrors.length ? (
         <div class="text-red-500 mt-1 ml-2">
           {validationErrors.map((error) => (
             <div>{error}</div>
