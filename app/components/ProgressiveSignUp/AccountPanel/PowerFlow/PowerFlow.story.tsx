@@ -27,10 +27,10 @@ function PowerFlowStory() {
   const [store, setStore] = createStore<Store>({
     pledges: [
       {
-        amount: 25,
-        currency: 'USD',
+        amount: 100,
+        currency: 'usd',
         completedAt: null,
-        mode: 'recurring-month',
+        mode: 'yearly',
         status: 'active',
         nextRenew: new Date('2024-1-26'),
         towards: {
@@ -43,8 +43,20 @@ function PowerFlowStory() {
         ],
       },
       {
+        amount: 6000,
+        currency: 'ars',
+        completedAt: null,
+        mode: 'monthly',
+        status: 'active',
+        nextRenew: new Date('2024-4-12'),
+        towards: {
+          hoja: 1,
+        },
+        historic: [['4 Mar 2024', 6000]],
+      },
+      {
         amount: 12000,
-        currency: 'ARS',
+        currency: 'ars',
         completedAt: new Date('2023-12-25'),
         mode: 'onetime',
         status: 'done',
@@ -74,7 +86,7 @@ function PowerFlowStory() {
   function handleAddPledge() {
     setStore('pledges', store.pledges.length, {
       amount: 1000,
-      currency: 'ARS',
+      currency: 'ars',
       completedAt: null,
       mode: 'onetime',
       status: 'draft',
@@ -89,22 +101,7 @@ function PowerFlowStory() {
   function updateWith(i: number, update: Partial<Pledge>) {
     console.log('Updating pledge', i, update);
     setStore('pledges', i, update);
-    // for (let k in update) {
-    //   const key = k as keyof typeof update;
-    //   console.log(key, update[key]);
-
-    // }
-
-    // setPledges((prev) => {
-    //   return prev.map((pledge, j) => (j === i ? { ...pledge, ...update } : pledge));
-    // });
   }
-
-  // createEffect(() => {
-  //   for (let pledge of store.pledges) {
-  //     console.log(pledge);
-  //   }
-  // });
 
   return (
     <PowerFlow

@@ -2,8 +2,18 @@
 
 import OutLink from '~icons/fa6-solid/up-right-from-square?raw';
 import { Accessor, For, Match, Show, Switch } from 'solid-js';
-import { Pledge, Recipient } from './types';
 import { strToHue } from '@app/lib/utils';
+import {
+  PledgeMode,
+  PledgeCurrency,
+  PledgeStatus,
+  Pledge,
+  Recipient,
+  CURRENCY_LIST,
+  MODES_LIST,
+  STATUS_LIST,
+} from './types';
+import { paymentLinks, directPayments } from './config';
 
 function pledgeTotal(pledge: Pledge) {
   return pledge.historic.reduce((all, [date, amount]) => {
@@ -11,11 +21,15 @@ function pledgeTotal(pledge: Pledge) {
   }, 0);
 }
 
+function isRecurring(mode: Pledge['mode']) {
+  return mode === 'monthly' || mode === 'yearly';
+}
+
 const getManageButtonData = (pledge: Pledge) => {
-  if (pledge.currency === 'ARS') {
-    return { href: 'https://mercadopago.com.ar', label: 'Manage on MercadoPago' };
+  if (pledge.currency === 'ars') {
+    return { url: 'https://www.mercadopago.com.ar/subscriptions', label: 'Manage on MercadoPago' };
   } else {
-    return { href: 'https://gumroad.com', label: 'Manage on Gumroad' };
+    return { url: 'https://gumroad.com', label: 'Manage on Gumroad' };
   }
 };
 
@@ -32,10 +46,10 @@ export function PledgeCard(p: {
             <div class="text-2xl text-black/40">
               <span class="font-black mr-2">{p.pledge.amount.toLocaleString()}</span>
               <span class="">
-                {p.pledge.currency}
+                <span class="uppercase">{p.pledge.currency}</span>
                 <Switch>
-                  <Match when={p.pledge.mode === 'recurring-year'}> / year</Match>
-                  <Match when={p.pledge.mode === 'recurring-month'}> / month</Match>
+                  <Match when={p.pledge.mode === 'yearly'}> / year</Match>
+                  <Match when={p.pledge.mode === 'monthly'}> / month</Match>
                 </Switch>
               </span>
             </div>
@@ -63,7 +77,7 @@ export function PledgeCard(p: {
                 <div class="flex px-2 py-1 b-b b-slate-500">
                   <div class="flex-grow">{date}</div>
                   <div class="">
-                    {amount.toLocaleString()} {p.pledge.currency}
+                    {amount.toLocaleString()} {p.pledge.currency.toUpperCase()}
                   </div>
                 </div>
               )}
@@ -71,7 +85,7 @@ export function PledgeCard(p: {
             <div class="bg-slate-500 px-2 py-1 text-right text-white/75">
               <span class="tracking-wider">TOTAL:</span>{' '}
               <span class="font-black">
-                {pledgeTotal(p.pledge)} {p.pledge.currency}
+                {pledgeTotal(p.pledge)} {p.pledge.currency.toUpperCase()}
               </span>
             </div>
           </div>
@@ -80,14 +94,26 @@ export function PledgeCard(p: {
       <Show when={p.pledge.status === 'committed'}>
         <div class="px-4 mb-4 text-white">
           <div class="bg-amber-400/70 p-4 rounded-md b b-black/10 text-center">
-            Your pledge is comitted. Awaiting payment signal.
+            Your pledge is comitted. Awaiting payment signal. <br />
+            Make sure you select the comitted amount.
+            <Button
+              class="mt-2"
+              href={paymentLinks[p.pledge.currency][p.pledge.mode].label}
+              target="_blank"
+            >
+              Pay on {paymentLinks[p.pledge.currency][p.pledge.mode].label}
+            </Button>
+            <Show when={!!(directPayments as any)[p.pledge.currency]?.[p.pledge.mode]}>
+              <div class="mt-2">{(directPayments as any)[p.pledge.currency][p.pledge.mode]}</div>
+            </Show>
           </div>
         </div>
         <div class="px-4 mb-4 flexee">
-          <Button onClick={p.onCancel}>Cancel</Button>
+          <div class="flex-grow"></div>
+          <Button onClick={p.onCancel}>Un-commit</Button>
         </div>
       </Show>
-      <Show when={p.pledge.mode.startsWith('recurring')}>
+      <Show when={isRecurring(p.pledge.mode)}>
         <div class="flexee px-4 mb-4">
           <ManageButton {...getManageButtonData(p.pledge)} />
         </div>
@@ -96,12 +122,18 @@ export function PledgeCard(p: {
   );
 }
 
+const modeLabels: { [key in PledgeMode]: string } = {
+  monthly: 'Monthly',
+  yearly: 'Yearly',
+  onetime: 'One-time',
+};
+
 export function DraftPledgeCard(p: {
   pledge: Pledge;
   recipients: Record<string, Recipient>;
   onCommit: () => void;
   onAmountChange: (amount: number) => void;
-  onCurrencyChange: (currency: string) => void;
+  onCurrencyChange: (currency: Pledge['currency']) => void;
   onModeChange: (mode: Pledge['mode']) => void;
 }) {
   return (
@@ -120,11 +152,14 @@ export function DraftPledgeCard(p: {
               />
               <select
                 value={p.pledge.currency}
-                onChange={({ currentTarget }) => p.onCurrencyChange(currentTarget.value)}
+                onChange={({ currentTarget }) =>
+                  p.onCurrencyChange(currentTarget.value as Pledge['currency'])
+                }
                 class="rounded-md w-full h-8 xs:h-10 sm:px-2 sm:py-1 text-center"
               >
-                <option value="ARS">ARS</option>
-                <option value="USD">USD</option>
+                <For each={CURRENCY_LIST}>
+                  {(currency) => <option value={currency}>{currency.toUpperCase()}</option>}
+                </For>
               </select>
               <select
                 value={p.pledge.mode}
@@ -133,9 +168,9 @@ export function DraftPledgeCard(p: {
                   p.onModeChange(currentTarget.value as Pledge['mode']);
                 }}
               >
-                <option value={'recurring-month'}>Recurring monthly</option>
-                <option value={'recurring-year'}>Recurring yearly</option>
-                <option value={'onetime'}>One time</option>
+                <For each={MODES_LIST}>
+                  {(mode) => <option value={mode}>{modeLabels[mode]}</option>}
+                </For>
               </select>
             </div>
           </div>
@@ -144,32 +179,34 @@ export function DraftPledgeCard(p: {
       </div>
       <div class="flexee px-4 mb-4">
         <div class="flex-grow text-black/40">Recipient: Hoja team (the only team for now)</div>
-        <Button onClick={p.onCommit}>Commit</Button>
+        <Button disabled={!p.pledge.amount} onClick={p.onCommit}>
+          Commit
+        </Button>
       </div>
     </div>
   );
 }
 
-function Button({
-  onClick,
-  href,
-  target,
-  children,
-}: {
+function Button(p: {
   href?: string;
   target?: string;
   onClick?: () => void;
   children: any;
+  disabled?: boolean;
+  class?: string;
 }) {
-  const _class =
-    'flexcc px-2 py-1 bg-slate-400 b b-black/10 rounded-md text-white/90 cursor-pointer hover:bg-slate-500';
-  return href ? (
-    <a class={_class} href={href} target={target}>
-      {children}
+  const _class = `flexcc px-2 py-1 bg-slate-400 b b-black/10 rounded-md text-white/90 cursor-pointer ${p.class}`;
+  const classList = () => ({
+    'opacity-50 cursor-not-allowed': p.disabled,
+    'hover:bg-slate-500': !p.disabled,
+  });
+  return p.href ? (
+    <a class={_class} classList={classList()} href={p.href} target={p.target}>
+      {p.children}
     </a>
   ) : (
-    <button class={_class} onClick={onClick}>
-      {children}
+    <button class={_class} disabled={p.disabled} classList={classList()} onClick={p.onClick}>
+      {p.children}
     </button>
   );
 }
@@ -190,9 +227,9 @@ function StatusBadge({ status }: { status: Pledge['status'] }) {
   );
 }
 
-function ManageButton({ href, label }: { href: string; label: string }) {
+function ManageButton({ url, label }: { url: string; label: string }) {
   return (
-    <Button href={href} target="_blank">
+    <Button href={url} target="_blank">
       {label}
       <span class="ml-2 text-sm" innerHTML={OutLink as unknown as string} />
     </Button>
@@ -247,7 +284,7 @@ function RecipientsBar({
                 }}
               ></span>
               <div class="inline-block text-sm">
-                {distribution.amount.toLocaleString()} {pledge.currency}
+                {distribution.amount.toLocaleString()} {pledge.currency.toUpperCase()}
               </div>
               <div class="inline-block mx-2 opacity-50">&rarr;</div>
               <div class="inline-block text-sm mr-2">{distribution.recipient.name}</div>

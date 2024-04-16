@@ -33,6 +33,10 @@ export default function PowerFlow(p: {
 
   return (
     <div class="text-black/60 p-4">
+      <div class="p-4 bg-red-300 text-white rounded-md text-center mb-4">
+        This UI is under development, changes won't be saved and payment verifications aren't done
+        yet.
+      </div>
       <InfoPanel />
       <TokensPanel available={p.tokens - 1000} total={p.tokens} />
       <Index each={p.pledges}>
@@ -74,19 +78,21 @@ export default function PowerFlow(p: {
 
 function TokensPanel({ available, total }: { available: number; total: number }) {
   return (
-    <div class="flexcc flex-col mb-2">
-      <div class="bg-emerald-500 px-8 py-4 b b-black/10 text-white text-shadow-1 rounded-lg text-3xl flex">
-        <div class="flexcc flex-col">
-          {available.toLocaleString()}
-          <div class="text-base text-white/60">Available</div>
-        </div>{' '}
-        <span class="mx-2">/</span>{' '}
-        <div class="flexcc flex-col">
-          {total.toLocaleString()}
-          <div class="text-base text-white/60">Total</div>
+    <div class="flexcc flex-col mb-4">
+      <div class="bg-emerald-500 px-8 py-4 b b-black/10 text-white text-shadow-1 rounded-lg text-3xl flex flex-col">
+        <span class="text-2xl tracking-wider mb-2 font-black uppercase text-center">Tokens</span>
+        <div class="flex">
+          <div class="flexcc flex-col">
+            {available.toLocaleString()}
+            <div class="text-base text-white/60">Available</div>
+          </div>{' '}
+          <span class="mx-2">/</span>{' '}
+          <div class="flexcc flex-col">
+            {total.toLocaleString()}
+            <div class="text-base text-white/60">Total</div>
+          </div>
         </div>
       </div>
-      <span class="text-2xl text-black/30 font-black uppercase">Tokens</span>
     </div>
   );
 }
