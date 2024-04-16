@@ -9,24 +9,7 @@ import solidPlugin from 'vite-plugin-solid';
 
 const projectRootDir = resolve(__dirname);
 
-const fileRegex = /PowerFlow\.tsx$/;
-
-function transformSolidJsPlugin() {
-  return {
-    name: 'transform-file',
-    enforce: 'pre',
-
-    transform(src, id) {
-      if (fileRegex.test(id)) {
-        console.log(src);
-        const { code } = babel.transformSync(src, { presets: ['babel-preset-solid'] })!;
-        console.log(code);
-        return code;
-        // return src.replace(/solid-js\/jsx-dev-runtime/g, 'solid-js/h/jsx-dev-runtime');
-      }
-    },
-  };
-}
+const solidFiles = [/PowerFlow\.tsx/, /PledgeCard\.tsx/, /PowerFlow\.story\.tsx/];
 
 export default defineConfig(({ mode }) => {
   return {
@@ -44,9 +27,9 @@ export default defineConfig(({ mode }) => {
     },
     appType: 'mpa',
     plugins: [
-      solidPlugin({ include: [/PowerFlow\.tsx/] }),
+      solidPlugin({ include: solidFiles }),
       vike({ prerender: true }),
-      preact({ exclude: [/PowerFlow\.tsx/] }),
+      preact({ exclude: solidFiles }),
       UnoCSS(),
       Icons({ compiler: 'jsx' }),
       // tsconfigPaths(),

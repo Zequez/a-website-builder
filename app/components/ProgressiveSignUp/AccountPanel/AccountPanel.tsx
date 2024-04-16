@@ -3,7 +3,7 @@ import { MemberAuth } from '../../Auth';
 import { useState } from 'preact/hooks';
 import Button from '../Button';
 import AccountDetails from './AccountDetails';
-import PowerFlow from './PowerFlow';
+import PowerFlowStory from './PowerFlow/PowerFlow.story';
 // import SolidComponent from './SolidComponent';
 
 export default function AccountPanel({
@@ -28,7 +28,7 @@ export default function AccountPanel({
         {tab === 0 ? (
           <AccountDetails memberAuth={memberAuth} />
         ) : tab == 1 ? (
-          <PowerFlow />
+          <PowerFlowStory />
         ) : (
           <ResourcesUsage />
         )}
