@@ -19,12 +19,8 @@ const getManageButtonData = (pledge: Pledge) => {
   }
 };
 
-export function PledgeCard({
-  pledge,
-  recipients,
-  onCancel,
-}: {
-  pledge: Accessor<Pledge>;
+export function PledgeCard(p: {
+  pledge: Pledge;
   recipients: Record<string, Recipient>;
   onCancel: () => void;
 }) {
@@ -34,40 +30,40 @@ export function PledgeCard({
         <div class="flexss mb-4">
           <div class="flex-grow">
             <div class="text-2xl text-black/40">
-              <span class="font-black mr-2">{pledge().amount.toLocaleString()}</span>
+              <span class="font-black mr-2">{p.pledge.amount.toLocaleString()}</span>
               <span class="">
-                {pledge().currency}
+                {p.pledge.currency}
                 <Switch>
-                  <Match when={pledge().mode === 'recurring-year'}> / year</Match>
-                  <Match when={pledge().mode === 'recurring-month'}> / month</Match>
+                  <Match when={p.pledge.mode === 'recurring-year'}> / year</Match>
+                  <Match when={p.pledge.mode === 'recurring-month'}> / month</Match>
                 </Switch>
               </span>
             </div>
             <Show
               when={
-                pledge().mode.startsWith('recurring') &&
-                pledge().nextRenew &&
-                pledge().status === 'active'
+                p.pledge.mode.startsWith('recurring') &&
+                p.pledge.nextRenew &&
+                p.pledge.status === 'active'
               }
             >
               <div class="text-black/40">
-                Next renew on {pledge().nextRenew?.toISOString().slice(0, 10)}
+                Next renew on {p.pledge.nextRenew?.toISOString().slice(0, 10)}
               </div>
             </Show>
           </div>
-          <StatusBadge status={pledge().status} />
+          <StatusBadge status={p.pledge.status} />
         </div>
-        <RecipientsBar recipients={recipients} pledge={pledge()} />
+        <RecipientsBar recipients={p.recipients} pledge={p.pledge} />
       </div>
-      <Show when={pledge().historic.length}>
+      <Show when={p.pledge.historic.length}>
         <div class="px-4 mb-4">
           <div class="bg-slate-400 text-white rounded-md overflow-hidden">
-            <For each={pledge().historic}>
+            <For each={p.pledge.historic}>
               {([date, amount], i) => (
                 <div class="flex px-2 py-1 b-b b-slate-500">
                   <div class="flex-grow">{date}</div>
                   <div class="">
-                    {amount.toLocaleString()} {pledge().currency}
+                    {amount.toLocaleString()} {p.pledge.currency}
                   </div>
                 </div>
               )}
@@ -75,47 +71,39 @@ export function PledgeCard({
             <div class="bg-slate-500 px-2 py-1 text-right text-white/75">
               <span class="tracking-wider">TOTAL:</span>{' '}
               <span class="font-black">
-                {pledgeTotal(pledge())} {pledge().currency}
+                {pledgeTotal(p.pledge)} {p.pledge.currency}
               </span>
             </div>
           </div>
         </div>
       </Show>
-      <Show when={pledge().status === 'committed'}>
+      <Show when={p.pledge.status === 'committed'}>
         <div class="px-4 mb-4 text-white">
           <div class="bg-amber-400/70 p-4 rounded-md b b-black/10 text-center">
             Your pledge is comitted. Awaiting payment signal.
           </div>
         </div>
         <div class="px-4 mb-4 flexee">
-          <Button onClick={onCancel}>Cancel</Button>
+          <Button onClick={p.onCancel}>Cancel</Button>
         </div>
       </Show>
-      <Show when={pledge().mode.startsWith('recurring')}>
+      <Show when={p.pledge.mode.startsWith('recurring')}>
         <div class="flexee px-4 mb-4">
-          <ManageButton {...getManageButtonData(pledge())} />
+          <ManageButton {...getManageButtonData(p.pledge)} />
         </div>
       </Show>
     </div>
   );
 }
 
-export function DraftPledgeCard({
-  pledge,
-  recipients,
-  onCommit,
-  onAmountChange,
-  onCurrencyChange,
-  onModeChange,
-}: {
-  pledge: Accessor<Pledge>;
+export function DraftPledgeCard(p: {
+  pledge: Pledge;
   recipients: Record<string, Recipient>;
   onCommit: () => void;
   onAmountChange: (amount: number) => void;
   onCurrencyChange: (currency: string) => void;
   onModeChange: (mode: Pledge['mode']) => void;
 }) {
-  const p = pledge();
   return (
     <div class="bg-slate-200 b b-slate-300 rounded-md mb-4 last:mb-0">
       <div class="p-4">
@@ -125,24 +113,24 @@ export function DraftPledgeCard({
               <input
                 class="rounded-md w-full h-8 xs:h-10 text-center sm:px-2 sm:py-1"
                 type="number"
-                value={p.amount}
+                value={p.pledge.amount}
                 onInput={({ currentTarget }) => {
-                  onAmountChange(parseInt(currentTarget.value));
+                  p.onAmountChange(parseInt(currentTarget.value));
                 }}
               />
               <select
-                value={p.currency}
-                onChange={({ currentTarget }) => onCurrencyChange(currentTarget.value)}
+                value={p.pledge.currency}
+                onChange={({ currentTarget }) => p.onCurrencyChange(currentTarget.value)}
                 class="rounded-md w-full h-8 xs:h-10 sm:px-2 sm:py-1 text-center"
               >
                 <option value="ARS">ARS</option>
                 <option value="USD">USD</option>
               </select>
               <select
-                value={p.mode}
+                value={p.pledge.mode}
                 class="rounded-md w-full sm:w-30 sm:px-2 sm:py-1 h-8 xs:h-10 text-center"
                 onChange={({ currentTarget }) => {
-                  onModeChange(currentTarget.value as Pledge['mode']);
+                  p.onModeChange(currentTarget.value as Pledge['mode']);
                 }}
               >
                 <option value={'recurring-month'}>Recurring monthly</option>
@@ -151,12 +139,12 @@ export function DraftPledgeCard({
               </select>
             </div>
           </div>
-          <StatusBadge status={p.status} />
+          <StatusBadge status={p.pledge.status} />
         </div>
       </div>
       <div class="flexee px-4 mb-4">
         <div class="flex-grow text-black/40">Recipient: Hoja team (the only team for now)</div>
-        <Button onClick={onCommit}>Commit</Button>
+        <Button onClick={p.onCommit}>Commit</Button>
       </div>
     </div>
   );

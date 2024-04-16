@@ -1,56 +1,67 @@
 /** @jsxImportSource solid-js */
 
 import CircleInfo from '~icons/fa6-solid/circle-info?raw';
-import { Accessor, createEffect, createMemo, createSignal, For, Index, Show } from 'solid-js';
+import {
+  Accessor,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Index,
+  Match,
+  Show,
+  Switch,
+} from 'solid-js';
 import { cx } from '@app/lib/utils';
 import { Pledge, Recipient } from './types';
 import { PledgeCard, DraftPledgeCard } from './PledgeCard';
 
-export default function PowerFlow({
-  tokens,
-  pledges,
-  recipients,
-  onAdd,
-  onUpdatePledge,
-}: {
+export default function PowerFlow(p: {
   tokens: number;
-  pledges: Accessor<Pledge[]>;
+  pledges: Pledge[];
   recipients: Record<string, Recipient>;
   onAdd: () => void;
   onUpdatePledge: (index: number, update: Partial<Pledge>) => void;
 }) {
   const allowToAdd = createMemo(
-    () => !pledges().find((p) => p.status === 'draft' || p.status === 'committed'),
+    () => !p.pledges.find((p) => p.status === 'draft' || p.status === 'committed'),
   );
+
+  createEffect(() => {
+    console.log('Pledges on Power Flow', p.pledges);
+  });
 
   return (
     <div class="text-black/60 p-4">
       <InfoPanel />
-      <TokensPanel available={tokens - 1000} total={tokens} />
-      <Index each={pledges()}>
-        {(pledge, i) =>
-          pledge().status === 'draft' ? (
-            <DraftPledgeCard
-              pledge={pledge}
-              recipients={recipients}
-              onCommit={() => onUpdatePledge(i, { status: 'committed' })}
-              onAmountChange={(amount) => onUpdatePledge(i, { amount })}
-              onCurrencyChange={(currency) => onUpdatePledge(i, { currency })}
-              onModeChange={(mode) => onUpdatePledge(i, { mode })}
-            />
-          ) : (
-            <PledgeCard
-              pledge={pledge}
-              recipients={recipients}
-              onCancel={() => onUpdatePledge(i, { status: 'draft' })}
-            />
-          )
-        }
+      <TokensPanel available={p.tokens - 1000} total={p.tokens} />
+      <Index each={p.pledges}>
+        {(pledge, i) => (
+          <Switch>
+            <Match when={pledge().status === 'draft'}>
+              <DraftPledgeCard
+                pledge={pledge()}
+                recipients={p.recipients}
+                onCommit={() => p.onUpdatePledge(i, { status: 'committed' })}
+                onAmountChange={(amount) => p.onUpdatePledge(i, { amount })}
+                onCurrencyChange={(currency) => p.onUpdatePledge(i, { currency })}
+                onModeChange={(mode) => p.onUpdatePledge(i, { mode })}
+              />
+            </Match>
+            <Match when={pledge().status !== 'draft'}>
+              <PledgeCard
+                pledge={pledge()}
+                recipients={p.recipients}
+                onCancel={() => p.onUpdatePledge(i, { status: 'draft' })}
+              />
+            </Match>
+          </Switch>
+        )}
       </Index>
       <Show when={allowToAdd()}>
         <div class="flexcc">
           <button
-            onClick={onAdd}
+            onClick={p.onAdd}
             class="bg-slate-400 hover:bg-slate-500 rounded-md b b-black/10 text-white px-4 py-2 uppercase tracking-wider font-semibold"
           >
             Add

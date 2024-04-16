@@ -19,7 +19,7 @@ export default function AccountPanel({
     <div class={cx('flexsc ', _class)}>
       <div class="b-0 b-b sm:b b-slate-200 w-full max-w-screen-sm bg-slate-50 sm:rounded-md overflow-hidden">
         <div class="bg-slate-100 h-12 flex line-height-tight text-black/60 b-b b-slate-200">
-          {['Account details', 'Power Flow', 'Resources usage'].map((t, i) => (
+          {['Account', 'Power Flow', 'Proposals'].map((t, i) => (
             <TabButton active={tab === i} onClick={() => setTab(i)}>
               {t}
             </TabButton>
@@ -30,7 +30,7 @@ export default function AccountPanel({
         ) : tab == 1 ? (
           <PowerFlowStory />
         ) : (
-          <ResourcesUsage />
+          <Proposals />
         )}
       </div>
     </div>
@@ -96,7 +96,7 @@ const PowerPledge = () => {
   );
 };
 
-const ResourcesUsage = () => {
+const Proposals = () => {
   return <div class="flexcc text-2xl text-black/40 h-60">Unavailable yet</div>;
 };
 
