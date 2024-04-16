@@ -1,4 +1,4 @@
-import { StyleTransition, CSSTransition } from 'preact-transitioning';
+// import { StyleTransition } from 'preact-transitioning';
 
 import Google from '~icons/fa6-brands/google';
 
@@ -10,7 +10,6 @@ import { useEffect, useState } from 'preact/hooks';
 import { emailAvailability, signUp } from '@app/lib/api';
 import { toArr, validateEmail } from '@shared/utils';
 import { useAuth } from '../Auth';
-import AccountPanel from './AccountPanel/AccountPanel';
 import Button from './Button';
 import TextInput from './TextInput';
 import CheckboxInput from './CheckboxInput';
@@ -144,14 +143,10 @@ export default function ProgressiveSignUp() {
       </div>
 
       {memberAuth ? (
-        justSignedUp ? (
-          <AccountPanel memberAuth={memberAuth} />
-        ) : (
-          <div class="text-black/60 text-lg text-center">
-            <div class="mb-2">You are already signed up</div>
-            <Button href="/account">Open account panel</Button>
-          </div>
-        )
+        <div class="text-black/60 text-lg text-center">
+          <div class="mb-2">You are already signed up</div>
+          <Button href="/account">Open account panel</Button>
+        </div>
       ) : (
         <div class="w-full">
           <div class="w-full b b-black/10 p-2 xs:p-4 bg-slate-500/5 rounded-md mb-4">
@@ -220,19 +215,20 @@ export default function ProgressiveSignUp() {
   );
 }
 
-const SignUpFadeTransitionGroup = ({ children, in: _in }: { children: any; in: boolean }) => (
-  <StyleTransition
-    in={_in}
-    duration={1500}
-    styles={{
-      enter: { opacity: 0 },
-      enterActive: { opacity: 1 },
-      exit: { opacity: 1 },
-      exitActive: { opacity: 0 },
-    }}
-  >
+const SignUpFadeTransitionGroup = ({ children, in: _in }: { children: any; in: boolean }) =>
+  // <StyleTransition
+  //   in={_in}
+  //   duration={1500}
+  //   styles={{
+  //     enter: { opacity: 0 },
+  //     enterActive: { opacity: 1 },
+  //     exit: { opacity: 1 },
+  //     exitActive: { opacity: 0 },
+  //   }}
+  // >
+  _in ? (
     <div class="absolute inset-0 flex flex-col space-y-4 items-center justify-center transition-opacity duration-1500">
       {children}
     </div>
-  </StyleTransition>
-);
+  ) : null;
+// </StyleTransition>
