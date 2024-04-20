@@ -1,4 +1,4 @@
-export default onRenderHtml;
+import { PageContext } from 'vike/types';
 
 import renderToString from 'preact-render-to-string';
 import { PageShell } from './PageShell';
@@ -8,7 +8,7 @@ import americas from '../favicons/americas.png';
 import asiaoceania from '../favicons/asiaoceania.png';
 import europeafrica from '../favicons/europeafrica.png';
 
-async function onRenderHtml(pageContext: any) {
+async function onRenderHtml(pageContext: PageContext) {
   const { Page, pageProps } = pageContext;
   const pageHtml = renderToString(
     <PageShell pageContext={pageContext}>{Page ? <Page {...pageProps} /> : null}</PageShell>,
@@ -48,3 +48,5 @@ async function onRenderHtml(pageContext: any) {
     },
   };
 }
+
+export default onRenderHtml;

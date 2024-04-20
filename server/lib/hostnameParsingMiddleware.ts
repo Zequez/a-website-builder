@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import rootHostnames from '../root-hostnames';
+import { rootHostnames, locales, defaultLocale } from '../root-hostnames';
 
 const vercelMiddlewareMemberSite = '/_member_site_/';
 
@@ -35,6 +35,7 @@ const hostnameParsingMiddleware = (req: Request, res: Response, next: NextFuncti
     url.pathname = url.pathname.replace(vercelMiddlewareMemberSite, '/');
   }
 
+  req.locale = locales[validHostname] || defaultLocale;
   req.rootDomain = validHostname;
   req.subDomain = subdomain;
   req.resolvedUrl = url;

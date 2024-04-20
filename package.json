@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=production node ./dist/ts/server/index.js",
+    "start": "pnpm dev",
+    "start:dist:prod": "NODE_ENV=production node ./dist/ts/server/index.js",
     "start:dist": "node ./dist/ts/server/index.js",
     "dev": "NODE_ENV=development tsx watch ./server/index.ts",
     "dev:app": "vite",

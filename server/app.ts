@@ -9,6 +9,7 @@ import api from './routes/api';
 import { logger, errorHandler } from './lib/middlewares.js';
 import { parseUrlFile } from './lib/utils.js';
 import hostnameParsingMiddleware from './lib/hostnameParsingMiddleware';
+import { allLocales, defaultLocale } from './root-hostnames';
 
 const app = express();
 
@@ -27,6 +28,9 @@ app.all('*', async (req, res, next) => {
 
   if (!req.subDomain) {
     // On Vercel it serves the app directly without going through here
+    if (req.locale !== defaultLocale && !req.url.startsWith('/assets')) {
+      req.url = `/${req.locale}${req.url}`;
+    }
     return appDist(req, res, next);
   } else {
     console.log('Site new URL ', url.toString());

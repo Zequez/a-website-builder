@@ -8,6 +8,7 @@ declare global {
       resolvedUrl: URL;
       subDomain: string | null;
       rootDomain: string;
+      locale: string;
     }
   }
 

@@ -1,5 +1,18 @@
 import { cx } from '@app/lib/utils';
 import Button from './Button';
+import { usePageContext } from '@app/renderer/usePageContext';
+import { useLocale } from '@app/lib/useLocale';
+
+const i18n = {
+  en: {
+    mainSite: 'hojaweb.xyz',
+    webCreationClub: 'Web creation \nclub',
+  },
+  es: {
+    mainSite: 'hoja.ar',
+    webCreationClub: 'Club de \ncreación web',
+  },
+};
 
 const Header = ({
   isAuth,
@@ -12,6 +25,8 @@ const Header = ({
   class?: string;
   translucent?: boolean;
 }) => {
+  const { t } = useLocale(i18n);
+
   return (
     <div
       class={cx('relative z-0  flex-shrink-0 pt-2 w-full', _class, {
@@ -23,16 +38,14 @@ const Header = ({
         <div class="flex-grow flex items-center h-10 mb-2 ">
           <a href="/" class="p-1 relative rounded-md flex ">
             <span class="relative z-20 rounded-md bg-white/90 shadow-sm text-slate-400 text-xl md:text-2xl font-semibold tracking-widest font-serif px-2 py-0.5">
-              <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-sky-400">
-                HOJAWEB.XYZ
+              <span class="uppercase bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-sky-400">
+                {t('mainSite')}
               </span>
             </span>
             <div class="z-10 absolute inset-0 bg-gradient-to-r from-amber-400 to-sky-400 blur-md"></div>
           </a>
-          <div class="ml-2 xs:ml-4 text-white font-bold uppercase tracking-widest line-height-tight text-xs sm:text-sm">
-            Web creation
-            <br />
-            club
+          <div class="ml-2 xs:ml-4 whitespace-pre text-white font-bold uppercase tracking-widest line-height-tight text-xs sm:text-sm">
+            {t('webCreationClub')}
           </div>
         </div>
         <div class="flex space-x-2 justify-end  items-center flex-grow h-10 mb-2">

@@ -158,7 +158,6 @@ export default function ProgressiveSignUp() {
               onChange={(val) => (email.value = val)}
               loadingLabel="Checking..."
               class="mb-4"
-              autoFocus
             />
             {!showPassword ? (
               <div class={cx('w-full flex flex-col items-center mb-4', {})}>

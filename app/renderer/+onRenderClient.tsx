@@ -2,8 +2,9 @@ export default onRenderClient;
 
 import { hydrate, render } from 'preact';
 import { PageShell } from './PageShell';
+import { PageContext } from 'vike/types';
 
-async function onRenderClient(pageContext: any) {
+async function onRenderClient(pageContext: PageContext) {
   const { Page, pageProps } = pageContext;
   const page = (
     <PageShell pageContext={pageContext}>
