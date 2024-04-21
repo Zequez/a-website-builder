@@ -7,16 +7,25 @@ import { escapeInject, dangerouslySkipEscape } from 'vike/server';
 import americas from '../favicons/americas.png';
 import asiaoceania from '../favicons/asiaoceania.png';
 import europeafrica from '../favicons/europeafrica.png';
+import { defaultLocale } from '@server/root-hostnames';
 
 async function onRenderHtml(pageContext: PageContext) {
   const { Page, pageProps } = pageContext;
-  const pageHtml = renderToString(
-    <PageShell pageContext={pageContext}>{Page ? <Page {...pageProps} /> : null}</PageShell>,
-  );
 
-  const config = pageContext.config;
-  const title = (config && config.title) || 'Hoja';
-  const desc = (config && config.description) || 'Cooperative Web Creation';
+  // On pages that skip SSR Page will be undefined
+  const pageHtml = Page
+    ? renderToString(
+        <PageShell pageContext={pageContext}>{Page ? <Page {...pageProps} /> : null}</PageShell>,
+      )
+    : '';
+
+  const titleKey = pageContext.locale !== defaultLocale ? `${pageContext.locale}.title` : 'title';
+  const descriptionKey =
+    pageContext.locale !== defaultLocale ? `${pageContext.locale}.description` : 'description';
+
+  const config = pageContext.config || {};
+  const title = (config as any)[titleKey] || config.title || 'Hoja';
+  const desc = (config as any)[descriptionKey] || config.description || 'Cooperative Web Creation';
 
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="en">
@@ -34,10 +43,9 @@ async function onRenderHtml(pageContext: PageContext) {
         <title>${title}</title>
       </head>
       <body>
-        ${dangerouslySkipEscape(pageHtml)}
+        <div id="root">${dangerouslySkipEscape(pageHtml)}</div>
         <div id="floating-menus"></div>
         <div id="fullscreen-preview"></div>
-        <div id="solid-root"></div>
       </body>
     </html>`;
 

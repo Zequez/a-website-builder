@@ -4,9 +4,11 @@ import { SanitizedMember } from '@db';
 import { useEffect, useState } from 'preact/hooks';
 import TelegramIcon from '~icons/fa6-brands/telegram';
 import Spinner from './Spinner';
+import { useLocale } from '@app/lib/useLocale';
 
 const CORE_TEAM = [
   {
+    tag: 'ezequiel',
     name: 'Ezequiel Schwartzman',
     roles: [
       'System Admin',
@@ -17,15 +19,29 @@ const CORE_TEAM = [
       'Funds Admin',
       'Ambassador',
     ],
-    website: 'https://ezequiel.hojaweb.xyz',
+    website: 'https://ezequiel.hoja.ar',
     telegram: 'zequez',
     profileSrc: gravatarUrl('zequez@gmail.com'),
     hoursCommitment: 20,
   },
 ];
 
+const i18n = {
+  en: {
+    coreTeam: 'Core Team',
+    powerTeam: 'Power Team',
+    guests: 'Guests',
+  },
+  es: {
+    coreTeam: 'Equipo Núcleo',
+    powerTeam: 'Equipo Potenciador',
+    guests: 'Invitados',
+  },
+};
+
 export default function MembersExplorer({ class: _class }: { class?: string }) {
   const [selectedTab, setSelectedTab] = useState(0);
+  const { t } = useLocale(i18n);
 
   const [membersStatus, setMembersStatus] = useState<
     'not-started' | 'loading' | 'error' | 'loaded'
@@ -61,7 +77,7 @@ export default function MembersExplorer({ class: _class }: { class?: string }) {
     >
       <div class="h-12 flex bg-gradient-to-b from-slate-200 to-slate-100 border-b-2 border-slate-200 ">
         <div class="flex space-x-[1px] pr-[1px] bg-slate-300 line-height-tight text-sm sm:text-base">
-          {['Core Team', 'Power Team', 'Guests'].map((text, i) => (
+          {[t('coreTeam'), t('powerTeam'), t('guests')].map((text, i) => (
             <button
               class={cx(
                 'text-center flex items-center px-4 border-solid font-light tracking-wider font-semibold',
@@ -95,6 +111,7 @@ export default function MembersExplorer({ class: _class }: { class?: string }) {
             members!.map((m) =>
               m.is_admin ? null : (
                 <MemberRow
+                  tag={m.tag}
                   name={m.full_name}
                   roles={[]}
                   website=""
@@ -114,6 +131,7 @@ export default function MembersExplorer({ class: _class }: { class?: string }) {
 }
 
 const MemberRow = ({
+  tag,
   name,
   roles,
   website,
@@ -121,14 +139,15 @@ const MemberRow = ({
   profileSrc,
   hoursCommitment,
 }: {
-  name: string;
+  tag: string | null;
+  name: string | null;
   roles: string[];
   website: string;
   telegram: string;
   profileSrc: string;
   hoursCommitment: number;
 }) => {
-  return (
+  return name ? (
     <div class="flex flex-col pt-2  bg-slate-100 border-b border-black/20 text-black/70">
       <div class="flex mb-2 px-2">
         <div class="mr-4 flex-shrink-0">
@@ -136,7 +155,10 @@ const MemberRow = ({
         </div>
         <div class="flexcs flex-grow overflow-hidden">
           <div>
-            <div class=" text-lg tracking-wider">{name}</div>
+            <div class=" text-lg tracking-wider">
+              {name}{' '}
+              {tag ? <span class="bg-sky-200  text-black/40 p-1 rounded-md">@{tag}</span> : null}
+            </div>
             <div class="flex flex-grow flex-shrink-0 space-x-2">
               {telegram ? (
                 <a
@@ -153,6 +175,7 @@ const MemberRow = ({
               {website ? (
                 <a
                   href={website}
+                  target="_blank"
                   class="font-mono text-black/30 hover:text-sky-5 underline underline-sky-2"
                 >
                   {website.replace(/^https?:\/\//, '')}
@@ -187,7 +210,7 @@ const MemberRow = ({
         </div>
       ) : null}
     </div>
-  );
+  ) : null;
 };
 
 const MemberRoleTag = ({ tag }: { tag: string }) => {

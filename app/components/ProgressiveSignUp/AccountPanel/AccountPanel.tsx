@@ -1,5 +1,5 @@
 import { cx } from '@app/lib/utils';
-import { MemberAuth } from '../../Auth';
+import { MemberAuth } from '@app/lib/AuthContext';
 import { useState } from 'preact/hooks';
 import Button from '../Button';
 import AccountDetails from './AccountDetails';

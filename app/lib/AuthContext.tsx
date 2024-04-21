@@ -1,7 +1,6 @@
 import { JSX, createContext } from 'preact';
 import { useState, useMemo, useContext, useEffect } from 'preact/hooks';
 import * as api from '@app/lib/api';
-import AuthModal from './AuthModal';
 
 type TokenData = {
   id: number;
@@ -109,42 +108,28 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
     return { memberAuth, setToken };
   }, [memberAuth]);
 
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  function closeAuthModal() {
-    setShowAuthModal(false);
-    window.location.hash = '';
-  }
-
-  useEffect(() => {
-    function parseHash() {
-      const hash = window.location.hash.slice(1);
-      if (hash === 'auth') {
-        setShowAuthModal(true);
-      }
-    }
-
-    parseHash();
-
-    window.addEventListener('hashchange', parseHash);
-    return () => {
-      window.removeEventListener('hashchange', parseHash);
-    };
-  }, []);
-
   return (
-    <MemberAuthContext.Provider value={memberAuthContext}>
-      {children}
-      {showAuthModal ? <AuthModal onClose={closeAuthModal} /> : null}
-    </MemberAuthContext.Provider>
+    <MemberAuthContext.Provider value={memberAuthContext}>{children}</MemberAuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
   const { memberAuth, setToken } = useContext(MemberAuthContext);
 
+  async function signIn(email: string, password: string) {
+    const { data, error } = await api.signIn({ email, passphrase: password }, null);
+    if (data) {
+      setToken(data.token);
+      return true;
+    } else {
+      setToken(null);
+      return false;
+    }
+  }
+
   function signOut() {
     setToken(null);
   }
 
-  return { memberAuth, signOut, setToken };
+  return { memberAuth, signOut, signIn, setToken };
 };

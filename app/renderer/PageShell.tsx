@@ -1,5 +1,5 @@
 import '../styles';
-import { AuthWrapper } from '../components/Auth';
+import { AuthWrapper } from '@app/lib/AuthContext';
 import { PageContextProvider } from './usePageContext';
 import { PageContext } from 'vike/types';
 

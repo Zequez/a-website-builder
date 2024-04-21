@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 
 import OutLink from '~icons/fa6-solid/up-right-from-square';
 import HGripLinesIcon from '~icons/fa6-solid/grip-lines';
+import IconUser from '~icons/fa6-solid/user';
 
 import { cx, useLocalStorageState } from '@app/lib/utils';
 import { LocalFile, LocalSite } from './types';
 
-import { useAuth } from '../Auth';
+import { MemberAuth, useAuth } from '@app/lib/AuthContext';
 import useSites from './lib/useSites';
 import build, { BuildError, BuildFile } from './lib/builder';
 import { encodeB64 } from '@shared/utils';
@@ -174,18 +175,10 @@ const Editor = () => {
     }
   };
 
-  const handleAttemptSyncEnabling = () => {
-    if (memberAuth) {
-      S.setSyncEnabled((v) => !v);
-    } else {
-      alert('You must register to enable syncing');
-    }
-  };
-
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {/*editorInspector ? <Inspector S={S} /> : null*/}
-      <Sidebar>
+      <Sidebar memberAuth={memberAuth}>
         <SidebarSites
           sites={S.sitesListSortedByLastUpdatedFile}
           selectedSiteId={site?.id || null}
@@ -213,9 +206,9 @@ const Editor = () => {
         )}
 
         <BottomButtons
-          selectedSite={S.RSites._byId && site && S.RSites._byId[site.id]}
+          selectedRemoteSite={S.RSites._byId && site && S.RSites._byId[site.id]}
+          auth={memberAuth}
           syncEnabled={S.syncEnabled}
-          onToggleSync={handleAttemptSyncEnabling}
         />
       </Sidebar>
 
@@ -276,26 +269,27 @@ const bottomButtonStyle = (c: string) =>
   cx('block  py-1 uppercase text-left tracking-wider px-2', c);
 
 function BottomButtons({
-  selectedSite,
+  selectedRemoteSite,
   syncEnabled,
-  onToggleSync,
+  auth,
 }: {
-  selectedSite: LocalSite | null;
+  selectedRemoteSite: LocalSite | null;
   syncEnabled: boolean;
-  onToggleSync: () => void;
+  auth: MemberAuth | null;
 }) {
+  // Adjust link to hosted sites for Vite development environment
   let currentHost = window.location.host;
   const currentProtocol = window.location.protocol;
   if (currentHost.match(/localhost\:5173/)) {
     currentHost = `hoja.localhost:3000`;
   }
-  const siteUrl = selectedSite
-    ? `${currentProtocol}//${selectedSite.localName}.${currentHost}`
+  const siteUrl = selectedRemoteSite
+    ? `${currentProtocol}//${selectedRemoteSite.localName}.${currentHost}`
     : null;
 
   return (
     <>
-      {selectedSite ? (
+      {selectedRemoteSite ? (
         <a class={bottomButtonStyle('bg-lime-300 text-black/40')} href={siteUrl!} target="_blank">
           <div class="flex w-full">
             <div class="flex-grow text-left">Live site</div>
@@ -305,19 +299,34 @@ function BottomButtons({
           </div>
         </a>
       ) : null}
-      <button
-        class={bottomButtonStyle(
-          syncEnabled ? 'bg-lime-600 text-white/60' : 'bg-gray-400 text-white',
-        )}
-        onClick={onToggleSync}
-      >
-        <div class="flex w-full">
-          <div class="flex-grow text-left">{syncEnabled ? 'Syncing' : 'SYNC'}</div>
-          <div>{syncEnabled ? '🟢' : '⚪️'}</div>
+      {auth ? (
+        <div
+          class={bottomButtonStyle(
+            syncEnabled ? 'bg-lime-600 text-white/60' : 'bg-gray-400 text-white',
+          )}
+        >
+          <div class="flex w-full">
+            <div class="flex-grow text-left">{syncEnabled ? 'Online' : 'Offline'}</div>
+            <div>{syncEnabled ? '🟢' : '⚪️'}</div>
+          </div>
         </div>
-      </button>
+      ) : (
+        <div class="bg-sky-300 b-b b-black/10 text-black/50 p-4 text-center flexcc">
+          <IconUser class="w-10 h-10 mr-2" />
+          <div>
+            <a class="underline hover:text-white" href="/join">
+              Create an account
+            </a>{' '}
+            or{' '}
+            <a class="underline hover:text-white" href="/account">
+              log in
+            </a>{' '}
+            to publish to the web
+          </div>
+        </div>
+      )}
 
-      <a class={bottomButtonStyle('bg-blue-300 text-black/60')} href={'/'}>
+      <a class={bottomButtonStyle('bg-blue-300 text-black/60 hover:bg-blue-400')} href={'/'}>
         &larr; Back home
       </a>
     </>

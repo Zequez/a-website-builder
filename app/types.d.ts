@@ -17,8 +17,11 @@ declare global {
       locale: string;
       pageProps: Record<string, any>;
       config: {
+        ssr: boolean;
         title: string;
         description: string;
+        'es.title': string;
+        'es.description': string;
       };
       Page: () => JSX.Element;
       // Refine type of pageContext.Page (it's `unknown` by default)

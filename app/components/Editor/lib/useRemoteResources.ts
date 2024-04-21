@@ -1,4 +1,4 @@
-import { MemberAuth } from '@app/components/Auth';
+import { MemberAuth } from '@app/lib/AuthContext';
 import { useRemoteResource, ApiEndpoint } from '@app/lib/api';
 import * as api from '@app/lib/api';
 import { keyBy } from '@shared/utils';

@@ -1,8 +1,9 @@
 export default {
   title: 'Web Editor ',
-  meta: {
-    Page: {
-      env: { server: false, client: true },
-    },
-  },
+  ssr: false,
+  // meta: {
+  //   Page: {
+  //     env: { server: false, client: true },
+  //   },
+  // },
 };

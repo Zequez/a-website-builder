@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import BoltLightningIcon from '~icons/fa6-solid/bolt-lightning';
 import UserIcon from '~icons/fa6-solid/user';
-import { MemberAuth } from '../../Auth';
+import { MemberAuth } from '@app/lib/AuthContext';
 import { getAvailability, getMember, patchMember, useRemoteResource } from '@app/lib/api';
 import Spinner from '../../Spinner';
 import TextInput from '../TextInput';

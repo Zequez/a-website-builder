@@ -109,6 +109,8 @@ const TextInput = ({
       }
 
       onFullyValid?.(isFullyValid);
+    } else {
+      onChange(inputVal);
     }
   }
 

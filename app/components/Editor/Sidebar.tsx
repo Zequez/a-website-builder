@@ -1,7 +1,9 @@
 import Thumbtack from '~icons/fa6-solid/thumbtack';
 import Bars from '~icons/fa6-solid/bars';
+import UserIcon from '~icons/fa6-solid/user';
 import { signal, effect } from '@preact/signals';
 import { cx } from '@app/lib/utils';
+import { MemberAuth } from '@app/lib/AuthContext';
 
 const LS_KEY = 'SIDEBAR_COLLAPSED_MODE';
 
@@ -46,7 +48,7 @@ function popInToggle() {
   sidebarPoppingIn.value = !sidebarPoppingIn.value;
 }
 
-const Sidebar = ({ children }: { children: any }) => {
+const Sidebar = ({ children, memberAuth }: { children: any; memberAuth: MemberAuth | null }) => {
   return (
     <>
       <div
@@ -56,7 +58,7 @@ const Sidebar = ({ children }: { children: any }) => {
         })}
       >
         <div
-          class={cx('relative flex flex-col w-54 h-full z-80 bg-gray-500', {
+          class={cx('relative flex flex-col w-54 h-full z-80 bg-gray-500 transition-transform', {
             'translate-x-[-100%]': collapsedMode.value && !sidebarPoppingIn.value,
           })}
           onMouseOver={!MOBILE_MODE ? popIn : () => {}}
@@ -82,8 +84,15 @@ const Sidebar = ({ children }: { children: any }) => {
             </>
           ) : null}
           <div class="flex justify-end  bg-black/10 border-b border-black/10">
+            {memberAuth ? (
+              <a href="/account" class="flex-grow flexcs px-2 text-white hover:bg-white/10 w-0">
+                <UserIcon class="mr-2" />
+                <div class="overflow-hidden text-ellipsis">{memberAuth.member.email}</div>
+              </a>
+            ) : null}
+
             <button
-              class={cx('w-10 h-10  border flex items-center justify-center', {
+              class={cx('flex-shrink-0 w-10 h-10  border flex items-center justify-center', {
                 'shadow-inset shadow-md border-black/10 bg-black/10 text-white/40':
                   !collapsedMode.value,
                 'text-white/70 border-transparent hover:bg-white/10 ': collapsedMode.value,

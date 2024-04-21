@@ -7,10 +7,18 @@ const i18n = {
   en: {
     mainSite: 'hojaweb.xyz',
     webCreationClub: 'Web creation \nclub',
+    access: 'Log in',
+    join: 'Sign up',
+    logout: 'Logout',
+    editor: 'Editor',
   },
   es: {
     mainSite: 'hoja.ar',
     webCreationClub: 'Club de \ncreación web',
+    access: 'Acceder',
+    join: 'Registrarme',
+    logout: 'Salir',
+    editor: 'Editor',
   },
 };
 
@@ -49,19 +57,23 @@ const Header = ({
           </div>
         </div>
         <div class="flex space-x-2 justify-end  items-center flex-grow h-10 mb-2">
-          {isAuth ? (
-            <Button class="bg-red-500" onClick={signOut}>
-              Logout
-            </Button>
-          ) : null}
-          <Button class="bg-blue-500 " href="#auth">
-            {isAuth ? 'Account' : 'Access'}
+          <Button class="bg-emerald-500" href={'/editor/'}>
+            {t('editor')}
           </Button>
           {isAuth ? (
-            <Button class="bg-emerald-500" href={'/editor/'}>
-              Editor
+            <Button class="bg-red-500" onClick={signOut}>
+              {t('logout')}
             </Button>
-          ) : null}
+          ) : (
+            <>
+              <Button class="bg-blue-500 " href="/join">
+                {t('join')}
+              </Button>
+              <Button class="bg-blue-500 " href="/account">
+                {t('access')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

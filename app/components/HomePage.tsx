@@ -5,7 +5,7 @@ import { SanitizedMember } from '@db';
 import { gravatarUrl } from '@app/lib/utils';
 import * as api from '@app/lib/api';
 import Button from '@app/components/Button';
-import { useAuth } from '@app/components/Auth';
+import { useAuth } from '@app/lib/AuthContext';
 import Spinner from '@app/components/Spinner';
 import Header from './Header';
 

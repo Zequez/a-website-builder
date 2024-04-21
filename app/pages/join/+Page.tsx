@@ -1,4 +1,4 @@
-import { useAuth } from '@app/components/Auth';
+import { useAuth } from '@app/lib/AuthContext';
 import Header from '@app/components/Header';
 import ProgressiveSignUp from '@app/components/ProgressiveSignUp/ProgressiveSignUp';
 

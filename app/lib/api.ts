@@ -42,7 +42,7 @@ import {
   RouteGetMembersAvailabilityQuery,
 } from '@server/routes/api/types';
 
-import type { MemberAuth } from '@app/components/Auth';
+import type { MemberAuth } from '@app/lib/AuthContext';
 import { useEffect, useState } from 'preact/hooks';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 

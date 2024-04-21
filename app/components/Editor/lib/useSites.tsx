@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'preact/hooks';
 import { LocalFile, LocalSite } from '../types';
 import { randomAlphaNumericString, uuid, encodeB64, decodeB64 } from '@shared/utils';
-import { MemberAuth } from '@app/components/Auth';
+import { MemberAuth } from '@app/lib/AuthContext';
 import * as api from '@app/lib/api';
 
 import useLocalResources from './useLocalResources';
@@ -14,8 +14,27 @@ import {
 } from '@server/routes/api/types';
 import { useLocalStorageState } from '@app/lib/utils';
 
+function onWindowEvent(event: string, cb: (ev: any) => void) {
+  window.addEventListener(event, cb);
+  return () => window.removeEventListener(event, cb);
+}
+
 export default function useSites(memberAuth: MemberAuth | null) {
-  const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : false,
+  );
+  onWindowEvent('online', () => {
+    setIsOnline(true);
+  });
+  onWindowEvent('offline', () => {
+    setIsOnline(false);
+  });
+
+  const syncEnabled = useMemo(() => {
+    return !!(isOnline && memberAuth);
+  }, [isOnline, memberAuth]);
+
+  // const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
 
   useEffect(() => {
     console.log('SETTING THING!');
@@ -449,7 +468,6 @@ export default function useSites(memberAuth: MemberAuth | null) {
 
     // Other
     syncEnabled,
-    setSyncEnabled,
   };
 }
 

@@ -11,9 +11,9 @@ async function onRenderClient(pageContext: PageContext) {
       <Page {...pageProps} />
     </PageShell>
   );
-  const container = document.querySelector('body')!;
+  const container = document.querySelector('#root')!;
 
-  if (pageContext.isHydration) {
+  if (pageContext.config.ssr && pageContext.isHydration) {
     hydrate(page, container);
   } else {
     render(page, container);
