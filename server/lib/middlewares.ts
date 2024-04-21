@@ -14,9 +14,13 @@ export const logger = (apiPath: string) => (req: Request, res: Response, next: N
 
 export function authorize(req: Request, res: Response, next: NextFunction) {
   const maybeTokenMember = verifiedTokenFromHeader(req.headers);
+
   if (!maybeTokenMember) {
     return res.status(401).json({ error: 'Unauthorized' });
+  } else if (new Date(maybeTokenMember.exp * 1000).getTime() < new Date().getTime()) {
+    return res.status(401).json({ error: 'Token expired' });
   }
+
   req.tokenMember = maybeTokenMember;
   next();
 }

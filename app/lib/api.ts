@@ -21,14 +21,10 @@ import {
   type RoutePostAuthSignIn,
   type RoutePostAuthSignUp,
   type RouteGetAuthMe,
-  type RoutePostAuthChangePass,
   type RouteGetMembersIdQuery,
   type RoutePostAuthSignUpQuery,
   type RoutePostAuthSignInQuery,
   type RouteGetAuthMeQuery,
-  type RoutePostAuthChangePassQuery,
-  type RouteGetEmailAvailabilityQuery,
-  type RouteGetEmailAvailability,
   // Misc
   type RouteGetMembersQuery,
   type RouteDeleteFilesIdQuery,
@@ -156,15 +152,8 @@ export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedRespon
 // Auth
 export const signUp = api<RoutePostAuthSignUp, RoutePostAuthSignUpQuery>('auth/signUp', 'POST');
 export const signIn = api<RoutePostAuthSignIn, RoutePostAuthSignInQuery>('auth/signIn', 'POST');
+
 export const me = api<RouteGetAuthMe, RouteGetAuthMeQuery>('auth/me', 'GET');
-export const changePass = api<RoutePostAuthChangePass, RoutePostAuthChangePassQuery>(
-  'auth/changePass',
-  'POST',
-);
-export const emailAvailability = api<RouteGetEmailAvailability, RouteGetEmailAvailabilityQuery>(
-  'auth/emailAvailability',
-  'GET',
-);
 
 // Members
 export const getMembers = api<RouteGetMembers, RouteGetMembersQuery>('members', 'GET');

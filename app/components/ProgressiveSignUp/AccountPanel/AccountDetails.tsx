@@ -88,6 +88,8 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
     }
   });
 
+  console.log(fullMember);
+
   const [submitting, setSubmitting] = useState(false);
 
   const [newPassword, setNewPassword] = useState('');
@@ -283,6 +285,20 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
               />
             </div>
           ) : null}
+          <div class="mb-4">
+            {fullMember.google ? (
+              <>
+                Your account is liked with Google.{' '}
+                <a href="/_api_/auth/google/remove" class="underline text-sky-4">
+                  Disconnect
+                </a>
+              </>
+            ) : (
+              <a href="/_api_/auth/google" class="underline text-sky-4">
+                Connect to Google Account
+              </a>
+            )}
+          </div>
           {serverErrors.length ? (
             <div class="text-red-500 mb-4">
               {serverErrors.map((error) => (

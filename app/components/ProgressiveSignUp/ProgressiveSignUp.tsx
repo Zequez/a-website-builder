@@ -7,7 +7,7 @@ import Heart from '~icons/fa6-solid/heart';
 import { cx } from '@app/lib/utils';
 import { signal, computed, effect } from '@preact/signals';
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { emailAvailability, signUp } from '@app/lib/api';
+import { getAvailability, signUp } from '@app/lib/api';
 import { toArr, validateEmail } from '@shared/utils';
 import { useAuth } from '@app/lib/AuthContext';
 import Button from './Button';
@@ -94,9 +94,9 @@ const genValidations = (t: TranslateHelper) => ({
     },
 
     async: async (email: string) => {
-      const { data, status } = await emailAvailability({ email });
+      const { data, status } = await getAvailability({ email });
       if (!data) return [t('error.email.serverError')];
-      return data.available ? [] : [t('error.email.inUse')];
+      return data.email ? [] : [t('error.email.inUse')];
     },
   },
   password: {

@@ -1,4 +1,5 @@
 const rootHostnames = [
+  'localhost',
   'hoja.ar',
   'hoja.localhost',
   'hojaweb.localhost',

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import { Member, T } from '@db';
+import { google } from 'googleapis';
+import { Member, SanitizedMember, T } from '@db';
 import {
   hashCompare,
   hashPass,
@@ -9,13 +10,14 @@ import {
   tokenFromMember,
 } from '@server/lib/utils';
 import { validateEmail } from '@shared/utils';
+import { authorize } from '@server/lib/middlewares';
 
 const jsonParser = bodyParser.json();
 
 const router = Router();
 
 export type RoutePostAuthSignUp = {
-  member: Omit<Member, 'passphrase'>;
+  member: SanitizedMember;
   token: string;
 };
 export type RoutePostAuthSignUpQuery = {
@@ -60,7 +62,7 @@ export type RoutePostAuthSignInQuery = {
   passphrase: string;
 };
 export type RoutePostAuthSignIn = {
-  member: Omit<Member, 'passphrase'>;
+  member: SanitizedMember;
   token: string;
 };
 router.post('/signIn', jsonParser, async (req, res) => {
@@ -82,67 +84,91 @@ router.post('/signIn', jsonParser, async (req, res) => {
 
 export type RouteGetAuthMeQuery = Record<PropertyKey, never>;
 export type RouteGetAuthMe = {
-  member: Omit<Member, 'passphrase'>;
+  member: SanitizedMember;
 };
-router.get('/me', async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  const { id: memberId, exp } = tokenData(token);
-  if (new Date(exp * 1000).getTime() < new Date().getTime()) {
-    return res.status(401).json({ error: 'Token expired' });
-  }
-
-  const member = await T.members.get(memberId);
+router.get('/me', authorize, async (req, res) => {
+  const member = await T.members.get(req.tokenMember!.id);
   if (!member) return res.status(404).json({ error: 'Member deleted maybe' });
 
   return res.status(200).json({ member: sanitizeMember(member) });
 });
 
-export type RoutePostAuthChangePassQuery = {
-  oldPassphrase: string;
-  newPassphrase: string;
-};
-export type RoutePostAuthChangePass = Record<PropertyKey, never>;
-router.post('/changePass', jsonParser, async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Need a token' });
-  const { id: memberId } = tokenData(token);
-  const member = await T.members.get(memberId);
-  if (!member) return res.status(404).json({ error: 'Member deleted maybe' });
+//  ██████╗  ██████╗  ██████╗  ██████╗ ██╗     ███████╗
+// ██╔════╝ ██╔═══██╗██╔═══██╗██╔════╝ ██║     ██╔════╝
+// ██║  ███╗██║   ██║██║   ██║██║  ███╗██║     █████╗
+// ██║   ██║██║   ██║██║   ██║██║   ██║██║     ██╔══╝
+// ╚██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗███████╗
+//  ╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
 
-  const { oldPassphrase, newPassphrase } = req.body;
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  'http://localhost:3000/_api_/auth/google/callback',
+);
 
-  if (newPassphrase.length < 6) {
-    return res.status(400).json({ error: 'Passphrase must be at least 6 characters' });
-  }
+// const drive = google.drive({
+//   version: 'v3',
+//   auth: oauth2Client,
+// });
 
-  if (!oldPassphrase && member.passphrase) {
-    return res.status(400).json({ error: 'Old passphrase is required' });
-  }
-
-  if (
-    (member.passphrase && !(await hashCompare(oldPassphrase, member.passphrase))) ||
-    (!member.passphrase && !!oldPassphrase)
-  ) {
-    return res.status(400).json({ error: 'Wrong password' });
-  }
-
-  await T.members.update(member.id, { passphrase: await hashPass(newPassphrase) });
-
-  res.status(200).json({});
+router.get('/google', async (req, res) => {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'https://www.googleapis.com/auth/drive.file',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],
+  });
+  res.redirect(authUrl);
 });
 
-export type RouteGetEmailAvailabilityQuery = {
-  email: string;
-};
-export type RouteGetEmailAvailability = {
-  available: boolean;
-};
-router.get('/emailAvailability', async (req, res) => {
-  const { email } = req.query;
-  const member = await T.members.where({ email }).one();
-  if (!member) return res.status(200).json({ available: true });
-  return res.status(200).json({ available: false });
+router.post('/google/remove', authorize, async (req, res) => {
+  await T.members.update(req.tokenMember!.id, { google_tokens: null });
+  return res.status(200).json({ message: 'Auth removed' });
 });
+
+router.get('/google/callback', async (req, res) => {
+  const code = req.query.code as string;
+  const { tokens } = await oauth2Client.getToken(code);
+
+  if (!tokens.access_token) {
+    return res.status(401).json({ error: `Auth failed; couldn't get access token` });
+  }
+
+  const userInfo = await getUserInfo(tokens.access_token);
+
+  if (!userInfo || !userInfo.email) {
+    return res.status(401).json({ error: `Auth failed; couldn't get user info` });
+  }
+
+  const existingMember = await T.members.where({ email: userInfo.email }).one();
+  if (existingMember) {
+    await T.members.update(existingMember.id, { google_tokens: tokens });
+  } else {
+    await T.members.insert({
+      email: userInfo.email,
+      google_tokens: tokens,
+      ...(userInfo.name ? { full_name: userInfo.name } : {}),
+    });
+  }
+
+  return res.status(200).json({ message: 'Auth successful' });
+});
+
+async function getUserInfo(accessToken: string) {
+  try {
+    const oauthClient = new google.auth.OAuth2();
+    oauthClient.setCredentials({ access_token: accessToken });
+    const oauth = google.oauth2({ auth: oauthClient, version: 'v2' });
+    const userInfo = await oauth.userinfo.get();
+    const email = userInfo.data.email;
+    const name = userInfo.data.name;
+    return { name, email };
+  } catch (error) {
+    console.error('Error fetching user info', error);
+    return null;
+  }
+}
 
 export default router;

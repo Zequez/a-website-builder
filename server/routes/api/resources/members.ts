@@ -7,13 +7,13 @@ import {
   hashCompare,
 } from '@server/lib/utils';
 import { authorize, jsonParser } from '@server/lib/middlewares';
-import { T, Member, SiteWithFiles, sql } from '@db';
+import { T, Member, SiteWithFiles, sql, SanitizedMember } from '@db';
 import { wait } from '@shared/utils';
 
 const router = Router();
 
 export type RouteGetMembersQuery = Record<PropertyKey, never>;
-export type RouteGetMembers = Omit<Member, 'passphrase'>[];
+export type RouteGetMembers = SanitizedMember[];
 router.get('/members', async (req, res) => {
   const members = await T.members.all();
   return res.status(200).json(members.map(sanitizeMember));
@@ -51,7 +51,7 @@ router.get('/members/availability', async (req, res) => {
 });
 
 export type RouteGetMembersIdQuery = { id: number };
-export type RouteGetMembersId = Omit<Member, 'passphrase'>;
+export type RouteGetMembersId = SanitizedMember;
 router.get('/members/:id', async (req, res) => {
   const member = await T.members.get(req.params.id);
   if (!member) return res.status(404).json({ error: 'Member not found' });
@@ -69,7 +69,7 @@ export type RoutePatchMembersIdQuery = {
   currentPassword?: string;
   subscribed_to_newsletter?: boolean;
 };
-export type RoutePatchMembersId = Omit<Member, 'passphrase'>;
+export type RoutePatchMembersId = SanitizedMember;
 router.patch('/members/:id', jsonParser, authorize, async (req, res) => {
   await wait(2000);
 

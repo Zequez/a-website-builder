@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import mime from 'mime';
 import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
-import { File_, Member } from '@db';
+import { File_, Member, SanitizedMember } from '@db';
 import { FileB64 } from '@server/db/driver';
 
 export const QS = stringify;
@@ -49,8 +49,11 @@ export function removeKeys(obj: Record<string, any>, excluded: string[] = []) {
   return newObj;
 }
 
-export function sanitizeMember(member: Member) {
-  return removeKeys(member, ['passphrase']);
+export function sanitizeMember(member: Member): SanitizedMember {
+  const sanitized = removeKeys(member, ['passphrase', 'google_tokens']) as SanitizedMember;
+  console.log(member);
+  sanitized.google = !!member.google_tokens;
+  return sanitized;
 }
 
 export function randomEmail() {
@@ -75,9 +78,10 @@ export type TokenMember = {
   id: number;
   email: string;
   fullName: string | null;
+  exp: number;
 };
 
-export function generateToken(member: TokenMember, expIn = 60 * 60 * 24 * 30) {
+export function generateToken(member: Omit<TokenMember, 'exp'>, expIn = 60 * 60 * 24 * 30) {
   if (!process.env.JWT_SECRET) throw 'JWT_SECRET environment variable not set';
   const exp = Math.round(new Date().getTime() / 1000) + expIn;
   const token = jwt.sign({ ...member, exp }, process.env.JWT_SECRET);

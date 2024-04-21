@@ -9,6 +9,14 @@ export type Member = {
   subscribed_to_newsletter: boolean;
   telegram_handle: string | null;
   tag: string | null;
+  google_tokens: {
+    access_token: string;
+    refresh_token: string;
+    scope: string;
+    token_type: string;
+    id_token: string;
+    expiry_date: number;
+  } | null;
 };
 
 export type Site = {
@@ -33,4 +41,4 @@ export type File_ = {
   updated_at: string;
 };
 
-export type SanitizedMember = Omit<Member, 'passphrase'>;
+export type SanitizedMember = Omit<Member, 'passphrase' | 'google_tokens'> & { google: boolean };

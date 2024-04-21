@@ -54,7 +54,6 @@ const TextInput = ({
   const showErrors = ((isTouched && isBlurred) || becameStill) && validationErrors.length > 0;
 
   function handleOnChange(inputVal: string) {
-    console.log('Handling change');
     if (becameStill) setBecameStill(false);
     if (stillnessTimeoutRef.current) {
       clearTimeout(stillnessTimeoutRef.current);
@@ -187,7 +186,6 @@ const TextInput = ({
           name={label}
           value={value}
           onInput={({ currentTarget }) => {
-            console.log(currentTarget);
             handleOnChange(currentTarget.value);
           }}
           onBlur={async ({ currentTarget }) => {
