@@ -15,6 +15,8 @@ import TextInput from './TextInput';
 import CheckboxInput from './CheckboxInput';
 import { TranslateHelper, useLocale } from '@app/lib/useLocale';
 
+const NEWSLETTER = false;
+
 const i18n = {
   en: {
     thankYou: 'Thank you for signing up',
@@ -24,7 +26,9 @@ const i18n = {
     openEditor: 'Open editor',
     logout: 'Logout',
     email: 'Email',
+    checkingEmail: 'Checking...',
     password: 'Password',
+    signUpForNewsletter: 'Sign up for newsletter',
     'error.email.invalid': 'Please enter a valid email',
     'error.email.inUse': 'Email is already in use',
     'error.email.serverError': 'Error checking email availability',
@@ -38,7 +42,9 @@ const i18n = {
     openEditor: 'Abrir editor',
     logout: 'Salir',
     email: 'Email',
+    checkingEmail: 'Chequeando...',
     password: 'Contraseña',
+    signUpForNewsletter: 'Recibir novedades',
     'error.email.invalid': 'Por favor ingresa un correo valido',
     'error.email.inUse': 'El correo ya se encuentra en uso',
     'error.email.serverError': 'Error al verificar disponibilidad del correo',
@@ -200,22 +206,18 @@ export default function ProgressiveSignUp() {
               value={email.value}
               validations={validations.email}
               onFullyValid={setFullyValidInputFor('email')}
-              label="Email"
+              label={t('email') as any}
               onChange={(val) => (email.value = val)}
-              loadingLabel="Checking..."
+              loadingLabel={t('checkingEmail') as any}
               class="mb-4"
             />
-            {!showPassword ? (
-              GOOGLE_AUTH_LINK ? (
-                <div class={cx('w-full flex flex-col items-center mb-4', {})}>
-                  <div class="mb-4 text-black/60">or</div>
-                  <Button disabled={showPassword}>
-                    <Google class="mr-2" /> Sign up with Google
-                  </Button>
-                </div>
-              ) : (
-                <div class="-mt-4"></div>
-              )
+            {!showPassword && GOOGLE_AUTH_LINK ? (
+              <div class={cx('w-full flex flex-col items-center mb-4', {})}>
+                <div class="mb-4 text-black/60">or</div>
+                <Button disabled={showPassword}>
+                  <Google class="mr-2" /> Sign up with Google
+                </Button>
+              </div>
             ) : (
               <div class={cx('relative flex flex-col mb-4', {})}>
                 <TextInput
@@ -223,18 +225,18 @@ export default function ProgressiveSignUp() {
                   type="password"
                   value={password.value}
                   onChange={(v) => (password.value = v)}
-                  label="Password"
+                  label={t('password') as any}
                   validations={validations.password}
                   onFullyValid={setFullyValidInputFor('password')}
                 />
-                {emailAndPass ? (
+                {emailAndPass || !NEWSLETTER ? (
                   <CheckboxInput
                     checked={subscribeToNewsletter.value}
                     onChange={(v) => (subscribeToNewsletter.value = v)}
-                    label="Sign up for newsletter"
+                    label={t('signUpForNewsletter') as any}
                   />
                 ) : null}
-                {signUpErrors ? (
+                {signUpErrors.length ? (
                   <div class="text-red-500 mb-4">
                     {signUpErrors.map((error) => (
                       <div>{error}</div>
@@ -250,14 +252,16 @@ export default function ProgressiveSignUp() {
               </div>
             )}
           </div>
-          <div class="w-full px-2 xs:px-4">
-            {!emailAndPass ? (
-              <div class="flex flex-col flex-items-center">
-                <div class="mb-4 text-black/60">or</div>
-                <Button disabled={!emailIsFullyValid.value}>Just sign up for newsletter</Button>
-              </div>
-            ) : null}
-          </div>
+          {NEWSLETTER ? (
+            <div class="w-full px-2 xs:px-4">
+              {!emailAndPass ? (
+                <div class="flex flex-col flex-items-center">
+                  <div class="mb-4 text-black/60">or</div>
+                  <Button disabled={!emailIsFullyValid.value}>Just sign up for newsletter</Button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

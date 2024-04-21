@@ -54,6 +54,7 @@ const TextInput = ({
   const showErrors = ((isTouched && isBlurred) || becameStill) && validationErrors.length > 0;
 
   function handleOnChange(inputVal: string) {
+    console.log('Handling change');
     if (becameStill) setBecameStill(false);
     if (stillnessTimeoutRef.current) {
       clearTimeout(stillnessTimeoutRef.current);
@@ -185,7 +186,10 @@ const TextInput = ({
           type={showPass ? 'text' : _type}
           name={label}
           value={value}
-          onChange={({ currentTarget }) => handleOnChange(currentTarget.value)}
+          onInput={({ currentTarget }) => {
+            console.log(currentTarget);
+            handleOnChange(currentTarget.value);
+          }}
           onBlur={async ({ currentTarget }) => {
             if (!isBlurred) {
               const isModifiedAndBlurred = value !== '';
@@ -205,10 +209,9 @@ const TextInput = ({
           peer-not-placeholder-shown:(top-0 text-white bg-slate-6 scale-90)
           peer-focus:(top-0 text-white bg-slate-6 scale-90)`,
             {
-              'peer-focus:bg-amber-500! peer-not-placeholder-shown:bg-amber-500!':
-                asyncValidationPending,
-              'peer-focus:bg-red-500! peer-not-placeholder-shown:bg-red-500!':
-                showErrors && !asyncValidationPending,
+              'bg-amber-500! bg-amber-500! text-white!': asyncValidationPending,
+              'bg-red-500! bg-red-500! text-white!':
+                validationErrors.length > 0 && !asyncValidationPending,
               'opacity-50': disabled || loading,
             },
           )}
