@@ -1,8 +1,8 @@
 const rootHostnames = [
-  'localhost',
   'hoja.ar',
   'hoja.localhost',
   'hojaweb.localhost',
+  'localhost',
   'hojaweb.xyz',
   'a-website-builder-zequez.vercel.app',
 ];
