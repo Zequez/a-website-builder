@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bodyParser from 'body-parser';
-import { google } from 'googleapis';
-import { Member, SanitizedMember, T } from '@db';
+import { googleClient, googleOauthForMember } from '@server/lib/oauth';
+import { GoogleTokens, Member, SanitizedMember, T } from '@db';
 import {
   hashCompare,
   hashPass,
@@ -100,20 +100,15 @@ router.get('/me', authorize, async (req, res) => {
 // ╚██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗███████╗
 //  ╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  'http://localhost:3000/_api_/auth/google/callback',
-);
-
 // const drive = google.drive({
 //   version: 'v3',
 //   auth: oauth2Client,
 // });
 
 router.get('/google', async (req, res) => {
-  const authUrl = oauth2Client.generateAuthUrl({
+  const authUrl = googleClient.generateAuthUrl({
     access_type: 'offline',
+    prompt: 'consent',
     scope: [
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.email',
@@ -123,6 +118,8 @@ router.get('/google', async (req, res) => {
   res.redirect(authUrl);
 });
 
+export type RoutePostAuthGoogleRemoveQuery = Record<PropertyKey, never>;
+export type RoutePostAuthGoogleRemove = Record<PropertyKey, never>;
 router.post('/google/remove', authorize, async (req, res) => {
   await T.members.update(req.tokenMember!.id, { google_tokens: null });
   return res.status(200).json({ message: 'Auth removed' });
@@ -130,13 +127,19 @@ router.post('/google/remove', authorize, async (req, res) => {
 
 router.get('/google/callback', async (req, res) => {
   const code = req.query.code as string;
-  const { tokens } = await oauth2Client.getToken(code);
 
-  if (!tokens.access_token) {
-    return res.status(401).json({ error: `Auth failed; couldn't get access token` });
+  let validTokens: GoogleTokens;
+  try {
+    const { tokens } = await googleClient.getToken(code);
+    if (!tokens.access_token) {
+      return res.status(401).json({ error: `Auth failed; couldn't get access token` });
+    }
+    validTokens = tokens as GoogleTokens;
+  } catch (e) {
+    return res.status(401).json({ error: `Invalid tokens` });
   }
 
-  const userInfo = await getUserInfo(tokens.access_token);
+  const userInfo = await getUserInfo(validTokens);
 
   if (!userInfo || !userInfo.email) {
     return res.status(401).json({ error: `Auth failed; couldn't get user info` });
@@ -144,23 +147,21 @@ router.get('/google/callback', async (req, res) => {
 
   const existingMember = await T.members.where({ email: userInfo.email }).one();
   if (existingMember) {
-    await T.members.update(existingMember.id, { google_tokens: tokens });
+    await T.members.update(existingMember.id, { google_tokens: validTokens });
   } else {
     await T.members.insert({
       email: userInfo.email,
-      google_tokens: tokens,
+      google_tokens: validTokens,
       ...(userInfo.name ? { full_name: userInfo.name } : {}),
     });
   }
 
-  return res.status(200).json({ message: 'Auth successful' });
+  return res.redirect('/account');
 });
 
-async function getUserInfo(accessToken: string) {
+async function getUserInfo(tokens: GoogleTokens) {
   try {
-    const oauthClient = new google.auth.OAuth2();
-    oauthClient.setCredentials({ access_token: accessToken });
-    const oauth = google.oauth2({ auth: oauthClient, version: 'v2' });
+    const oauth = googleOauthForMember(tokens);
     const userInfo = await oauth.userinfo.get();
     const email = userInfo.data.email;
     const name = userInfo.data.name;

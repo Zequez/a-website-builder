@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'preact/hooks';
 import BoltLightningIcon from '~icons/fa6-solid/bolt-lightning';
 import UserIcon from '~icons/fa6-solid/user';
-import { MemberAuth } from '@app/lib/AuthContext';
-import { getAvailability, getMember, patchMember, useRemoteResource } from '@app/lib/api';
+import { MemberAuth, useAuth } from '@app/lib/AuthContext';
+import {
+  getAvailability,
+  getMember,
+  googleRemove,
+  patchMember,
+  useRemoteResource,
+} from '@app/lib/api';
 import Spinner from '../../Spinner';
 import TextInput from '../TextInput';
 import CheckboxInput from '../CheckboxInput';
 import { cx, gravatarUrl } from '@app/lib/utils';
 import Button from '../Button';
-import { validate } from 'uuid';
 import { RoutePatchMembersIdQuery } from '@server/routes/api/types';
 import { toArr } from '@shared/utils';
 
@@ -75,20 +80,7 @@ const validators = {
 };
 
 export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth }) {
-  const {
-    data: fullMember,
-    error,
-    setResource,
-  } = useRemoteResource(getMember, { id: memberAuth.member.id }, undefined, (fullMember) => {
-    if (fullMember) {
-      setSubscribedToNewsletter(fullMember.subscribed_to_newsletter);
-      setTelegramHandle(fullMember.telegram_handle || '');
-      setMemberTag(fullMember.tag || '');
-      setFullName(fullMember.full_name || '');
-    }
-  });
-
-  console.log(fullMember);
+  const { fullMember, setFullMember } = useAuth();
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -161,10 +153,17 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
         setServerErrors(toArr(error));
       } else if (updatedMember) {
         setNewPassword('');
-        setResource(updatedMember);
+        setFullMember(updatedMember);
       }
       setSubmitting(false);
       // });
+    }
+  }
+
+  async function handleDisconnectGoogle() {
+    const { error } = await googleRemove({});
+    if (!error) {
+      setFullMember({ ...fullMember!, google: false });
     }
   }
 
@@ -178,15 +177,15 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
     );
   }
 
-  if (error) {
-    return (
-      <div class="p-4">
-        <div class="bg-red-400 text-white/80 p-4 rounded-md">
-          <div>Error loading account information; please try again later or contact admin</div>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div class="p-4">
+  //       <div class="bg-red-400 text-white/80 p-4 rounded-md">
+  //         <div>Error loading account information; please try again later or contact admin</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div>
@@ -285,11 +284,11 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
               />
             </div>
           ) : null}
-          <div class="mb-4">
+          {/* <div class="mb-4">
             {fullMember.google ? (
               <>
                 Your account is liked with Google.{' '}
-                <a href="/_api_/auth/google/remove" class="underline text-sky-4">
+                <a onClick={handleDisconnectGoogle} class="underline text-sky-4">
                   Disconnect
                 </a>
               </>
@@ -298,7 +297,7 @@ export default function AccountDetails({ memberAuth }: { memberAuth: MemberAuth 
                 Connect to Google Account
               </a>
             )}
-          </div>
+          </div> */}
           {serverErrors.length ? (
             <div class="text-red-500 mb-4">
               {serverErrors.map((error) => (

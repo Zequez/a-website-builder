@@ -1,3 +1,12 @@
+export type GoogleTokens = {
+  access_token: string;
+  refresh_token: string;
+  scope: string;
+  token_type: string;
+  id_token: string;
+  expiry_date: number;
+};
+
 export type Member = {
   id: number;
   email: string;
@@ -9,14 +18,7 @@ export type Member = {
   subscribed_to_newsletter: boolean;
   telegram_handle: string | null;
   tag: string | null;
-  google_tokens: {
-    access_token: string;
-    refresh_token: string;
-    scope: string;
-    token_type: string;
-    id_token: string;
-    expiry_date: number;
-  } | null;
+  google_tokens: GoogleTokens | null;
 };
 
 export type Site = {

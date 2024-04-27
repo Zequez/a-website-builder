@@ -1,3 +1,4 @@
+import UserIcon from '~icons/fa6-solid/user';
 import { cx } from '@app/lib/utils';
 import Button from './Button';
 import { usePageContext } from '@app/renderer/usePageContext';
@@ -11,6 +12,7 @@ const i18n = {
     join: 'Sign up',
     logout: 'Logout',
     editor: 'Editor',
+    account: 'Account',
   },
   es: {
     mainSite: 'hoja.ar',
@@ -19,6 +21,7 @@ const i18n = {
     join: 'Registrarme',
     logout: 'Salir',
     editor: 'Editor',
+    account: 'Cuenta',
   },
 };
 
@@ -61,9 +64,14 @@ const Header = ({
             {t('editor')}
           </Button>
           {isAuth ? (
-            <Button class="bg-red-500" onClick={signOut}>
-              {t('logout')}
-            </Button>
+            <>
+              <Button class="bg-blue-500" href="/account">
+                <UserIcon class="mr-2" /> {t('account')}
+              </Button>
+              <Button class="bg-red-500" onClick={signOut}>
+                {t('logout')}
+              </Button>
+            </>
           ) : (
             <>
               <Button class="bg-blue-500 " href="/join">

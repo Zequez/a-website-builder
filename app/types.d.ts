@@ -1,5 +1,8 @@
 import type { JSX } from 'preact';
 
+// import gapi from @types/gapi
+// import type { GoogleAccounts } from '@types/google.accounts';
+
 export type Member = {
   id: number;
   email: string;
@@ -8,6 +11,11 @@ export type Member = {
   active: boolean;
   created_at: string;
 };
+
+declare global {
+  const GOOGLE_API_KEY: string;
+  const GOOGLE_CLIENT_ID: string;
+}
 
 declare global {
   namespace Vike {
@@ -29,3 +37,10 @@ declare global {
     }
   }
 }
+
+// Add gapi to window
+// declare global {
+//   interface Window {
+//     google: any;
+//   }
+// }

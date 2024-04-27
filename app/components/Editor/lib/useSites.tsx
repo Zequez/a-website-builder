@@ -12,7 +12,6 @@ import {
   RouteGetSites,
   RouteGetSitesQuery,
 } from '@server/routes/api/types';
-import { useLocalStorageState } from '@app/lib/utils';
 
 function onWindowEvent(event: string, cb: (ev: any) => void) {
   window.addEventListener(event, cb);
@@ -34,10 +33,7 @@ export default function useSites(memberAuth: MemberAuth | null) {
     return !!(isOnline && memberAuth);
   }, [isOnline, memberAuth]);
 
-  // const [syncEnabled, setSyncEnabled] = useLocalStorageState('sync_enabled', false);
-
   useEffect(() => {
-    console.log('SETTING THING!');
     localStorage.setItem(
       'storage_member_id',
       JSON.stringify(memberAuth ? memberAuth.member.id : null),

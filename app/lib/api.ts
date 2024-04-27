@@ -36,10 +36,16 @@ import {
   type RoutePatchMembersIdQuery,
   RouteGetMembersAvailability,
   RouteGetMembersAvailabilityQuery,
+  RoutePostAuthGoogleRemove,
+  RoutePostAuthGoogleRemoveQuery,
 } from '@server/routes/api/types';
 
 import type { MemberAuth } from '@app/lib/AuthContext';
 import { useEffect, useState } from 'preact/hooks';
+import {
+  RoutePostMediaUploadUrl,
+  RoutePostMediaUploadUrlQuery,
+} from '@server/routes/api/resources/media';
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
 let memberAuth: MemberAuth | null = null;
@@ -47,7 +53,7 @@ export function setAuth(newAuth: MemberAuth | null) {
   memberAuth = newAuth;
 }
 
-function api<T, Q extends Record<string, any>>(
+export function api<T, Q extends Record<string, any>>(
   path: string | ((q: Q) => string),
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
 ): ApiEndpoint<Q, T> {
@@ -123,7 +129,6 @@ export function useRemoteResource<T, K>(
   const [remoteResource, setRemoteResource] = useState<K | null>(null);
   const [fetchError, setFetchError] = useState<string | string[] | null>(null);
   useEffect(() => {
-    console.log('Fetching remote resource');
     const noAuthRequired = typeof auth === 'undefined';
     if ((auth || noAuthRequired) && params) {
       (async () => {
@@ -152,8 +157,18 @@ export type TypedSimplifiedResponse<T> = ReturnType<typeof typedSimplifiedRespon
 // Auth
 export const signUp = api<RoutePostAuthSignUp, RoutePostAuthSignUpQuery>('auth/signUp', 'POST');
 export const signIn = api<RoutePostAuthSignIn, RoutePostAuthSignInQuery>('auth/signIn', 'POST');
-
 export const me = api<RouteGetAuthMe, RouteGetAuthMeQuery>('auth/me', 'GET');
+export const googleRemove = api<RoutePostAuthGoogleRemove, RoutePostAuthGoogleRemoveQuery>(
+  'auth/google/remove',
+  'POST',
+);
+
+// Media
+
+export const mediaUploadUrl = api<RoutePostMediaUploadUrl, RoutePostMediaUploadUrlQuery>(
+  'media/upload-url',
+  'POST',
+);
 
 // Members
 export const getMembers = api<RouteGetMembers, RouteGetMembersQuery>('members', 'GET');

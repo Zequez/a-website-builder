@@ -1,6 +1,7 @@
 import { JSX, createContext } from 'preact';
 import { useState, useMemo, useContext, useEffect } from 'preact/hooks';
 import * as api from '@app/lib/api';
+import { SanitizedMember } from '@db';
 
 type TokenData = {
   id: number;
@@ -25,6 +26,10 @@ export type MemberAuth = {
 export const MemberAuthContext = createContext<{
   memberAuth: MemberAuth | null;
   setToken: (token: string | null) => void;
+  signOut: () => void;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  setFullMember: (fullMember: SanitizedMember | null) => void;
+  fullMember: SanitizedMember | null;
 }>(null!);
 
 const AUTH_LOCALSTORAGE_KEY = '_auth_token_';
@@ -63,10 +68,19 @@ function tokenToMemberAuth(token: string): MemberAuth | null {
   }
 }
 
+const initialContextValue = {
+  memberAuth: null,
+  setToken: () => null,
+  signOut: () => null,
+  signIn: async () => false,
+  setFullMember: () => null,
+  fullMember: null,
+};
+
 export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
   if (import.meta.env.SSR) {
     return (
-      <MemberAuthContext.Provider value={{ memberAuth: null, setToken: () => null }}>
+      <MemberAuthContext.Provider value={initialContextValue}>
         {children}
       </MemberAuthContext.Provider>
     );
@@ -84,6 +98,12 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
       return null;
     }
   });
+
+  const {
+    data: fullMember,
+    error,
+    setResource: setFullMember,
+  } = api.useRemoteResource(api.getMember, { id: memberAuth?.member.id || 0 }, memberAuth);
 
   const memberAuthContext = useMemo(() => {
     function setToken(token: string | null) {
@@ -105,8 +125,24 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
         }
       }
     }
-    return { memberAuth, setToken };
-  }, [memberAuth]);
+
+    async function signIn(email: string, password: string) {
+      const { data, error } = await api.signIn({ email, passphrase: password }, null);
+      if (data) {
+        setToken(data.token);
+        return true;
+      } else {
+        setToken(null);
+        return false;
+      }
+    }
+
+    function signOut() {
+      setToken(null);
+    }
+
+    return { memberAuth, setToken, signIn, signOut, fullMember, setFullMember };
+  }, [memberAuth, fullMember]);
 
   return (
     <MemberAuthContext.Provider value={memberAuthContext}>{children}</MemberAuthContext.Provider>
@@ -114,22 +150,5 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
 };
 
 export const useAuth = () => {
-  const { memberAuth, setToken } = useContext(MemberAuthContext);
-
-  async function signIn(email: string, password: string) {
-    const { data, error } = await api.signIn({ email, passphrase: password }, null);
-    if (data) {
-      setToken(data.token);
-      return true;
-    } else {
-      setToken(null);
-      return false;
-    }
-  }
-
-  function signOut() {
-    setToken(null);
-  }
-
-  return { memberAuth, signOut, signIn, setToken };
+  return useContext(MemberAuthContext);
 };

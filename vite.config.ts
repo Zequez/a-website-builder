@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import UnoCSS from 'unocss/vite';
 import preact from '@preact/preset-vite';
 import Icons from 'unplugin-icons/vite';
@@ -12,6 +12,8 @@ const projectRootDir = resolve(__dirname);
 const solidFiles = [/PowerFlow\.tsx/, /PledgeCard\.tsx/, /PowerFlow\.story\.tsx/];
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
   return {
     resolve: {
       alias: {
@@ -42,6 +44,10 @@ export default defineConfig(({ mode }) => {
         'preact/jsx-dev-runtime',
         'preact/hooks',
       ],
+    },
+    define: {
+      GOOGLE_CLIENT_ID: JSON.stringify(env.GOOGLE_CLIENT_ID),
+      GOOGLE_API_KEY: JSON.stringify(env.GOOGLE_API_KEY),
     },
     root: resolve(__dirname, 'app'),
     base: '/', //mode === 'production' ? '/app/' : '/',

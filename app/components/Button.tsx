@@ -1,25 +1,26 @@
 import { FC } from './FC';
 import cx from 'classnames';
 
-type ButtonType = FC<{
+type ButtonProps = {
   onClick?: () => void;
   class?: string;
   size?: 'md' | 'lg';
   href?: string;
-}>;
+  children: any;
+};
 
-const Button: ButtonType = ({
+const Button = ({
   onClick,
   class: _class = 'bg-blue-400',
   children,
   size = 'md',
   href,
-}) => {
+}: ButtonProps) => {
   const Element = href ? 'a' : 'button';
   return (
     <Element
       class={cx([
-        'relative group block rounded-md border-1 border-solid border-black/10 text-white/85 uppercase tracking-[1px] font-semibold text-shadow-1',
+        'relative group block rounded-md border-1 border-solid border-black/10 text-white/85 uppercase tracking-[1px] font-semibold text-shadow-1 flex',
         _class,
         {
           'px-2 py-1.5 text-sm': size === 'md',
