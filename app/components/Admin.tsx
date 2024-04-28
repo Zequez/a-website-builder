@@ -24,7 +24,7 @@ export default function Admin() {
 
 function AdminBlobs() {
   const storageList = useRemoteResource(blobsApi.storageList, { query: {} });
-  const { resource: dbList } = useRemoteResource(blobsApi.list, { query: {} });
+  const dbList = useRemoteResource(blobsApi.list, { query: {} });
 
   async function handleDeleteStorageBlob(url: string) {
     await blobsApi.storageDelete({ url });
@@ -70,7 +70,30 @@ function AdminBlobs() {
         <div>Loading blobs storage...</div>
       )}
       <div>DB List</div>
-      <div class="whitespace-pre">{JSON.stringify(dbList, null, 2)}</div>
+      <div class="whitespace-pre">
+        {dbList.resource ? (
+          dbList.resource.length ? (
+            <table>
+              <tbody>
+                {dbList.resource.map((blob) => (
+                  <tr class="b b-slate-300">
+                    <td class="p-1 b-r">{blob.member_id}</td>
+                    <td class="p-1 b-r">{blob.name}</td>
+                    <td class="p-1 b-r text-center">
+                      {Math.round((blob.size / 1024) * 10) / 10} kB
+                    </td>
+                    <td class="p-1 b-r w-0"></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            'No items in DB List'
+          )
+        ) : (
+          'Loading DB list...'
+        )}
+      </div>
     </div>
   );
 }

@@ -46,11 +46,11 @@ export type File_ = {
 export type Blob_ = {
   id: string;
   name: string;
-  memberId: number;
+  member_id: number;
   url: string;
-  contentType: string;
+  content_type: string;
   size: number;
-  createdAt: string;
+  created_at: string;
 };
 
 export type SanitizedMember = Omit<Member, 'passphrase' | 'google_tokens'> & { google: boolean };

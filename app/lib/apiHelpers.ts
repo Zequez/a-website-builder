@@ -77,7 +77,7 @@ export function useRemoteResource<QueryT extends Record<string, any>, ResponseT>
 
   const fetchResource = useCallback(() => {
     setLoading(true);
-    apiEndpoint(config.query, memberAuth?.token)
+    return apiEndpoint(config.query, memberAuth?.token)
       .then((data) => {
         setResource(data);
         setError(null);
