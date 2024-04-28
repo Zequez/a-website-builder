@@ -4,7 +4,7 @@ import auth from './auth';
 import sites from './resources/sites';
 import members from './resources/members';
 import files from './resources/files';
-import media from './resources/media';
+import media from './resources/blobs';
 
 const mainRouter = Router();
 

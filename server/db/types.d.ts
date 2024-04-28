@@ -43,4 +43,14 @@ export type File_ = {
   updated_at: string;
 };
 
+export type Blob_ = {
+  id: string;
+  name: string;
+  memberId: number;
+  url: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
+};
+
 export type SanitizedMember = Omit<Member, 'passphrase' | 'google_tokens'> & { google: boolean };

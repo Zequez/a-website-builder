@@ -42,10 +42,7 @@ import {
 
 import type { MemberAuth } from '@app/lib/AuthContext';
 import { useEffect, useState } from 'preact/hooks';
-import {
-  RoutePostMediaUploadUrl,
-  RoutePostMediaUploadUrlQuery,
-} from '@server/routes/api/resources/media';
+
 export const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
 let memberAuth: MemberAuth | null = null;
@@ -160,13 +157,6 @@ export const signIn = api<RoutePostAuthSignIn, RoutePostAuthSignInQuery>('auth/s
 export const me = api<RouteGetAuthMe, RouteGetAuthMeQuery>('auth/me', 'GET');
 export const googleRemove = api<RoutePostAuthGoogleRemove, RoutePostAuthGoogleRemoveQuery>(
   'auth/google/remove',
-  'POST',
-);
-
-// Media
-
-export const mediaUploadUrl = api<RoutePostMediaUploadUrl, RoutePostMediaUploadUrlQuery>(
-  'media/upload-url',
   'POST',
 );
 

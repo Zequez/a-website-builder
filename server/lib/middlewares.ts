@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { verifiedTokenFromHeader } from './utils.js';
 import bodyParser from 'body-parser';
 import { isDev, isTest } from '@server/config.js';
+import { T } from '@db';
 
 export const logger = (apiPath: string) => (req: Request, res: Response, next: NextFunction) => {
   const { method } = req;
@@ -23,6 +24,25 @@ export function authorize(req: Request, res: Response, next: NextFunction) {
 
   req.tokenMember = maybeTokenMember;
   next();
+}
+
+async function _authorizeAdmin(req: Request, res: Response, next: NextFunction) {
+  const member = await T.members.find(req.tokenMember!.id);
+  if (!member.is_admin) return res.status(403).json({ error: 'Forbidden' });
+  next();
+}
+
+export function authorizeAdmin(req: Request, res: Response, next: NextFunction) {
+  // Call the original authorize middleware
+  authorize(req, res, (error?: any) => {
+    if (error) {
+      // Forward the error to the next middleware
+      return next(error);
+    }
+
+    // Call the original authorizeAdmin middleware
+    _authorizeAdmin(req, res, next);
+  });
 }
 
 export async function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {

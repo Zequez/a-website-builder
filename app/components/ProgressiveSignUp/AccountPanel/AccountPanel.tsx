@@ -4,19 +4,22 @@ import { useState } from 'preact/hooks';
 import Button from '../Button';
 import AccountDetails from './AccountDetails';
 import PowerFlowStory from './PowerFlow/PowerFlow.story';
+import { SanitizedMember } from '@db';
 // import SolidComponent from './SolidComponent';
 
 export default function AccountPanel({
   memberAuth,
+  fullMember,
   class: _class,
 }: {
   memberAuth: MemberAuth;
+  fullMember: SanitizedMember | null;
   class?: string;
 }) {
   const [tab, setTab] = useState(0);
 
   return (
-    <div class={cx('flexsc ', _class)}>
+    <div class={cx('flexcs flex-col ', _class)}>
       <div class="b-0 b-b sm:b b-slate-200 w-full max-w-screen-sm bg-slate-50 sm:rounded-md overflow-hidden">
         <div class="bg-slate-100 h-12 flex line-height-tight text-black/60 b-b b-slate-200">
           {['Account', 'Power Flow', 'Proposals'].map((t, i) => (
@@ -33,6 +36,11 @@ export default function AccountPanel({
           <Proposals />
         )}
       </div>
+      {fullMember?.is_admin ? (
+        <a href="/admin" class="underline text-sky-400 mt-4">
+          Admin panel
+        </a>
+      ) : null}
     </div>
   );
 }

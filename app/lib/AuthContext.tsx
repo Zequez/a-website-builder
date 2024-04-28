@@ -34,6 +34,10 @@ export const MemberAuthContext = createContext<{
 
 const AUTH_LOCALSTORAGE_KEY = '_auth_token_';
 
+export function getToken() {
+  return (JSON.parse(localStorage.getItem(AUTH_LOCALSTORAGE_KEY) || '') as string) || null;
+}
+
 function cleanLocalFiles(memberId: number) {
   const storageMemberIdRaw = localStorage.getItem('storage_member_id');
   const storageMemberId = storageMemberIdRaw ? JSON.parse(storageMemberIdRaw) : null;
@@ -139,6 +143,7 @@ export const AuthWrapper = ({ children }: { children: JSX.Element }) => {
 
     function signOut() {
       setToken(null);
+      setFullMember(null);
     }
 
     return { memberAuth, setToken, signIn, signOut, fullMember, setFullMember };

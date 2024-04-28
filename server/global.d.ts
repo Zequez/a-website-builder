@@ -17,4 +17,6 @@ declare global {
       GLOBAL_PG_CLIENT: PoolClient | undefined;
     }
   }
+
+  type EmptyObject = Record<PropertyKey, never>;
 }

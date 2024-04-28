@@ -1,55 +1,37 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { list, del } from '@vercel/blob';
 import { Router } from 'express';
 import { T } from '@db';
-import { authorize, jsonParser } from '@server/lib/middlewares';
-import { googleDriveForMember } from '@server/lib/oauth';
-import { verifiedTokenFromHeader, verifyToken } from '@server/lib/utils';
+import { authorize, authorizeAdmin, jsonParser } from '@server/lib/middlewares';
+import { verifyToken } from '@server/lib/utils';
 
 const router = Router();
 
-export type RoutePostMediaUploadUrlQuery = {
-  fileName: string;
-};
-export type RoutePostMediaUploadUrl = {
-  uploadUrl: string;
-  id: string;
-};
-router.post('/media/upload-url', authorize, jsonParser, async (req, res) => {
-  const fileMetadata = {
-    name: req.body.fileName,
-  };
-
-  if (!fileMetadata.name) {
-    return res.status(400).json({ error: 'File name is required' });
-  }
-
-  const member = await T.members.find(req.tokenMember!.id);
-  if (!member.google_tokens) {
-    return res.status(401).json({ error: 'Member does not have Google tokens' });
-  }
-
-  const drive = googleDriveForMember(member.google_tokens);
-
-  try {
-    const { data } = await drive.files.create({
-      requestBody: fileMetadata,
-      fields: 'id, webViewLink',
-    });
-    return res.status(200).json({ uploadUrl: data.webViewLink, id: data.id });
-  } catch (e) {
-    console.log(e);
-    return res.status(500).json({ error: 'Google request failed' });
-  }
+export type StorageListQuery = EmptyObject;
+export type StorageListResponse = Awaited<ReturnType<typeof list>>['blobs'];
+router.get('/blobs/storage/list', authorizeAdmin, async (req, res) => {
+  const { blobs } = await list();
+  return res.status(200).json(blobs);
 });
 
-// export type RoutePostMediaUploadQuery = {
-//   fileName: string;
-// };
-// export type RoutePostMediaUpload = {
-//   uploadUrl: string;
-//   id: string;
-// };
-router.post('/media/upload', jsonParser, async (req, res, next) => {
+export type StorageDeleteQuery = { url: string };
+export type StorageDeleteResponse = EmptyObject;
+router.delete('/blobs/storage/delete', authorizeAdmin, jsonParser, async (req, res) => {
+  const { url } = req.body as StorageDeleteQuery;
+  await del(url);
+  return res.status(200).json({});
+});
+
+export type ListQuery = EmptyObject;
+export type ListResponse = Awaited<ReturnType<(typeof T)['blobs']['all']>>;
+router.get('/blobs/list', authorizeAdmin, async (req, res) => {
+  T.blobs.all().then((blobs) => {
+    return res.status(200).json(blobs);
+  });
+});
+
+// This is used by the Vercel library, not by the app directly so, no types are neccesary
+router.post('/blobs/upload', jsonParser, async (req, res, next) => {
   const body = req.body as HandleUploadBody;
 
   try {

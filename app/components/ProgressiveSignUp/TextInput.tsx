@@ -218,6 +218,7 @@ const TextInput = ({
         </label>
         {_type === 'password' && (
           <button
+            type="button"
             onClick={() => setShowPass(!showPass)}
             tabIndex={-1}
             class="absolute right-2 top-1/2 -translate-y-1/2 text-black/40 outline-slate-4"
