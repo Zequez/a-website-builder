@@ -46,7 +46,7 @@ import {
   RoutePostMediaUploadUrl,
   RoutePostMediaUploadUrlQuery,
 } from '@server/routes/api/resources/media';
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
+export const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_' : '/_api_';
 
 let memberAuth: MemberAuth | null = null;
 export function setAuth(newAuth: MemberAuth | null) {

@@ -1,22 +1,25 @@
 import UploadIcon from '~icons/fa6-solid/upload';
 import ImageIcon from '~icons/fa6-solid/image';
 import { useAuth } from '@app/lib/AuthContext';
-import * as api from '@app/lib/api';
-import { useEffect } from 'preact/hooks';
+import { API_BASE_URL } from '@app/lib/api';
+import { useEffect, useState } from 'preact/hooks';
+import { type PutBlobResult } from '@vercel/blob';
+import { upload } from '@vercel/blob/client';
+import { C } from '@unocss/preset-mini/dist/shared/preset-mini.Dh95saIh';
 
 export default function UploadBlobBox() {
   const { fullMember, memberAuth } = useAuth();
 
   return (
     <div class="text-white/60 my-2 px-1">
-      {!memberAuth ? (
+      {memberAuth ? (
         <div>
           <div class="">
             <button class="flexcs mb-2 py-0.5 px-1 bg-white/10 rounded-md w-full hover:bg-white/20">
               <ImageIcon class="w-5 h-5 mr-2" />
               Some media file
             </button>
-            <DropFilesZone />
+            <DropFilesZone token={memberAuth.token} />
           </div>
         </div>
       ) : (
@@ -31,9 +34,31 @@ export default function UploadBlobBox() {
   );
 }
 
-function DropFilesZone() {
+function DropFilesZone({ token }: { token: string }) {
+  const [blob, setBlob] = useState<PutBlobResult | null>(null);
+
   async function handleSelectFile() {
-    uploadDirectly();
+    // uploadDirectly();
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.onchange = async () => {
+      if (input.files) {
+        for (let i = 0; i < input.files.length; i++) {
+          const file = input.files[i];
+          const newBlob = await upload(file.name, file, {
+            access: 'public',
+            handleUploadUrl: API_BASE_URL + '/media/upload',
+            clientPayload: JSON.stringify({ token }),
+          });
+
+          console.log(newBlob);
+          setBlob(newBlob);
+        }
+      }
+    };
+    input.click();
   }
 
   return (
@@ -46,4 +71,4 @@ function DropFilesZone() {
   );
 }
 
-function uploadDirectly() {}
+// function uploadDirectly() {}
