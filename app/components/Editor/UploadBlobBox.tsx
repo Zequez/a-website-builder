@@ -2,15 +2,13 @@ import UploadIcon from '~icons/fa6-solid/upload';
 import ImageIcon from '~icons/fa6-solid/image';
 import { MemberAuth, useAuth } from '@app/lib/AuthContext';
 import * as blobsApi from '@server/routes/api/resources/blobs.client';
-import { useEffect, useState } from 'preact/hooks';
-import { type PutBlobResult } from '@vercel/blob';
+import { useState } from 'preact/hooks';
 import { upload } from '@vercel/blob/client';
-import { C } from '@unocss/preset-mini/dist/shared/preset-mini.Dh95saIh';
 import { useRemoteResource } from '@app/lib/apiHelpers';
 import { Blob_ } from '@db';
 
 export default function UploadBlobBox() {
-  const { fullMember, memberAuth } = useAuth();
+  const { memberAuth } = useAuth();
   const blobsList = useRemoteResource(blobsApi.list, { query: {} });
 
   function copyBlobUrl(blob: Blob_) {
