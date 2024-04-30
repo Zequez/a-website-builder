@@ -3,7 +3,7 @@
   "functions": {
     "api/index.js": {
       "runtime": "@vercel/node@3.0.20",
-      "includeFiles": "dist/ts/server/**/*"
+      "includeFiles": "dist/ts/server/**/*|dist/templates/genesis/index.html"
     }
   },
   "rewrites": [

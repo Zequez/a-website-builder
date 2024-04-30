@@ -11,7 +11,7 @@
     "dev:app": "vite",
     "dev:server": "NODE_ENV=development tsx watch ./server/index.ts",
     "dev:template": "vite --config ./template-genesis/vite.config.ts",
-    "build": "NODE_ENV=production  pnpm build:app && pnpm build:server && pnpm build:templates",
+    "build": "NODE_ENV=production  pnpm build:app && pnpm build:templates && pnpm build:server",
     "build:app": "NODE_ENV=production rm -rf ./dist && vite build && mv dist/vike/client/* dist/",
     "build:server": "NODE_ENV=production rm -rf ./dist/ts && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:templates": "NODE_ENV=production vite build --config ./templates/vite.config.ts",
