@@ -6,10 +6,10 @@ import TimesIcon from '~icons/fa6-solid/xmark';
 import { cx } from '@app/lib/utils';
 import { keyBy } from '@shared/utils';
 import { useRef, useState } from 'preact/hooks';
-import FloatingMenu from '../FloatingMenu';
-import template from './template';
-import { LocalFile } from './types';
-import { sections, filesBySection, Section } from './lib/files-sections';
+import FloatingMenu from '../../FloatingMenu';
+import template from '../template';
+import { LocalFile } from '../types';
+import { sections, filesBySection, Section } from '../lib/files-sections';
 import UploadBlobBox from './UploadBlobBox';
 
 export default function SidebarFiles({
@@ -67,7 +67,7 @@ export default function SidebarFiles({
         const { title, icon, dir, nameUnwrap, nameWrap } = section;
         return (
           <div class="mx-1">
-            <div class="uppercase tracking-wider text-sm flex p-0.5 bg-black/20 rounded-md">
+            <div class="uppercase tracking-wider text-sm flex p-0.5 bg-slate/800 rounded-md">
               <span class="mx-2 py-0.5">{icon}</span>
               <span class="flex-grow py-0.5 text-white/70">{title}</span>
               <button

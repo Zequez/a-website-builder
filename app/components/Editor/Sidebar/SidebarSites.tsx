@@ -1,16 +1,16 @@
 import { useState, useRef } from 'preact/hooks';
 import cx from 'classnames';
 
-import { LocalSite } from './types';
+import { LocalSite } from '../types';
 import CheckIcon from '~icons/fa6-solid/check';
 import PlusIcon from '~icons/fa6-solid/plus';
 import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
 // import CloudIcon from '~icons/fa6-solid/cloud';
 
-import SyncStatusIcon from './SyncStatusIcon';
+import SyncStatusIcon from '../SyncStatusIcon';
 
-import FloatingMenu from '../FloatingMenu';
-import { SyncStatus } from './lib/sync';
+import FloatingMenu from '../../FloatingMenu';
+import { SyncStatus } from '../lib/sync';
 
 export default function SidebarSites({
   sites,

@@ -12,14 +12,14 @@ import useSites from './lib/useSites';
 import build, { BuildError, BuildFile } from './lib/builder';
 import { encodeB64 } from '@shared/utils';
 
-import SidebarSites from './SidebarSites';
-import SidebarFiles from './NewSidebarFiles';
+import SidebarSites from './Sidebar/SidebarSites';
+import SidebarFiles from './Sidebar/NewSidebarFiles';
 import Preview from './Preview';
 import CodePanel from './CodePanel';
 // import Inspector from './Inspector';
 import { postFilesSaveBuild } from '@app/lib/api';
 import { relocateFiles } from './lib/files-sections';
-import Sidebar from './Sidebar';
+import Sidebar from './Sidebar/Layout';
 
 const Editor = () => {
   const { memberAuth } = useAuth();
@@ -41,7 +41,6 @@ const Editor = () => {
   }, [S.UnsavedFiles.list, site?.id]);
 
   const saveUnsavedFiles = useCallback(() => {
-    console.log('Saving!');
     if (site) {
       S.UnsavedFiles.list.forEach((f) => {
         if (f.siteId === site.id) {
@@ -178,32 +177,35 @@ const Editor = () => {
   return (
     <div class="fixed h-full w-full bg-gray-700 flex z-20">
       {/*editorInspector ? <Inspector S={S} /> : null*/}
-      <Sidebar memberAuth={memberAuth}>
-        <SidebarSites
-          sites={S.sitesListSortedByLastUpdatedFile}
-          selectedSiteId={site?.id || null}
-          onSelect={handleSelectSite}
-          onAdd={() => S.addSite()}
-          onDelete={(id) => handleDeleteSite(id)}
-          onLocalNameChangeAttempt={S.setSiteLocalName}
-          onNameChange={S.setSiteName}
-          syncStatus={{}}
-        />
-
-        {site && S.selectedSiteFiles ? (
-          <SidebarFiles
-            files={S.selectedSiteFiles}
-            selectedFileId={S.selectedFile?.id || null}
-            unsavedFilesIds={Object.keys(S.UnsavedFiles.byId)}
-            onOpenFile={handleFileClick}
-            onAddFile={handleAddFile}
-            onRenameFile={handleRenameFile}
-            onApplyTemplate={(template) => S.applyTemplate(site.id, template)}
-            onDeleteFile={handleDeleteFile}
+      {/* <Sidebar /> */}
+      <Sidebar>
+        <div class="flex-grow">
+          <SidebarSites
+            sites={S.sitesListSortedByLastUpdatedFile}
+            selectedSiteId={site?.id || null}
+            onSelect={handleSelectSite}
+            onAdd={() => S.addSite()}
+            onDelete={(id) => handleDeleteSite(id)}
+            onLocalNameChangeAttempt={S.setSiteLocalName}
+            onNameChange={S.setSiteName}
+            syncStatus={{}}
           />
-        ) : (
-          <div class="flex-grow"></div>
-        )}
+
+          {site && S.selectedSiteFiles ? (
+            <SidebarFiles
+              files={S.selectedSiteFiles}
+              selectedFileId={S.selectedFile?.id || null}
+              unsavedFilesIds={Object.keys(S.UnsavedFiles.byId)}
+              onOpenFile={handleFileClick}
+              onAddFile={handleAddFile}
+              onRenameFile={handleRenameFile}
+              onApplyTemplate={(template) => S.applyTemplate(site.id, template)}
+              onDeleteFile={handleDeleteFile}
+            />
+          ) : (
+            <div class="flex-grow"></div>
+          )}
+        </div>
 
         <BottomButtons
           selectedRemoteSite={S.RSites._byId && site && S.RSites._byId[site.id]}

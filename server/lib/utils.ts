@@ -127,3 +127,7 @@ export function verifiedTokenFromHeader(reqHeader: IncomingHttpHeaders) {
     return null;
   }
 }
+
+export function validateTokenExpiry(tokenData: { exp: number }) {
+  return new Date(tokenData.exp * 1000).getTime() > new Date().getTime();
+}

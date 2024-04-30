@@ -15,7 +15,7 @@ export default defineConfig({
   transformers: [transformerVariantGroup()],
   rules: [
     [
-      /^flex([cse])([cse])$/,
+      /^flex([cse_])([cse_])$/,
       ([, c1, c2]) => ({
         display: 'flex',
         'align-items': FLEX_ALIGNS[c1],

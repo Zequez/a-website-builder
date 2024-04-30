@@ -1,6 +1,7 @@
 import { toArr } from '@shared/utils';
 import { getToken, useAuth } from './AuthContext';
 import { useCallback, useEffect, useState } from 'preact/hooks';
+import type { Functions as F } from '@server/routes/api/functions';
 
 export const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_/' : '/_api_/';
 
@@ -26,7 +27,27 @@ export function apiFetchWrapper<QueryT extends Record<string, any>, ResponseT>(
     apiFetch<QueryT, ResponseT>(method, path, query, authorization);
 }
 
-export async function apiFetch<QueryT extends Record<string, any>, ResponseT>(
+export async function pipeFetch<QueryT, ResponseT>(
+  fun: string,
+  query?: QueryT,
+  authorization?: string,
+) {
+  return await apiFetch<QueryT, ResponseT>(
+    'POST',
+    `pipe/${fun}`,
+    (query || {}) as QueryT,
+    authorization,
+  );
+}
+
+export function pipeWrapper<QueryT, ResponseT>(fun: string) {
+  return async (query: QueryT, authorization?: string) => {
+    const { data } = (await pipeFetch<QueryT, ResponseT>(fun, query, authorization)) as any;
+    return data as ResponseT;
+  };
+}
+
+export async function apiFetch<QueryT, ResponseT>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   path: string | ((q: QueryT) => string),
   query: QueryT,
@@ -46,14 +67,14 @@ export async function apiFetch<QueryT extends Record<string, any>, ResponseT>(
 
   const res =
     method === 'GET'
-      ? await fetch(`${baseUrl}?${new URLSearchParams(query)}`, {
+      ? await fetch(`${baseUrl}?${new URLSearchParams(query || {})}`, {
           method,
           headers,
         })
       : await fetch(baseUrl, {
           method,
           headers,
-          body: JSON.stringify(query),
+          body: JSON.stringify(query || {}),
         });
 
   if (res.status >= 200 && res.status <= 299) {

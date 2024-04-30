@@ -2,8 +2,8 @@ import Thumbtack from '~icons/fa6-solid/thumbtack';
 import Bars from '~icons/fa6-solid/bars';
 import UserIcon from '~icons/fa6-solid/user';
 import { signal, effect } from '@preact/signals';
-import { cx } from '@app/lib/utils';
-import { MemberAuth } from '@app/lib/AuthContext';
+import { cx, gravatarUrl } from '@app/lib/utils';
+import { MemberAuth, useAuth } from '@app/lib/AuthContext';
 
 const LS_KEY = 'SIDEBAR_COLLAPSED_MODE';
 
@@ -48,19 +48,24 @@ function popInToggle() {
   sidebarPoppingIn.value = !sidebarPoppingIn.value;
 }
 
-const Sidebar = ({ children, memberAuth }: { children: any; memberAuth: MemberAuth | null }) => {
+export default function Layout({ children }: { children: any }) {
+  const { memberAuth } = useAuth();
+
   return (
     <>
       <div
         class={cx('relative flex-shrink-0 z-100', {
           'w-0': collapsedMode.value,
-          'w-54': !collapsedMode.value,
+          'w-60': !collapsedMode.value,
         })}
       >
         <div
-          class={cx('relative flex flex-col w-54 h-full z-80 bg-gray-500 transition-transform', {
-            'translate-x-[-100%]': collapsedMode.value && !sidebarPoppingIn.value,
-          })}
+          class={cx(
+            'relative flex flex-col w-60 h-full z-80 bg-slate-600 br b-slate-700 transition-transform',
+            {
+              'translate-x-[-100%]': collapsedMode.value && !sidebarPoppingIn.value,
+            },
+          )}
           onMouseOver={!MOBILE_MODE ? popIn : () => {}}
           onMouseOut={!MOBILE_MODE ? startPopOutTimeout : () => {}}
         >
@@ -83,11 +88,23 @@ const Sidebar = ({ children, memberAuth }: { children: any; memberAuth: MemberAu
               ) : null}
             </>
           ) : null}
-          <div class="flex justify-end  bg-black/10 border-b border-black/10">
+          <div class="flexce text-white  bg-black/10 border-b border-black/10">
+            <a href="/" class="px-2 flex-grow h-full hover:bg-white/10 flexcs">
+              <span class="relative">
+                <span class="relative z-20 inline-block bg-slate-600 px-2 rounded-md">
+                  <span class="uppercase font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-sky-400">
+                    HOJA
+                  </span>
+                </span>
+                <div class="z-10 absolute inset-0 bg-gradient-to-r from-amber-400 to-sky-400 blur-[2px]"></div>
+              </span>
+            </a>
             {memberAuth ? (
-              <a href="/account" class="flex-grow flexcs px-2 text-white hover:bg-white/10 w-0">
-                <UserIcon class="mr-2" />
-                <div class="overflow-hidden text-ellipsis">{memberAuth.member.email}</div>
+              <a
+                href="/account"
+                class="h-full flexcs px-1 text-white hover:bg-white/10 saturate-75"
+              >
+                <img src={gravatarUrl(memberAuth.member.email)} class="h-8 w-8 rounded-full" />
               </a>
             ) : null}
 
@@ -102,7 +119,7 @@ const Sidebar = ({ children, memberAuth }: { children: any; memberAuth: MemberAu
               <Thumbtack class="h-full" />
             </button>
           </div>
-          {children}
+          <div class="flex-grow overflow-auto flex flex-col">{children}</div>
         </div>
       </div>
       {MOBILE_MODE && collapsedMode.value && sidebarPoppingIn.value ? (
@@ -110,6 +127,4 @@ const Sidebar = ({ children, memberAuth }: { children: any; memberAuth: MemberAu
       ) : null}
     </>
   );
-};
-
-export default Sidebar;
+}

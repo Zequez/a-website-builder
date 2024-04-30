@@ -8,6 +8,10 @@ import { sql, spreadAnd, spreadUpdate, spreadInsert } from './squid';
 export { sql, Q };
 export const query = Q;
 
+export async function QQ<T>(strings: TemplateStringsArray, ...values: any) {
+  return await Q<T>(sql(strings, ...values));
+}
+
 function select<T>(table: string) {
   const TA = sql.raw(table);
   return {

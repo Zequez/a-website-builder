@@ -34,6 +34,7 @@ export type Site = {
 export type File_ = {
   id: string;
   site_id: string;
+  member_id: number;
   name: string;
   data: Buffer;
   data_type: string;

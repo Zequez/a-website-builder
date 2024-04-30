@@ -7,3 +7,4 @@ export * as m1712514611_update_member from './m1712514611_update_member';
 export * as m1712986472_add_member_tag_and_telegram from './m1712986472_add_member_tag_and_telegram';
 export * as m1713727722_add_google_tokens from './m1713727722_add_google_tokens';
 export * as m1714259316_add_blobs_table from './m1714259316_add_blobs_table';
+export * as m1714371929_add_member_id_to_files from './m1714371929_add_member_id_to_files';
