@@ -1,7 +1,7 @@
 import { useAuth } from '@app/lib/AuthContext';
 import { ApiEndpoint, useRemoteResource } from '@app/lib/apiHelpers';
 import { cx } from '@app/lib/utils';
-import * as blobsApi from '@server/routes/api/resources/blobs.client';
+import * as blobsApi from '@app/lib/blobs.client';
 import { useEffect, useState } from 'preact/hooks';
 
 export default function Admin() {

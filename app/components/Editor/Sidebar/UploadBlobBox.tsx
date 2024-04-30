@@ -1,7 +1,7 @@
 import UploadIcon from '~icons/fa6-solid/upload';
 import ImageIcon from '~icons/fa6-solid/image';
 import { MemberAuth, useAuth } from '@app/lib/AuthContext';
-import * as blobsApi from '@server/routes/api/resources/blobs.client';
+import * as blobsApi from '@app/lib/blobs.client';
 import { useState } from 'preact/hooks';
 import { upload } from '@vercel/blob/client';
 import { useRemoteResource } from '@app/lib/apiHelpers';

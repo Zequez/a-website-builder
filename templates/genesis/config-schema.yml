@@ -1,0 +1,22 @@
+title: Config Schema
+type: object
+properties:
+  title:
+    type: string
+  foo:
+    type: boolean
+  pages:
+    type: object
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          title:
+            type: string
+          content:
+            type: string
+        required: ["title", "content"]
+        additionalProperties: false
+    additionalProperties: false
+additionalProperties: false
+required: ["foo", "title"]

@@ -54,4 +54,17 @@ export type Blob_ = {
   created_at: string;
 };
 
+export type TSite = {
+  id: string;
+  config: any;
+  template: string;
+  name: string;
+  subdomain: string;
+  domain: string;
+  access_key: string;
+  rendered_pages: any;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SanitizedMember = Omit<Member, 'passphrase' | 'google_tokens'> & { google: boolean };
