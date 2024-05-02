@@ -5,6 +5,7 @@ import App from './components/App';
 import createValidator from './config-validator';
 import configSchema from './config-schema.yml';
 import configDefault from './config-default';
+import { StoreContextWrapper } from './lib/useStore';
 
 function getDocumentConfig() {
   const documentConfigRaw = document.getElementById('config')!.innerHTML;
@@ -33,4 +34,9 @@ function getDocumentConfig() {
 
 const config = getDocumentConfig() || configDefault;
 
-hydrate(<App initialConfig={config} />, document.getElementById('root')!);
+hydrate(
+  <StoreContextWrapper initialConfig={config}>
+    <App />
+  </StoreContextWrapper>,
+  document.getElementById('root')!,
+);

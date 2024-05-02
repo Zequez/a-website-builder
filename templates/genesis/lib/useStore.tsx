@@ -1,15 +1,22 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { createContext } from 'preact';
+import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 
-export default function useStore(initialConfig: Config) {
-  const INITIAL_STATE = {
-    editing: true,
+type Store = {
+  editing: boolean;
+  savedConfig: Config;
+  config: Config;
+};
+
+export function useStoreBase(initialConfig: Config) {
+  const INITIAL_STATE: Store = {
+    editing: false,
     savedConfig: { ...initialConfig },
     config: { ...initialConfig },
   };
 
-  const [store, setStoreBase] = useState(INITIAL_STATE);
+  const [store, setStoreBase] = useState<Store>(INITIAL_STATE);
 
-  function setStore(store: typeof INITIAL_STATE) {
+  function setStore(store: Store) {
     console.log('setStore', store);
     setStoreBase(store);
   }
@@ -52,6 +59,25 @@ export default function useStore(initialConfig: Config) {
       setConfigVal,
       saveConfig,
       patchPage,
+      startEditing: () => setStore({ ...store, editing: true }),
+      finishEditing: () => setStore({ ...store, editing: false }),
     },
   };
+}
+
+const StoreContext = createContext<ReturnType<typeof useStoreBase>>(undefined!);
+
+export const StoreContextWrapper = ({
+  children,
+  initialConfig,
+}: {
+  children: any;
+  initialConfig: Config;
+}) => {
+  const store = useStoreBase(initialConfig);
+  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+};
+
+export default function useStore() {
+  return useContext(StoreContext);
 }
