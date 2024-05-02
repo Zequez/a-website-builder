@@ -6,17 +6,18 @@ properties:
   foo:
     type: boolean
   pages:
-    type: object
-    patternProperties:
-      "^[a-zA-Z0-9_-]+$":
-        type: object
-        properties:
-          title:
-            type: string
-          content:
-            type: string
-        required: ["title", "content"]
-        additionalProperties: false
-    additionalProperties: false
+    type: array
+    items:
+      type: object
+      properties:
+        path:
+          type: string
+          pattern: "^[a-zA-Z0-9_\\-/]+$"
+        title:
+          type: string
+        content:
+          type: string
+      required: ["title", "content", "path"]
+      additionalProperties: false
 additionalProperties: false
 required: ["foo", "title"]

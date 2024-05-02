@@ -2,11 +2,17 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 
 export default function useStore(initialConfig: Config) {
   const INITIAL_STATE = {
+    editing: true,
     savedConfig: { ...initialConfig },
     config: { ...initialConfig },
   };
 
-  const [store, setStore] = useState(INITIAL_STATE);
+  const [store, setStoreBase] = useState(INITIAL_STATE);
+
+  function setStore(store: typeof INITIAL_STATE) {
+    console.log('setStore', store);
+    setStoreBase(store);
+  }
 
   const configChanged = useMemo(() => {
     return JSON.stringify(store.config) !== JSON.stringify(store.savedConfig);
@@ -26,12 +32,26 @@ export default function useStore(initialConfig: Config) {
     setStore({ ...store, savedConfig: store.config });
   }
 
+  function patchPage(path: string, patch: Partial<Page>) {
+    setConfigVal(
+      'pages',
+      store.config.pages.map((page) => {
+        if (page.path === path) {
+          return { ...page, ...patch };
+        } else {
+          return page;
+        }
+      }),
+    );
+  }
+
   return {
     store,
     configChanged,
     actions: {
       setConfigVal,
       saveConfig,
+      patchPage,
     },
   };
 }

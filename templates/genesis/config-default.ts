@@ -1,16 +1,28 @@
 const configDefault: Config = {
   title: 'Your Website',
   foo: true,
-  pages: {
-    index: {
-      title: 'Home',
+  pages: [
+    {
+      title: 'Inicio',
+      path: '/',
       content: '#Hello there\nPotato',
     },
-    foo: {
-      title: 'Foo',
+    {
+      title: 'Sobre mí',
+      path: '/sobre-mi',
+      content: '#Hello there\nPotato',
+    },
+    {
+      title: 'Dónde estoy',
+      path: '/donde-estoy',
       content: '#Hello foo\nBar',
     },
-  },
+    {
+      title: 'Consultas',
+      path: '/consultas',
+      content: '#Hello foo\nBar',
+    },
+  ],
 };
 
 export default configDefault;
