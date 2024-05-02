@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       rollupOptions: {
         input: {
-          genesis: resolve(__dirname, 'genesis/index.html'),
+          genesis: resolve(__dirname, 'index.html'),
         },
       },
     },

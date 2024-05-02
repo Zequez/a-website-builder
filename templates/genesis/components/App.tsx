@@ -1,6 +1,6 @@
 import { render } from 'preact';
 import { useState, useEffect, useMemo } from 'preact/hooks';
-import indexHtml from '../index.html?raw';
+import indexHtml from '../../index.html?raw';
 import createValidator from '../config-validator';
 import useStore from '../lib/useStore';
 
