@@ -87,7 +87,9 @@ export default function AppWithEditor() {
           </button>
         </div>
       </div>
-      <App />
+      <div class={cx('flex-grow hidden sm:block')}>
+        <App />
+      </div>
     </div>
   );
 }
