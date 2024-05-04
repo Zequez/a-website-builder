@@ -108,9 +108,14 @@ function PagesList() {
     A.movePage(pageUuid, target);
   }
 
+  function isLastNavPage(uuid: string) {
+    return navPages.length === 1 && navPages[0].uuid === uuid;
+  }
+
   const pageWidget = (page: Page) => (
     <PageWidget
       page={page}
+      dragEnabled={!isLastNavPage(page.uuid)}
       onChange={(patch) => A.patchPage(page.path, patch)}
       onDragDrop={(pageUuid) => handleMovePage(pageUuid, { uuid: page.uuid, nav: page.onNav })}
       onDragOver={() => setDraggedOverId(page.uuid)}
@@ -191,6 +196,7 @@ function PageWidget(p: {
   onDragDrop: (droppedPageUuid: string) => void;
   onDragOver: () => void;
   onDragEnd: () => void;
+  dragEnabled: boolean;
   isDraggedOver: boolean;
 }) {
   return (
@@ -202,6 +208,7 @@ function PageWidget(p: {
         p.onDragOver();
       }}
       onDragStart={(ev) => {
+        if (!p.dragEnabled) ev.preventDefault();
         ev.dataTransfer!.setData('text/plain', p.page.uuid);
       }}
       onDragEnd={(ev) => {
@@ -219,7 +226,11 @@ function PageWidget(p: {
           '-translate-y-[2px]': p.isDraggedOver,
         })}
       >
-        <div class="pointer-events-none text-white/50 mr-2">
+        <div
+          class={cx('relative z-20 text-white/50 mr-2 pointer-events-none', {
+            'opacity-25 ': !p.dragEnabled,
+          })}
+        >
           <GripLinesIcon />
         </div>
         <button class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
@@ -235,7 +246,12 @@ function PageWidget(p: {
           <MenuEllipsisVIcon class="-mx-1" />
         </button>
       </div>
-      <div class="absolute z-10 w-full h-full cursor-move"></div>
+      <div
+        class={cx('absolute z-10 w-full h-full', {
+          'cursor-move': p.dragEnabled,
+          'cursor-not-allowed': !p.dragEnabled,
+        })}
+      ></div>
       {p.isDraggedOver && (
         <div class="absolute z-40 h-1.5 b b-black shadow-md bg-white/70 rounded-full top-full left-0 w-full -mt1"></div>
       )}

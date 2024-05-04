@@ -11,11 +11,12 @@ export function Nav() {
 
   return (
     <nav class="bg-white/30 rounded-b-lg flexcc flex-wrap text-xl sm:text-2xl space-x-1">
-      {navPages.map(({ path, title, icon }) => (
-        <div class="flex">
-          <NavItem active={path === '/'} path={path} icon={icon} title={title} />
-        </div>
-      ))}
+      {navPages.length > 1 &&
+        navPages.map(({ path, title, icon }) => (
+          <div class="flex">
+            <NavItem active={path === '/'} path={path} icon={icon} title={title} />
+          </div>
+        ))}
     </nav>
   );
 }
