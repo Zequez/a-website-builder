@@ -52,14 +52,14 @@ export default function App() {
         <div class="relative flex_s flex-col w-full h-full overflow-auto p-4 pb-12">
           <div class="absolute top-0 right-0">
             {!store.editing ? (
-              <button
-                class="bg-emerald-500 hover:bg-emerald-300 text-white rounded-bl-full h7 w7 p2 text-xs overflow-hidden"
-                onClick={A.startEditing}
+              <a
+                class="block bg-emerald-500 hover:bg-emerald-300 text-white rounded-bl-full h7 w7 p2 text-xs overflow-hidden"
+                href="/templates/editor#fbd06659-405d-44a5-81c6-cd037031bbf6"
               >
-                <div class="relative left-1 -top-1">
-                  {store.editing ? <CheckIcon /> : <KeyIcon />}
+                <div class="relative -top-1">
+                  <KeyIcon class="-rotate-90" />
                 </div>
-              </button>
+              </a>
             ) : null}
           </div>
           <header class="bg-emerald-300 max-w-screen-lg rounded-lg mb-4 shadow-sm">

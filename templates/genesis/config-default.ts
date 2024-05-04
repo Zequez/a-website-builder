@@ -4,7 +4,6 @@ const configDefault: Config = {
   domain: 'hoja.ar',
   description: 'This is my website',
   themeColor: 'hsl(90, 50%, 50%)',
-  foo: true,
   pages: [
     {
       uuid: 'a',

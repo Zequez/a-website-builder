@@ -3,15 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Website</title>
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <meta name="theme-color" content="{{THEME_COLOR}}" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>{{ICON}}</text></svg>"
+    />
+    <!--{{TEMPLATE_ASSETS}}-->
   </head>
   <body class="">
-    <div id="root"></div>
-    <script
-      id="config"
-      data-site-id="fbd06659-405d-44a5-81c6-cd037031bbf6"
-      type="application/json"
-    ></script>
-    <script type="module" src="./genesis/main.tsx"></script>
+    <div id="root"><!--{{PRE_RENDERED}}--></div>
+    <script id="config" data-site-id="{{SITE_ID}}" type="application/json">
+      {{CONFIG}}
+    </script>
+    <script type="module" src="./genesis/main-genesis.tsx"></script>
   </body>
 </html>

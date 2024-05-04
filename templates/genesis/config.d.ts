@@ -4,7 +4,6 @@ type Config = {
   domain: string;
   description: string;
   themeColor: string;
-  foo: boolean;
   pages: Page[];
 };
 

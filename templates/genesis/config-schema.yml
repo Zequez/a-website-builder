@@ -7,15 +7,17 @@ properties:
     type: string
   themeColor:
     type: string
-  foo:
-    type: boolean
+  domain:
+    type: string
+  subdomain:
+    type: string
   pages:
     type: array
     items:
       type: object
       properties:
         uuid:
-          type: string;
+          type: string
         path:
           type: string
           pattern: "^[a-zA-Z0-9_\\-/]+$"
@@ -27,7 +29,7 @@ properties:
           type: boolean
         content:
           type: string
-      required: ["title", "content", "path", "icon"]
+      required: ["title", "content", "uuid", "path", "icon"]
       additionalProperties: false
 additionalProperties: false
-required: ["foo", "title", "description", "themeColor", "pages"]
+required: ["title", "description", "subdomain", "domain", "themeColor", "pages"]

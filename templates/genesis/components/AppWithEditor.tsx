@@ -4,9 +4,11 @@ import useStore from '../lib/useStore';
 import App, { toHtml } from './App';
 import TextInput from './TextInput';
 import TextAreaInput from './TextAreaInput';
+import { useRef, useState } from 'preact/hooks';
+import { cx } from '@shared/utils';
 
 export default function AppWithEditor() {
-  const { store, configChanged, navPages, hiddenPages, subdomainChanged, actions: A } = useStore();
+  const { store, configChanged, subdomainChanged, actions: A } = useStore();
 
   function saveConfig() {
     A.saveConfig();
@@ -17,7 +19,7 @@ export default function AppWithEditor() {
 
   return (
     <div class="h-screen w-screen flex">
-      <div class="w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb4">
+      <div class="w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb4  overflow-auto">
         <Separator>Sitio</Separator>
         <div class="flexcc mb4 px-4">
           <TextInput
@@ -39,24 +41,7 @@ export default function AppWithEditor() {
         </div>
 
         <Separator>Páginas</Separator>
-        <div class="flex flex-col">
-          <div class="text-center">Navegación</div>
-          {navPages.map((page) => (
-            <PageWidget page={page} onChange={(patch) => A.patchPage(page.path, patch)} />
-          ))}
-          <div class="text-center">Otras</div>
-          {hiddenPages.map((page) => (
-            <PageWidget page={page} onChange={(patch) => A.patchPage(page.path, patch)} />
-          ))}
-          <div class="flexcc mt-2">
-            <button
-              class="bg-white/20 hover:bg-white/30 rounded-md py1 px2"
-              onClick={() => A.addPage()}
-            >
-              Agregar
-            </button>
-          </div>
-        </div>
+        <PagesList />
         {/* <button
           class="bg-slate-400 rounded-md px-2 py-1 mb4"
           onClick={() => A.setConfigVal('foo', !store.config.foo)}
@@ -114,29 +99,146 @@ export default function AppWithEditor() {
   );
 }
 
+function PagesList() {
+  const { store, navPages, hiddenPages, actions: A } = useStore();
+  const [draggedOverId, setDraggedOverId] = useState<string | null>(null);
+
+  function handleMovePage(pageUuid: string, target: { uuid?: string; nav: boolean }) {
+    setDraggedOverId(null);
+    A.movePage(pageUuid, target);
+  }
+
+  const pageWidget = (page: Page) => (
+    <PageWidget
+      page={page}
+      onChange={(patch) => A.patchPage(page.path, patch)}
+      onDragDrop={(pageUuid) => handleMovePage(pageUuid, { uuid: page.uuid, nav: page.onNav })}
+      onDragOver={() => setDraggedOverId(page.uuid)}
+      onDragEnd={() => setDraggedOverId(null)}
+      isDraggedOver={draggedOverId === page.uuid}
+    />
+  );
+
+  return (
+    <div class="flex flex-col">
+      <PagesDroppableWrapper
+        onDragDrop={(pageUuid) => handleMovePage(pageUuid, { nav: true })}
+        isDraggedOver={draggedOverId === 'nav'}
+        onDragOver={() => setDraggedOverId('nav')}
+      >
+        <div class="text-center">Navegación</div>
+      </PagesDroppableWrapper>
+      {navPages.map(pageWidget)}
+      <PagesDroppableWrapper
+        onDragDrop={(pageUuid) => handleMovePage(pageUuid, { nav: false })}
+        isDraggedOver={draggedOverId === 'no-nav'}
+        onDragOver={() => setDraggedOverId('no-nav')}
+      >
+        <div class="text-center">Otras</div>
+      </PagesDroppableWrapper>
+      {hiddenPages.map(pageWidget)}
+      <div class="flexcc mt-2">
+        <button
+          class="bg-white/20 hover:bg-white/30 rounded-md py1 px2"
+          onClick={() => A.addPage()}
+        >
+          Agregar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const Separator = (p: { children: any }) => (
   <div class="text-center text-xl py-2 px-4">{p.children}</div>
 );
 
-function PageWidget(p: { page: Page; onChange: (patch: Partial<Page>) => void }) {
+// function PagesDragSpace(p: { children: any }) {
+//   const
+// }
+
+function PagesDroppableWrapper(p: {
+  children: any;
+  onDragDrop: (droppedPageUuid: string) => void;
+  onDragOver: () => void;
+  isDraggedOver: boolean;
+}) {
   return (
-    <div class="relative flexcc px-2 py-1 hover:bg-white/10">
-      <div class="pointer-events-none text-white/50 mr-2">
-        <GripLinesIcon />
+    <div
+      class="relative"
+      onDragOver={(ev) => {
+        ev.preventDefault();
+        p.onDragOver();
+      }}
+      onDrop={(ev) => {
+        const targetUuid = ev.dataTransfer!.getData('text/plain');
+        if (targetUuid) {
+          p.onDragDrop(targetUuid);
+        }
+      }}
+    >
+      {p.children}
+      {p.isDraggedOver ? (
+        <div class="absolute z-40 h-1.5 b b-black shadow-md bg-white/70 rounded-full top-full left-0 w-full -mt1"></div>
+      ) : null}
+    </div>
+  );
+}
+
+function PageWidget(p: {
+  page: Page;
+  onChange: (patch: Partial<Page>) => void;
+  onDragDrop: (droppedPageUuid: string) => void;
+  onDragOver: () => void;
+  onDragEnd: () => void;
+  isDraggedOver: boolean;
+}) {
+  return (
+    <div
+      class={cx('relative flexcc px-2 py-1 hover:bg-white/10')}
+      draggable={true}
+      onDragOver={(ev) => {
+        ev.preventDefault();
+        p.onDragOver();
+      }}
+      onDragStart={(ev) => {
+        ev.dataTransfer!.setData('text/plain', p.page.uuid);
+      }}
+      onDragEnd={(ev) => {
+        p.onDragEnd();
+      }}
+      onDrop={(ev) => {
+        const targetUuid = ev.dataTransfer!.getData('text/plain');
+        if (targetUuid) {
+          p.onDragDrop(targetUuid);
+        }
+      }}
+    >
+      <div
+        class={cx('flexcc h-8', {
+          '-translate-y-[2px]': p.isDraggedOver,
+        })}
+      >
+        <div class="pointer-events-none text-white/50 mr-2">
+          <GripLinesIcon />
+        </div>
+        <button class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
+          {p.page.icon}
+        </button>
+        <input
+          type="text"
+          class="relative z-20 w-full h-full text-black/60 rounded-md px-2 py-1 mr-2"
+          value={p.page.title}
+          onInput={(e) => p.onChange({ title: e.currentTarget.value })}
+        />
+        <button class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
+          <MenuEllipsisVIcon class="-mx-1" />
+        </button>
       </div>
-      <button class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
-        {p.page.icon}
-      </button>
-      <input
-        type="text"
-        class="relative z-20 w-full text-black/60 rounded-md px-2 py-1 mr-2"
-        value={p.page.title}
-        onInput={(e) => p.onChange({ title: e.currentTarget.value })}
-      />
-      <button class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
-        <MenuEllipsisVIcon class="-mx-1" />
-      </button>
-      <div class="absolute z-10 w-full h-full  cursor-move"></div>
+      <div class="absolute z-10 w-full h-full cursor-move"></div>
+      {p.isDraggedOver && (
+        <div class="absolute z-40 h-1.5 b b-black shadow-md bg-white/70 rounded-full top-full left-0 w-full -mt1"></div>
+      )}
     </div>
   );
 }

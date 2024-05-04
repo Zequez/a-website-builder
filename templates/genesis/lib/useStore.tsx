@@ -1,6 +1,7 @@
 import { createContext } from 'preact';
 import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import * as pipes from '../lib/pipes';
+import configDefault from '../config-default';
 
 type Store = {
   editing: boolean;
@@ -132,6 +133,21 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     patchStore({ settingsMenuOpen: !store.settingsMenuOpen });
   }
 
+  function movePage(uuid: string, target: { uuid?: string; nav: boolean }) {
+    console.log(uuid, target);
+    let page = store.config.pages.find((page) => page.uuid === uuid)!;
+    page = { ...page, onNav: target.nav };
+    let pages = store.config.pages.filter((page) => page.uuid !== uuid);
+
+    if (target.uuid) {
+      const targetIndex = pages.findIndex((page) => page.uuid === target.uuid);
+      pages.splice(targetIndex + 1, 0, page);
+    } else {
+      pages.unshift(page);
+    }
+    setConfigVal('pages', pages);
+  }
+
   return {
     store,
     configChanged,
@@ -146,6 +162,7 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
       finishEditing: () => setStore({ ...store, editing: false, settingsMenuOpen: false }),
       toggleSettingsMenu,
       addPage,
+      movePage,
     },
   };
 }
@@ -159,11 +176,11 @@ export const StoreContextWrapper = ({
   editing,
 }: {
   children: any;
-  initialConfig: Config;
+  initialConfig?: Config;
   siteId: string | null;
   editing: boolean;
 }) => {
-  const store = useStoreBase(initialConfig, siteId, editing);
+  const store = useStoreBase(initialConfig || configDefault, siteId, editing);
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 };
 
