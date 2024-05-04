@@ -20,6 +20,7 @@ export default function App() {
   return (
     <>
       <div class="relative overflow-auto bg-emerald-600 text-white min-h-screen w-full">
+        {editing && <CurrentPageUrlVisualizer />}
         <div class="relative flex_s flex-col w-full h-full overflow-auto p-4 pb-12">
           <div class="absolute top-0 right-0">
             {!editing ? (
@@ -52,6 +53,39 @@ export default function App() {
         <NetworksLinks />
       </div>
     </>
+  );
+}
+
+function CurrentPageUrlVisualizer() {
+  const { selectedPage } = useStore();
+  const [justCopied, setJustCopied] = useState(false);
+  const copiedTimeout = useRef<any>(null);
+
+  const pageUrl = selectedPage ? `https://hoja.ar${selectedPage.path}` : '';
+
+  function handleClick() {
+    if (pageUrl) {
+      clearTimeout(copiedTimeout.current);
+      navigator.clipboard.writeText(pageUrl);
+      setJustCopied(true);
+      copiedTimeout.current = setTimeout(() => {
+        setJustCopied(false);
+      }, 1500);
+    }
+  }
+
+  return (
+    <div
+      class="absolute top-0 left-1/2 -translate-x-1/2 z-30 bg-black/50 py-1 px-4 rounded-b-md cursor-copy"
+      onClick={handleClick}
+    >
+      {justCopied ? (
+        <div class="absolute inset-0 flexcc">
+          <div class="bg-emerald-500 rounded-md text-white px1 py-0.5">Copiado</div>
+        </div>
+      ) : null}
+      {pageUrl ? pageUrl : 'Page not found'}
+    </div>
   );
 }
 

@@ -1,14 +1,9 @@
-import PencilIcon from '~icons/fa6-solid/pencil';
-import { useRef, useState } from 'preact/hooks';
-import VGripLinesIcon from '~icons/fa6-solid/grip-lines-vertical';
 import { cx } from '@shared/utils';
 import useStore from '../lib/useStore';
 
-// function SocialItem ({ href, children }: { href: string; children: any }) {
-// }
 export function Nav() {
   const {
-    store: { selectedPageId },
+    store: { selectedPageId, editing },
     navPages,
     actions: A,
   } = useStore();
@@ -19,7 +14,12 @@ export function Nav() {
         navPages.map(({ uuid, path, title, icon }) => (
           <div class="flex">
             <NavItem
-              onClick={() => A.navigateTo(path)}
+              onClick={(ev: MouseEvent) => {
+                if (editing) {
+                  ev.preventDefault();
+                  A.navigateTo(path);
+                }
+              }}
               active={uuid === selectedPageId}
               path={path}
               icon={icon}
@@ -36,7 +36,7 @@ export function NavItem(p: {
   icon: string;
   title: string;
   active?: boolean;
-  onClick: () => void;
+  onClick: (ev: MouseEvent) => void;
 }) {
   return (
     <a
@@ -47,10 +47,7 @@ export function NavItem(p: {
           'hover:bg-white/40': !p.active,
         },
       )}
-      onClick={(ev) => {
-        ev.preventDefault();
-        p.onClick();
-      }}
+      onClick={p.onClick}
       href={p.path}
     >
       <span class="whitespace-nowrap">
