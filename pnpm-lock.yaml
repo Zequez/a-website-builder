@@ -158,6 +158,9 @@ dependencies:
   dotenv:
     specifier: ^16.4.5
     version: 16.4.5
+  emoji-picker-element:
+    specifier: ^1.21.3
+    version: 1.21.3
   express:
     specifier: ^4.18.3
     version: 4.18.3
@@ -3217,6 +3220,10 @@ packages:
 
   /electron-to-chromium@1.4.685:
     resolution: {integrity: sha512-yDYeobbTEe4TNooEzOQO6xFqg9XnAkVy2Lod1C1B2it8u47JNLYvl9nLDWBamqUakWB8Jc1hhS1uHUNYTNQdfw==}
+    dev: false
+
+  /emoji-picker-element@1.21.3:
+    resolution: {integrity: sha512-o1wQmPX0+8dmp/v4BfHVSMD2x32ZmCQd5LMHpHTw1M9ltDW99P+IIPbveI7nPxwGw74TW9E6jds6Kitf14UCOg==}
     dev: false
 
   /emoji-regex@8.0.0:

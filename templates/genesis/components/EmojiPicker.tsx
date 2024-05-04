@@ -1,5 +1,8 @@
 import { createPortal } from 'preact/compat';
 import { useEffect, useRef } from 'preact/hooks';
+import 'emoji-picker-element';
+import { Picker } from 'emoji-picker-element';
+import es from 'emoji-picker-element/i18n/es';
 
 export default function EmojiPicker(p: {
   target: HTMLElement;
@@ -11,7 +14,13 @@ export default function EmojiPicker(p: {
   const floatingMenuContainer = document.getElementById('floating-menus')!;
 
   useEffect(() => {
-    elRef.current!.addEventListener('emoji-click', (ev: any) => {
+    const picker = new Picker({
+      i18n: es,
+    });
+    picker.style.width = '100%';
+    picker.style.height = '100%';
+    elRef.current!.appendChild(picker);
+    picker.addEventListener('emoji-click', (ev: any) => {
       p.onSelect(ev.detail.unicode);
     });
   }, []);
@@ -24,8 +33,9 @@ export default function EmojiPicker(p: {
           left: left + width,
           top: top,
         }}
+        ref={elRef}
       >
-        <emoji-picker style={{ width: '100%', height: '100%' }} ref={elRef}></emoji-picker>
+        {/* <emoji-picker style={{ width: '100%', height: '100%' }} ref={elRef}></emoji-picker> */}
       </div>
       <div
         class="absolute z-10 w-full h-full bg-black/0"
