@@ -3,6 +3,10 @@ type: object
 properties:
   title:
     type: string
+  description:
+    type: string
+  themeColor:
+    type: string
   foo:
     type: boolean
   pages:
@@ -10,14 +14,20 @@ properties:
     items:
       type: object
       properties:
+        uuid:
+          type: string;
         path:
           type: string
           pattern: "^[a-zA-Z0-9_\\-/]+$"
         title:
           type: string
+        icon:
+          type: string
+        onNav:
+          type: boolean
         content:
           type: string
-      required: ["title", "content", "path"]
+      required: ["title", "content", "path", "icon"]
       additionalProperties: false
 additionalProperties: false
-required: ["foo", "title"]
+required: ["foo", "title", "description", "themeColor", "pages"]

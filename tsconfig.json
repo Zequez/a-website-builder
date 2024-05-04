@@ -12,7 +12,9 @@
     "jsxImportSource": "preact",
     "lib": ["DOM"],
     "types": [
-      "./node_modules/unplugin-icons/types/preact.d.ts"
+      "./node_modules/unplugin-icons/types/preact.d.ts",
+      "./templates/types.d.ts",
+      "./templates/genesis/config.d.ts",
     ],
     "paths": {
       "@db": ["./server/db"],
@@ -25,13 +27,14 @@
     "outDir": "./dist/ts"
   },
   "include": [
+    "templates/**/*",
     "server/**/*",
     "app/**/*",
     "vitest.setup.ts",
     "vitest.hooks.ts",
     "scripts/**/*",
     "shared/jwt.ts"
-  ],
+, "shared/apiPipes.ts", "shared/apiHelpers.ts", "shared/AuthContext.tsx"  ],
   "exclude": ["node_modules"],
   "tsc-alias": {
     "resolveFullPaths": true,

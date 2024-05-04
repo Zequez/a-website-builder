@@ -1,4 +1,4 @@
-import { T, QQ, Q, sql, File_, Site, FileB64 } from '@db';
+import { T, QQ, Q, sql, File_, Site, FileB64, TSite } from '@db';
 import {
   TokenMember,
   sanitizeMember,
@@ -55,6 +55,34 @@ export class Functions {
 
   async $siteFiles(p: { siteId: string }): Promise<FileB64[]> {
     return (await T.files.where({ site_id: p.siteId, is_dist: false }).all()).map(updateFileToB64);
+  }
+
+  // ████████╗███████╗██╗████████╗███████╗███████╗
+  // ╚══██╔══╝██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
+  //    ██║   ███████╗██║   ██║   █████╗  ███████╗
+  //    ██║   ╚════██║██║   ██║   ██╔══╝  ╚════██║
+  //    ██║   ███████║██║   ██║   ███████╗███████║
+  //    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
+
+  async $tsite(p: { siteId: string; props: string[] }): Promise<TSite> {
+    const validProps = ['config', 'name', 'subdomain', 'domain'];
+    const selectProps = p.props.filter((c) => validProps.indexOf(c) !== -1);
+    if (selectProps.length === 0) {
+      throw E('No valid properties selected', 400, null);
+    }
+    const tsite = (
+      await QQ<TSite>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites WHERE id = ${p.siteId}`
+    )[0];
+    if (!tsite) throw E('Site not found', 404, null);
+    return tsite;
+  }
+
+  async $checkSubdomainAvailability(p: { subdomain: string; siteId: string }): Promise<boolean> {
+    const tsite = (
+      await QQ`SELECT id FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId}`
+    )[0];
+    if (tsite) return false;
+    return true;
   }
 }
 

@@ -1,5 +1,6 @@
 import { v4 as uuidv4, validate } from 'uuid';
 import { encode, decode } from 'js-base64';
+export { default as cx } from 'classnames';
 
 export function groupBy<T extends { [key: string]: any }>(arr: T[], key: string) {
   return arr.reduce((acc, obj) => {

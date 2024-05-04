@@ -4,16 +4,20 @@ import UnoCSS from 'unocss/vite';
 import Icons from 'unplugin-icons/vite';
 import preact from '@preact/preset-vite';
 import viteYaml from '@modyfi/vite-plugin-yaml';
+import codegen from 'vite-plugin-codegen';
 
 export default defineConfig(({ mode }) => {
   return {
     resolve: {
-      alias: {},
+      alias: {
+        '@shared': resolve(__dirname, '../shared'),
+        '@server': resolve(__dirname, '../server'),
+      },
     },
     server: {
       port: 5174,
     },
-    // appType: 'mpa',
+    appType: 'mpa',
     plugins: [
       viteYaml(),
       preact(),
@@ -28,6 +32,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           genesis: resolve(__dirname, 'index.html'),
+          editor: resolve(__dirname, 'editor.html'),
         },
       },
     },
