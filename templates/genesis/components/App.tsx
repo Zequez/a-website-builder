@@ -10,14 +10,19 @@ import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
 
 export default function App() {
-  const { store, configChanged, actions: A } = useStore();
+  const {
+    store: { editing, config },
+    configChanged,
+    selectedPage,
+    actions: A,
+  } = useStore();
 
   return (
     <>
       <div class="relative overflow-auto bg-emerald-600 text-white min-h-screen w-full">
         <div class="relative flex_s flex-col w-full h-full overflow-auto p-4 pb-12">
           <div class="absolute top-0 right-0">
-            {!store.editing ? (
+            {!editing ? (
               <a
                 class="block bg-emerald-500 hover:bg-emerald-300 text-white rounded-bl-full h7 w7 p2 text-xs overflow-hidden"
                 href="/templates/editor#fbd06659-405d-44a5-81c6-cd037031bbf6"
@@ -29,9 +34,17 @@ export default function App() {
             ) : null}
           </div>
           <header class="bg-emerald-300 max-w-screen-lg rounded-lg mb-4 shadow-sm">
-            <h1 class="text-center text-3xl sm:text-5xl font-black mb4 h-40 flexcc tracking-widest text-white/80">
-              <a href="/">{store.config.title}</a>
-            </h1>
+            <div class="relative">
+              <h1 class="text-center text-3xl sm:text-5xl font-black h-40 flexcc tracking-widest text-white/80">
+                <a href="/">{config.title}</a>
+              </h1>
+              {!!(selectedPage && !selectedPage.onNav) && (
+                <div class="absolute bottom-2 left-2 bg-black/20 rounded-md px1 py0.5">
+                  <span class="mr-2">{selectedPage.icon}</span>
+                  {selectedPage.title}
+                </div>
+              )}
+            </div>
             <Nav />
           </header>
         </div>

@@ -44,10 +44,6 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     setStore({ ...store, ...patch });
   }
 
-  const configChanged = useMemo(() => {
-    return JSON.stringify(store.config) !== JSON.stringify(store.savedConfig);
-  }, [store]);
-
   //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗
   // ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║   ██║╚══██╔══╝██╔════╝██╔══██╗
   // ██║     ██║   ██║██╔████╔██║██████╔╝██║   ██║   ██║   █████╗  ██║  ██║
@@ -55,17 +51,27 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
   // ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ╚██████╔╝   ██║   ███████╗██████╔╝
   //  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝      ╚═════╝    ╚═╝   ╚══════╝╚═════╝
 
-  const navPages = useMemo(() => {
-    return store.config.pages.filter((page) => page.onNav);
-  }, [store.config.pages]);
+  const computed = new (class {
+    configChanged = useMemo(() => {
+      return JSON.stringify(store.config) !== JSON.stringify(store.savedConfig);
+    }, [store]);
 
-  const hiddenPages = useMemo(() => {
-    return store.config.pages.filter((page) => !page.onNav);
-  }, [store.config.pages]);
+    navPages = useMemo(() => {
+      return store.config.pages.filter((page) => page.onNav);
+    }, [store.config.pages]);
 
-  const subdomainChanged = useMemo(() => {
-    return store.config.subdomain !== store.savedConfig.subdomain;
-  }, [store.config.subdomain, store.savedConfig.subdomain]);
+    hiddenPages = useMemo(() => {
+      return store.config.pages.filter((page) => !page.onNav);
+    }, [store.config.pages]);
+
+    subdomainChanged = useMemo(() => {
+      return store.config.subdomain !== store.savedConfig.subdomain;
+    }, [store.config.subdomain, store.savedConfig.subdomain]);
+
+    selectedPage = useMemo(() => {
+      return store.config.pages.find((page) => page.uuid === store.selectedPageId);
+    }, [store.selectedPageId, store.config.pages]);
+  })();
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
   // ██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝╚══██╔══╝██╔════╝
@@ -176,23 +182,40 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
   //  |U|I|
   //  +-+-+
 
+  function startEditing() {
+    patchStore({ editing: true });
+  }
+
+  function finishEditing() {
+    patchStore({ editing: false });
+  }
+
   function toggleSettingsMenu() {
     patchStore({ settingsMenuOpen: !store.settingsMenuOpen });
   }
 
+  function navigateTo(path: string) {
+    const page = store.config.pages.find((page) => page.path === path);
+    console.log('Navigating to:', path, page);
+    if (page) {
+      patchStore({ selectedPageId: page.uuid });
+    } else {
+      console.error('Page not found', path);
+      // TODO: Add some sort of 404 handling
+    }
+  }
+
   return {
     store,
-    configChanged,
-    navPages,
-    hiddenPages,
-    subdomainChanged,
+    ...computed,
     actions: {
       setConfigVal,
       saveConfig,
       pages,
-      startEditing: () => setStore({ ...store, editing: true }),
-      finishEditing: () => setStore({ ...store, editing: false, settingsMenuOpen: false }),
+      startEditing,
+      finishEditing,
       toggleSettingsMenu,
+      navigateTo,
     },
   };
 }

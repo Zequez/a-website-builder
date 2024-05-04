@@ -7,21 +7,37 @@ import useStore from '../lib/useStore';
 // function SocialItem ({ href, children }: { href: string; children: any }) {
 // }
 export function Nav() {
-  const { navPages } = useStore();
+  const {
+    store: { selectedPageId },
+    navPages,
+    actions: A,
+  } = useStore();
 
   return (
     <nav class="bg-white/30 rounded-b-lg flexcc flex-wrap text-xl sm:text-2xl space-x-1">
       {navPages.length > 1 &&
-        navPages.map(({ path, title, icon }) => (
+        navPages.map(({ uuid, path, title, icon }) => (
           <div class="flex">
-            <NavItem active={path === '/'} path={path} icon={icon} title={title} />
+            <NavItem
+              onClick={() => A.navigateTo(path)}
+              active={uuid === selectedPageId}
+              path={path}
+              icon={icon}
+              title={title}
+            />
           </div>
         ))}
     </nav>
   );
 }
 
-export function NavItem(p: { path: string; icon: string; title: string; active?: boolean }) {
+export function NavItem(p: {
+  path: string;
+  icon: string;
+  title: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
   return (
     <a
       class={cx(
@@ -31,6 +47,10 @@ export function NavItem(p: { path: string; icon: string; title: string; active?:
           'hover:bg-white/40': !p.active,
         },
       )}
+      onClick={(ev) => {
+        ev.preventDefault();
+        p.onClick();
+      }}
       href={p.path}
     >
       <span class="whitespace-nowrap">

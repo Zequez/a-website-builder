@@ -29,6 +29,7 @@ export default function PagesList() {
       onDragEnd={() => setDraggedOverId(null)}
       isDraggedOver={draggedOverId === page.uuid}
       onDelete={() => A.pages.remove(page.uuid)}
+      onSelect={() => A.navigateTo(page.path)}
     />
   );
 
@@ -99,6 +100,7 @@ function PageWidget(p: {
   dragEnabled: boolean;
   isDraggedOver: boolean;
   onDelete: () => void;
+  onSelect: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -156,6 +158,7 @@ function PageWidget(p: {
           class="relative z-20 w-full h-full text-black/60 rounded-md px-2 py-1 mr-2"
           value={p.page.title}
           onInput={(e) => p.onChange({ title: e.currentTarget.value })}
+          onFocus={() => p.onSelect()}
         />
         <button
           class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1"
