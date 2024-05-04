@@ -9,7 +9,7 @@ import MenuEllipsis from '~icons/fa6-solid/ellipsis-vertical';
 
 import SyncStatusIcon from '../SyncStatusIcon';
 
-import FloatingMenu from '../../FloatingMenu';
+import FloatingMenu from '@shared/components/FloatingMenu';
 import { SyncStatus } from '../lib/sync';
 
 export default function SidebarSites({

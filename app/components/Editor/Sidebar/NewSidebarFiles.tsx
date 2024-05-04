@@ -6,7 +6,7 @@ import TimesIcon from '~icons/fa6-solid/xmark';
 import { cx } from '@app/lib/utils';
 import { keyBy } from '@shared/utils';
 import { useRef, useState } from 'preact/hooks';
-import FloatingMenu from '../../FloatingMenu';
+import FloatingMenu from '@shared/components/FloatingMenu';
 import template from '../template';
 import { LocalFile } from '../types';
 import { sections, filesBySection, Section } from '../lib/files-sections';

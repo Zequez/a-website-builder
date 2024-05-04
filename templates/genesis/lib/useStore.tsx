@@ -48,7 +48,12 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     return JSON.stringify(store.config) !== JSON.stringify(store.savedConfig);
   }, [store]);
 
-  // COMPUTED
+  //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗
+  // ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║   ██║╚══██╔══╝██╔════╝██╔══██╗
+  // ██║     ██║   ██║██╔████╔██║██████╔╝██║   ██║   ██║   █████╗  ██║  ██║
+  // ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██║   ██║   ██║   ██╔══╝  ██║  ██║
+  // ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ╚██████╔╝   ██║   ███████╗██████╔╝
+  //  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝      ╚═════╝    ╚═╝   ╚══════╝╚═════╝
 
   const navPages = useMemo(() => {
     return store.config.pages.filter((page) => page.onNav);
@@ -62,7 +67,12 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     return store.config.subdomain !== store.savedConfig.subdomain;
   }, [store.config.subdomain, store.savedConfig.subdomain]);
 
-  // EFFECTS
+  // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
+  // ██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝╚══██╔══╝██╔════╝
+  // █████╗  █████╗  █████╗  █████╗  ██║        ██║   ███████╗
+  // ██╔══╝  ██╔══╝  ██╔══╝  ██╔══╝  ██║        ██║   ╚════██║
+  // ███████╗██║     ██║     ███████╗╚██████╗   ██║   ███████║
+  // ╚══════╝╚═╝     ╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝
 
   useEffect(() => {
     window.document.title = store.config.title;
@@ -91,7 +101,12 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
   //   }
   // }, [store.siteId, store.editing]);
 
-  // ACTIONS
+  //  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+  // ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+  // ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+  // ██╔══██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+  // ██║  ██║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+  // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
   function setConfigVal(key: string, val: any) {
     patchStore({ config: { ...store.config, [key]: val } });
@@ -101,51 +116,68 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     patchStore({ savedConfig: store.config });
   }
 
-  function patchPage(path: string, patch: Partial<Page>) {
-    setConfigVal(
-      'pages',
-      store.config.pages.map((page) => {
-        if (page.path === path) {
-          return { ...page, ...patch };
-        } else {
-          return page;
-        }
-      }),
-    );
-  }
+  //  +-+-+-+-+-+
+  //  |P|A|G|E|S|
+  //  +-+-+-+-+-+
 
-  function addPage() {
-    const uuid = crypto.randomUUID();
-    setConfigVal(
-      'pages',
-      store.config.pages.concat({
-        uuid,
-        path: '/' + uuid,
-        title: '',
-        icon: '',
-        onNav: false,
-        content: '',
-      }),
-    );
-  }
+  const pages = new (class {
+    patch(uuid: string, patch: Partial<Page>) {
+      setConfigVal(
+        'pages',
+        store.config.pages.map((page) => {
+          if (page.uuid === uuid) {
+            return { ...page, ...patch };
+          } else {
+            return page;
+          }
+        }),
+      );
+    }
+
+    add() {
+      const uuid = crypto.randomUUID();
+      setConfigVal(
+        'pages',
+        store.config.pages.concat({
+          uuid,
+          path: '/' + uuid,
+          title: '',
+          icon: '',
+          onNav: false,
+          content: '',
+        }),
+      );
+    }
+
+    move(uuid: string, target: { uuid?: string; nav: boolean }) {
+      console.log(uuid, target);
+      let page = store.config.pages.find((page) => page.uuid === uuid)!;
+      page = { ...page, onNav: target.nav };
+      let pages = store.config.pages.filter((page) => page.uuid !== uuid);
+
+      if (target.uuid) {
+        const targetIndex = pages.findIndex((page) => page.uuid === target.uuid);
+        pages.splice(targetIndex + 1, 0, page);
+      } else {
+        pages.unshift(page);
+      }
+      setConfigVal('pages', pages);
+    }
+
+    remove(uuid: string) {
+      setConfigVal(
+        'pages',
+        store.config.pages.filter((page) => page.uuid !== uuid),
+      );
+    }
+  })();
+
+  //  +-+-+
+  //  |U|I|
+  //  +-+-+
 
   function toggleSettingsMenu() {
     patchStore({ settingsMenuOpen: !store.settingsMenuOpen });
-  }
-
-  function movePage(uuid: string, target: { uuid?: string; nav: boolean }) {
-    console.log(uuid, target);
-    let page = store.config.pages.find((page) => page.uuid === uuid)!;
-    page = { ...page, onNav: target.nav };
-    let pages = store.config.pages.filter((page) => page.uuid !== uuid);
-
-    if (target.uuid) {
-      const targetIndex = pages.findIndex((page) => page.uuid === target.uuid);
-      pages.splice(targetIndex + 1, 0, page);
-    } else {
-      pages.unshift(page);
-    }
-    setConfigVal('pages', pages);
   }
 
   return {
@@ -157,12 +189,10 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
     actions: {
       setConfigVal,
       saveConfig,
-      patchPage,
+      pages,
       startEditing: () => setStore({ ...store, editing: true }),
       finishEditing: () => setStore({ ...store, editing: false, settingsMenuOpen: false }),
       toggleSettingsMenu,
-      addPage,
-      movePage,
     },
   };
 }

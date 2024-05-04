@@ -1,8 +1,9 @@
 import GripLinesIcon from '~icons/fa6-solid/grip-lines';
 import MenuEllipsisVIcon from '~icons/fa6-solid/ellipsis-vertical';
-import { useState } from 'preact/hooks';
-import useStore from '../lib/useStore';
+import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
+import FloatingMenu from '@shared/components/FloatingMenu';
+import useStore from '../lib/useStore';
 
 export default function PagesList() {
   const { store, navPages, hiddenPages, actions: A } = useStore();
@@ -10,7 +11,7 @@ export default function PagesList() {
 
   function handleMovePage(pageUuid: string, target: { uuid?: string; nav: boolean }) {
     setDraggedOverId(null);
-    A.movePage(pageUuid, target);
+    A.pages.move(pageUuid, target);
   }
 
   function isLastNavPage(uuid: string) {
@@ -21,11 +22,12 @@ export default function PagesList() {
     <PageWidget
       page={page}
       dragEnabled={!isLastNavPage(page.uuid)}
-      onChange={(patch) => A.patchPage(page.path, patch)}
+      onChange={(patch) => A.pages.patch(page.uuid, patch)}
       onDragDrop={(pageUuid) => handleMovePage(pageUuid, { uuid: page.uuid, nav: page.onNav })}
       onDragOver={() => setDraggedOverId(page.uuid)}
       onDragEnd={() => setDraggedOverId(null)}
       isDraggedOver={draggedOverId === page.uuid}
+      onDelete={() => A.pages.remove(page.uuid)}
     />
   );
 
@@ -50,7 +52,7 @@ export default function PagesList() {
       <div class="flexcc mt-2">
         <button
           class="bg-white/20 hover:bg-white/30 rounded-md py1 px2"
-          onClick={() => A.addPage()}
+          onClick={() => A.pages.add()}
         >
           Agregar
         </button>
@@ -95,9 +97,18 @@ function PageWidget(p: {
   onDragEnd: () => void;
   dragEnabled: boolean;
   isDraggedOver: boolean;
+  onDelete: () => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const elRef = useRef<HTMLDivElement>(null);
+
+  const menuOptions = {
+    Eliminar: () => p.onDelete(),
+  };
+
   return (
     <div
+      ref={elRef}
       class={cx('relative flexcc px-2 py-1 hover:bg-white/10')}
       draggable={true}
       onDragOver={(ev) => {
@@ -139,7 +150,10 @@ function PageWidget(p: {
           value={p.page.title}
           onInput={(e) => p.onChange({ title: e.currentTarget.value })}
         />
-        <button class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
+        <button
+          class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1"
+          onClick={() => setMenuOpen(true)}
+        >
           <MenuEllipsisVIcon class="-mx-1" />
         </button>
       </div>
@@ -149,6 +163,13 @@ function PageWidget(p: {
           'cursor-not-allowed': !p.dragEnabled,
         })}
       ></div>
+      {menuOpen && (
+        <FloatingMenu
+          target={elRef.current!}
+          items={menuOptions}
+          onClose={() => setMenuOpen(false)}
+        />
+      )}
       {p.isDraggedOver && (
         <div class="absolute z-40 h-1.5 b b-black shadow-md bg-white/70 rounded-full top-full left-0 w-full -mt1"></div>
       )}

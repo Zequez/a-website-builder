@@ -33,8 +33,8 @@
     "vitest.setup.ts",
     "vitest.hooks.ts",
     "scripts/**/*",
-    "shared/jwt.ts"
-, "shared/apiPipes.ts", "shared/apiHelpers.ts", "shared/AuthContext.tsx"  ],
+    "shared/**/*",
+  ],
   "exclude": ["node_modules"],
   "tsc-alias": {
     "resolveFullPaths": true,
