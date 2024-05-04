@@ -4,6 +4,7 @@ import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
 import FloatingMenu from '@shared/components/FloatingMenu';
 import useStore from '../lib/useStore';
+import EmojiPicker from './EmojiPicker';
 
 export default function PagesList() {
   const { store, navPages, hiddenPages, actions: A } = useStore();
@@ -100,7 +101,9 @@ function PageWidget(p: {
   onDelete: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const elRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLButtonElement>(null);
 
   const menuOptions = {
     Eliminar: () => p.onDelete(),
@@ -141,7 +144,11 @@ function PageWidget(p: {
         >
           <GripLinesIcon />
         </div>
-        <button class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1">
+        <button
+          ref={iconRef}
+          onClick={() => setEmojiPickerOpen(true)}
+          class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1"
+        >
           {p.page.icon}
         </button>
         <input
@@ -168,6 +175,19 @@ function PageWidget(p: {
           target={elRef.current!}
           items={menuOptions}
           onClose={() => setMenuOpen(false)}
+        />
+      )}
+      {emojiPickerOpen && (
+        <EmojiPicker
+          target={iconRef.current!}
+          onClose={() => {
+            setEmojiPickerOpen(false);
+            console.log('Closing emoji picker');
+          }}
+          onSelect={(val) => {
+            setEmojiPickerOpen(false);
+            p.onChange({ icon: val });
+          }}
         />
       )}
       {p.isDraggedOver && (
