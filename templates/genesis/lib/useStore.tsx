@@ -5,6 +5,8 @@ import configDefault from '../config-default';
 import createValidator, { ValidationError } from '../config-validator';
 import * as storage from './storage';
 import urlHash from './urlHash';
+import prerender from '../prerender';
+import { wait } from '@shared/utils';
 
 type Store = {
   editing: boolean;
@@ -12,8 +14,10 @@ type Store = {
   selectedPageId: null | string;
   siteId: null | string;
   attemptAccessLoading: boolean;
-  accessKeyToken: string | null;
+  accessToken: string | null;
   siteNeedsToBeCreated: boolean;
+
+  deploySiteInProgress: boolean;
 
   // CONFIG STUFF
   config: Config;
@@ -45,7 +49,7 @@ export function useStoreBase(init: StoreInit) {
       initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
     siteId: init.siteId,
     attemptAccessLoading: false,
-    accessKeyToken: storage.getAccessKeyToken(init.siteId),
+    accessToken: storage.getAccessKeyToken(init.siteId) || storage.getMemberToken() || null,
     //
     siteNeedsToBeCreated: !init.siteId,
     configNeedsToLoadFromServer: !init.config,
@@ -56,6 +60,9 @@ export function useStoreBase(init: StoreInit) {
     config: { ...initialConfig },
     invalidConfig: null,
     remoteSetConfigErrors: [],
+
+    //
+    deploySiteInProgress: false,
 
     //
     subdomainAvailabilityStatus: 'available',
@@ -163,7 +170,7 @@ export function useStoreBase(init: StoreInit) {
   // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
   async function initialize() {
-    if (store.accessKeyToken) {
+    if (store.accessToken) {
       if (store.configNeedsToLoadFromServer) {
         if (store.siteId) {
           const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
@@ -220,6 +227,24 @@ export function useStoreBase(init: StoreInit) {
     }
   }
 
+  async function deploySite() {
+    let result = false;
+    if (store.siteId) {
+      patchStore({ deploySiteInProgress: true });
+      const prerenderedPages = await prerender(store.siteId, store.config);
+      if (prerenderedPages) {
+        result = await pipes.deploySite({
+          siteId: store.siteId,
+          deployConfig: store.config,
+          prerenderedPages,
+          token: store.accessToken!,
+        });
+      }
+      patchStore({ deploySiteInProgress: false });
+    }
+    return result;
+  }
+
   async function attemptAccess(accessKey: string, saveKey: boolean) {
     patchStore({ attemptAccessLoading: true });
     const token = await pipes.tokenFromAccessKey({
@@ -230,7 +255,7 @@ export function useStoreBase(init: StoreInit) {
       if (saveKey) {
         storage.setAccessKeyToken(store.siteId!, token);
       }
-      patchStore({ accessKeyToken: token, attemptAccessLoading: false });
+      patchStore({ accessToken: token, attemptAccessLoading: false });
       return true;
     } else {
       patchStore({ attemptAccessLoading: false });
@@ -320,6 +345,7 @@ export function useStoreBase(init: StoreInit) {
     actions: {
       setConfigVal,
       saveConfig,
+      deploySite,
       retryFixConfig,
       attemptAccess,
       pages,

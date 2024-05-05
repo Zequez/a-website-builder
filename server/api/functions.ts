@@ -2,6 +2,8 @@ import { T, QQ, sql, TSite, Member } from '@db';
 import { ValidationError, valErr, validateConfig } from '../../templates/genesis/config-validator';
 import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
+import { Prerendered } from '@db/schema';
+import { spreadInsert } from 'squid/pg';
 
 export class Err extends Error {
   constructor(
@@ -147,6 +149,28 @@ export class Functions {
   // ██╔══██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
   // ██║  ██║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
   // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+  async $deploySite(p: {
+    siteId: string;
+    deployConfig: Config;
+    prerenderedPages: { content: string; path: string }[];
+    token: string;
+  }): Promise<boolean> {
+    this.accessKeyAuthorizeOnly(p.token, p.siteId);
+    const errors = validateConfig(p.deployConfig);
+    if (errors.length > 0) return false;
+    if (!p.prerenderedPages || !Array.isArray(p.prerenderedPages)) return false;
+    p.prerenderedPages.forEach((p) => {
+      if (!p.content || !p.path) return false;
+    });
+
+    await QQ`UPDATE tsites SET deploy_config = ${p.deployConfig} WHERE id = ${p.siteId};`;
+    await QQ`DELETE FROM prerendered WHERE tsite_id = ${p.siteId};`;
+    await QQ`INSERT INTO prerendered ${spreadInsert(
+      ...p.prerenderedPages.map(({ path, content }) => ({ tsite_id: p.siteId, path, content })),
+    )};`;
+    return true;
+  }
 
   //  +-+-+-+-+-+
   //  |A|D|M|I|N|

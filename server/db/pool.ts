@@ -45,6 +45,7 @@ export async function query<T>(queryConfig: pg.QueryConfig) {
     return rows as T[];
   } catch (e) {
     console.error('[SQL Error]', e, queryConfig);
+    await client.query('ROLLBACK;');
     throw e;
   } finally {
     if (!globalClient) client.release();

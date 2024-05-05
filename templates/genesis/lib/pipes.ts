@@ -9,6 +9,7 @@ type ART<T extends (...args: any) => any> = Awaited<ReturnType<T>>;
 export const tsite = pipeWrapper<FAT<F['$tsite']>, ART<F['$tsite']>>('tsite');
 export const checkSubdomainAvailability = pipeWrapper<FAT<F['$checkSubdomainAvailability']>, ART<F['$checkSubdomainAvailability']>>('checkSubdomainAvailability');
 export const tsites = pipeWrapper<FAT<F['$tsites']>, ART<F['$tsites']>>('tsites');
+export const deploySite = pipeWrapper<FAT<F['$deploySite']>, ART<F['$deploySite']>>('deploySite');
 export const setAccessKey = pipeWrapper<FAT<F['$setAccessKey']>, ART<F['$setAccessKey']>>('setAccessKey');
 export const tsiteSetConfig = pipeWrapper<FAT<F['$tsiteSetConfig']>, ART<F['$tsiteSetConfig']>>('tsiteSetConfig');
 export const tokenFromAccessKey = pipeWrapper<FAT<F['$tokenFromAccessKey']>, ART<F['$tokenFromAccessKey']>>('tokenFromAccessKey');

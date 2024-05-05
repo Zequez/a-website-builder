@@ -41,17 +41,13 @@ async function generateConfigSchemaTypings() {
     const pageType = await compile(page, 'Page', { bannerComment: '' });
     const configType = await compile(config, 'Config', { bannerComment: '' });
 
-    function fix(s: string) {
-      return s.replace(/export interface (.*) {/, 'type $1 = {');
-    }
-
     function replacePageType(s: string) {
       return s.replace(/pages: {([^]*)}\[\];/, `pages: Page[];`);
     }
 
     fs.writeFileSync(
       './templates/genesis/config.d.ts',
-      `${MARKER}\n\n${fix(pageType)}\n\n${replacePageType(fix(configType))}`,
+      `${MARKER}\n\n${interfaceToType(pageType)}\n\n${replacePageType(interfaceToType(configType))}`,
     );
 
     console.log('Config types regenerated');
@@ -59,8 +55,11 @@ async function generateConfigSchemaTypings() {
 }
 
 function generateTypingsFromDbSchema() {
-  exec(`pnpm pg-to-ts generate -c ${process.env.DEV_DATABASE_URL} -o ./server/db/schema.ts`);
-  console.log('DB Schema types generated');
+  exec(`pnpm pg-to-ts generate -c ${process.env.DEV_DATABASE_URL} -o ./server/db/schema.ts`, () => {
+    const schema = fs.readFileSync('./server/db/schema.ts', 'utf8');
+    fs.writeFileSync('./server/db/schema.ts', interfaceToType(schema, true));
+    console.log('DB Schema types generated');
+  });
 }
 
 // Utils
@@ -84,4 +83,8 @@ async function freshImport(givenPath: string) {
 
 function functionToApiDefinition(func: string) {
   return `export const ${func} = pipeWrapper<FAT<F['$${func}']>, ART<F['$${func}']>>('${func}');`;
+}
+
+function interfaceToType(s: string, exportIt?: boolean) {
+  return s.replace(/export interface (.*) {/g, `${exportIt ? 'export ' : ''}type $1 = {`);
 }

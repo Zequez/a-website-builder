@@ -4,12 +4,18 @@ import { TextInput, TextAreaInput, Button } from './ui';
 import { cx } from '@shared/utils';
 import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
+import { useState } from 'preact/hooks';
 
 export default function AppWithEditor() {
   const { store, configChanged, subdomainChanged, showPreScreen, actions: A } = useStore();
 
   function saveConfig() {
     A.saveConfig();
+  }
+
+  const [deploySiteResult, setDeploySiteResult] = useState(true);
+  async function handleDeploySite() {
+    setDeploySiteResult(await A.deploySite());
   }
 
   const C = store.config;
@@ -77,14 +83,26 @@ export default function AppWithEditor() {
             <div class="text-center text-red-500 mb2">Subdominio no disponible</div>
           )}
         </div>
-        <div class="px4">
+        <div class="px4 flex flex-col space-y-2">
           <Button
             expandH
             onClick={saveConfig}
             tint="green"
             disabled={!configChanged || store.subdomainAvailabilityStatus !== 'available'}
           >
-            Guardar cambios
+            Guardar
+          </Button>
+          <Button
+            tint="green"
+            disabled={store.deploySiteInProgress}
+            expandH
+            onClick={handleDeploySite}
+          >
+            {store.deploySiteInProgress
+              ? 'Publicando...'
+              : deploySiteResult
+                ? 'Publicar'
+                : 'Error. Reintentar?'}
           </Button>
         </div>
       </div>

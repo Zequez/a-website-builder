@@ -6,7 +6,7 @@ import Access from './Access';
 
 export default function EditorPreScreen() {
   const {
-    store: { invalidConfig, accessKeyToken },
+    store: { invalidConfig, accessToken: accessKeyToken },
   } = useStore();
 
   return (

@@ -1,9 +1,9 @@
-import { Q, sql } from '@db';
+import { QQ } from '@db';
 
 export async function up() {
-  await Q(sql``);
+  await QQ``;
 }
 
 export async function down() {
-  await Q(sql``);
+  await QQ``;
 }

@@ -4,7 +4,6 @@ import UnoCSS from 'unocss/vite';
 import preact from '@preact/preset-vite';
 import Icons from 'unplugin-icons/vite';
 import vike from 'vike/plugin';
-import babel from '@babel/core';
 import solidPlugin from 'vite-plugin-solid';
 
 const projectRootDir = resolve(__dirname);

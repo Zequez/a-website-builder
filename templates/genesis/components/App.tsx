@@ -60,36 +60,3 @@ export default function App() {
     </>
   );
 }
-
-export function toHtml(config: Config, path: string) {
-  const validator = createValidator();
-  if (!validator(config)) {
-    console.log(validator.errors);
-    return null;
-  }
-
-  const div = document.createElement('div');
-  render(
-    <StoreContextWrapper init={{ config, siteId: null, editing: false, initialPath: path }}>
-      <App />
-    </StoreContextWrapper>,
-    div,
-  );
-  const preRendered = div.innerHTML;
-  render(null, div);
-
-  const preRenderedIndex = indexHtml
-    .replace(`<div id="root">`, `<div id="root">${preRendered}`)
-    .replace(
-      `<script id="config" type="application/json">`,
-      `<script id="config" type="application/json">${JSON.stringify(config)}`,
-    )
-    .replace(`<title>(.*?)</title>`, `<title>${config.title}</title>`);
-
-  // const root2 = document.getElementById('root2')!;
-  // root2.innerHTML = preRendered;
-
-  // hydrate(<App initialConfig={config} />, root2);
-
-  return preRenderedIndex;
-}

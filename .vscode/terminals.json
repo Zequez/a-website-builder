@@ -5,20 +5,17 @@
       "name": "Dev",
       "description": "This is a description",
       "focus": true,
-      "command": "pnpm dev:template",
-      "persistent": "dev"
+      "command": "pnpm dev:template"
     },
     {
       "name": "Codegen",
       "split": "Dev",
-      "command": "pnpm codegen:watch",
-      "persistent": "codegen"
+      "command": "pnpm codegen:watch"
     },
     {
       "name": "Dev Server",
       "split": "Dev",
-      "command": "pnpm dev:server",
-      "persistent": "dev_server"
+      "command": "pnpm dev:server"
     }
 
   ]

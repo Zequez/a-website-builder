@@ -9,3 +9,6 @@ export * as m1713727722_add_google_tokens from './m1713727722_add_google_tokens'
 export * as m1714259316_add_blobs_table from './m1714259316_add_blobs_table';
 export * as m1714371929_add_member_id_to_files from './m1714371929_add_member_id_to_files';
 export * as m1714448783_tsites from './m1714448783_tsites';
+export * as m1714943124_prerendered from './m1714943124_prerendered';
+export * as m1714948054_add_deploy_config_to_tsites from './m1714948054_add_deploy_config_to_tsites';
+export * as m1714949177_remove_unused_columns from './m1714949177_remove_unused_columns';
