@@ -10,6 +10,8 @@ import urlHash from './lib/urlHash';
 
 const configEl = document.getElementById('config')!;
 
+// On dev mode the HTML does not have the data that will be available on
+// the pre-rendered site. So we load it from URL parameters for testing purposes.
 if (import.meta.env.DEV) {
   const hashData = urlHash.getData();
   if (!hashData.siteId) {

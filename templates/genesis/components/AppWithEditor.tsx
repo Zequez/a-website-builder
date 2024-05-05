@@ -5,6 +5,7 @@ import TextAreaInput from './TextAreaInput';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
 import PagesList from './PagesList';
+import { LoadingOverlay } from './LoadingOverlay';
 
 export default function AppWithEditor() {
   const { store, configChanged, subdomainChanged, actions: A } = useStore();
@@ -15,6 +16,8 @@ export default function AppWithEditor() {
   }
 
   const C = store.config;
+
+  if (store.configNeedsToLoadFromServer) return <LoadingOverlay />;
 
   return (
     <div class="h-screen w-screen flex">
@@ -44,7 +47,7 @@ export default function AppWithEditor() {
 
         {/* <Separator>Links Redes</Separator>
         <div class="flexcc mb2 px-4">
-          Instagram Facebook Whatsapp YouTube Telegram Twitter LinkedIn
+          Instagram Facebook Whatsapp YouTube Telegram Twitter LinkedIn Github
         </div> */}
 
         <div class="flex-grow"></div>

@@ -7,6 +7,7 @@ import {
   verifiedTokenFromHeader,
 } from '@server/lib/utils';
 import { Request } from 'express';
+import { ValidationError, validateConfig } from '../../../templates/genesis/config-validator';
 
 export class Err extends Error {
   constructor(message: string, public status: number, public data: any) {
@@ -75,6 +76,20 @@ export class Functions {
     )[0];
     if (!tsite) throw E('Site not found', 404, null);
     return tsite;
+  }
+
+  async $tsiteSetConfig(p: {
+    siteId: string;
+    config: Config;
+  }): Promise<{ errors: ValidationError[] }> {
+    const tsite = (await QQ<TSite>`SELECT id FROM tsites WHERE id = ${p.siteId}`)[0];
+    if (!tsite) throw E('Site not found', 404, null);
+    const errors = validateConfig(p.config);
+    if (errors.length > 0) return { errors };
+    else {
+      await T.tsites.update(p.siteId, { config: p.config });
+      return { errors: [] };
+    }
   }
 
   async $checkSubdomainAvailability(p: { subdomain: string; siteId: string }): Promise<boolean> {

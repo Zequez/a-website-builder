@@ -1,6 +1,8 @@
 import { createContext } from 'preact';
 import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import * as pipes from '../lib/pipes';
+import configDefault from '../config-default';
+import createValidator, { ValidationError } from '../config-validator';
 
 type Store = {
   editing: boolean;
@@ -8,29 +10,47 @@ type Store = {
   selectedPageId: null | string;
   siteId: null | string;
   accessKey: string | null;
-  savedConfig: Config;
+  siteNeedsToBeCreated: boolean;
+
+  // CONFIG STUFF
   config: Config;
+  savedConfig: Config;
+  configNeedsToLoadFromServer: boolean;
+  invalidConfig: null | Record<string, any>;
+  remoteSetConfigErrors: ValidationError[];
+  configIsSaving: boolean;
+
+  //
   subdomainAvailabilityStatus: 'unknown' | 'available' | 'taken';
 };
 
 type StoreInit = {
-  config: Config;
+  config: Config | null;
   siteId: string | null;
   editing: boolean;
   selectedPageId: string | null;
 };
 
 export function useStoreBase(init: StoreInit) {
+  const firstPage = init.config ? init.config.pages[0] : null;
+  const initialConfig = init.config ?? configDefault;
+
   const INITIAL_STATE: Store = {
     editing: init.editing,
 
-    selectedPageId: init.config.pages[0].uuid,
+    selectedPageId: firstPage?.uuid || null,
     siteId: init.siteId,
     accessKey: null,
+    //
+    siteNeedsToBeCreated: !init.siteId,
+    configNeedsToLoadFromServer: !init.config,
 
     //
-    savedConfig: { ...init.config },
-    config: { ...init.config },
+    configIsSaving: false,
+    savedConfig: { ...initialConfig },
+    config: { ...initialConfig },
+    invalidConfig: null,
+    remoteSetConfigErrors: [],
 
     //
     subdomainAvailabilityStatus: 'available',
@@ -77,6 +97,11 @@ export function useStoreBase(init: StoreInit) {
     selectedPage = useMemo(() => {
       return store.config.pages.find((page) => page.uuid === store.selectedPageId);
     }, [store.selectedPageId, store.config.pages]);
+
+    documentTitle = useMemo(() => {
+      const rest = this.selectedPage ? this.selectedPage.title : 'Page not found';
+      return `${rest} ← ${store.config.title}`;
+    }, [this.selectedPage, store.config.title]);
   })();
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
@@ -87,8 +112,12 @@ export function useStoreBase(init: StoreInit) {
   // ╚══════╝╚═╝     ╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝
 
   useEffect(() => {
-    window.document.title = store.config.title;
-  }, [store.config.title]);
+    initialize();
+  }, []);
+
+  useEffect(() => {
+    window.document.title = computed.documentTitle;
+  }, [computed.documentTitle]);
 
   useEffect(() => {
     if (store.siteId) {
@@ -120,12 +149,60 @@ export function useStoreBase(init: StoreInit) {
   // ██║  ██║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
   // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
+  async function initialize() {
+    if (store.configNeedsToLoadFromServer) {
+      if (store.siteId) {
+        const { config } = await pipes.tsite({ siteId: store.siteId, props: ['config'] });
+        const validator = createValidator();
+        if (validator(config)) {
+          const validConfig = config as Config;
+          patchStore({
+            config: validConfig,
+            savedConfig: { ...validConfig },
+            configNeedsToLoadFromServer: false,
+          });
+        } else {
+          console.error('Invalid configuration', config);
+          patchStore({
+            invalidConfig: config,
+          });
+        }
+      } else {
+        console.error('No config or site ID was provided');
+      }
+    }
+  }
+
+  async function retryFixConfig(config: Config) {
+    if (store.siteId) {
+      const { errors } = await pipes.tsiteSetConfig({ siteId: store.siteId, config });
+      if (errors.length === 0) {
+        patchStore({
+          config,
+          savedConfig: { ...config },
+          configNeedsToLoadFromServer: false,
+          remoteSetConfigErrors: [],
+        });
+      } else {
+        patchStore({
+          remoteSetConfigErrors: errors,
+        });
+      }
+    }
+  }
+
   function setConfigVal(key: string, val: any) {
     patchStore({ config: { ...store.config, [key]: val } });
   }
 
-  function saveConfig() {
-    patchStore({ savedConfig: store.config });
+  async function saveConfig() {
+    patchStore({ configIsSaving: true });
+    const { errors } = await pipes.tsiteSetConfig({ siteId: store.siteId!, config: store.config });
+    if (errors.length === 0) {
+      patchStore({ savedConfig: store.config, configIsSaving: false, remoteSetConfigErrors: [] });
+    } else {
+      patchStore({ remoteSetConfigErrors: errors, configIsSaving: false });
+    }
   }
 
   //  +-+-+-+-+-+
@@ -188,21 +265,8 @@ export function useStoreBase(init: StoreInit) {
   //  |U|I|
   //  +-+-+
 
-  function startEditing() {
-    patchStore({ editing: true });
-  }
-
-  function finishEditing() {
-    patchStore({ editing: false });
-  }
-
-  function toggleSettingsMenu() {
-    patchStore({ settingsMenuOpen: !store.settingsMenuOpen });
-  }
-
   function navigateTo(path: string) {
     const page = store.config.pages.find((page) => page.path === path);
-    console.log('Navigating to:', path, page);
     if (page) {
       patchStore({ selectedPageId: page.uuid });
     } else {
@@ -217,10 +281,8 @@ export function useStoreBase(init: StoreInit) {
     actions: {
       setConfigVal,
       saveConfig,
+      setConfig: retryFixConfig,
       pages,
-      startEditing,
-      finishEditing,
-      toggleSettingsMenu,
       navigateTo,
     },
   };

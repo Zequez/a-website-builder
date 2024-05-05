@@ -11,7 +11,7 @@
     "dev:app": "vite",
     "dev:server": "NODE_ENV=development tsx watch ./server/index.ts",
     "dev:template": "vite --config ./templates/vite.config.ts",
-    "build": "NODE_ENV=production  pnpm build:app && pnpm build:templates && pnpm build:server && pnpm build:copyTemplates",
+    "build": "NODE_ENV=production pnpm codegen:build && pnpm build:app && pnpm build:templates && pnpm build:server && pnpm build:copyTemplates",
     "build:app": "NODE_ENV=production rm -rf ./dist && vite build && mv dist/vike/client/* dist/",
     "build:server": "NODE_ENV=production rm -rf ./dist/ts && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:templates": "NODE_ENV=production vite build --config ./templates/vite.config.ts",
@@ -24,7 +24,9 @@
     "test": "pnpm test:server",
     "test:app": "NODE_ENV=test vitest -c vitest.config.ts -r app/",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --silent=false  -c vitest.config.ts -r server/",
-    "postinstall": "[ -f independent-preact/bundle.js ] || pnpm rollup -c independent-preact/rollup.config.js"
+    "postinstall": "[ -f independent-preact/bundle.js ] || pnpm rollup -c independent-preact/rollup.config.js",
+    "codegen:watch": "tsx watch ./scripts/codegen.ts",
+    "codegen:build": "tsx ./scripts/codegen.ts"
   },
   "type": "module",
   "keywords": [],
