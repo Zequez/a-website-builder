@@ -1,7 +1,33 @@
 import { JSONSchemaType } from 'ajv';
 
-const schema: JSONSchemaType<Config> = {
-  title: 'Config Schema',
+export const page: JSONSchemaType<Page> = {
+  type: 'object',
+  properties: {
+    uuid: {
+      type: 'string',
+    },
+    path: {
+      type: 'string',
+      pattern: '^[a-zA-Z0-9_\\-/]+$',
+    },
+    title: {
+      type: 'string',
+    },
+    icon: {
+      type: 'string',
+    },
+    onNav: {
+      type: 'boolean',
+    },
+    content: {
+      type: 'string',
+    },
+  },
+  required: ['title', 'content', 'uuid', 'path', 'icon', 'onNav'],
+  additionalProperties: false,
+};
+
+const config: JSONSchemaType<Config> = {
   type: 'object',
   properties: {
     title: {
@@ -21,36 +47,11 @@ const schema: JSONSchemaType<Config> = {
     },
     pages: {
       type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          uuid: {
-            type: 'string',
-          },
-          path: {
-            type: 'string',
-            pattern: '^[a-zA-Z0-9_\\-/]+$',
-          },
-          title: {
-            type: 'string',
-          },
-          icon: {
-            type: 'string',
-          },
-          onNav: {
-            type: 'boolean',
-          },
-          content: {
-            type: 'string',
-          },
-        },
-        required: ['title', 'content', 'uuid', 'path', 'icon'],
-        additionalProperties: false,
-      },
+      items: page,
     },
   },
   additionalProperties: false,
   required: ['title', 'description', 'subdomain', 'domain', 'themeColor', 'pages'],
 };
 
-export default schema;
+export default config;

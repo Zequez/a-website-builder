@@ -1,11 +1,4 @@
-type Config = {
-  title: string;
-  subdomain: string;
-  domain: string;
-  description: string;
-  themeColor: string;
-  pages: Page[];
-};
+/* GENERATED */
 
 type Page = {
   uuid: string;
@@ -14,4 +7,14 @@ type Page = {
   icon: string;
   onNav: boolean;
   content: string;
-};
+}
+
+
+type Config = {
+  title: string;
+  description: string;
+  themeColor: string;
+  domain: string;
+  subdomain: string;
+  pages: Page[];
+}
