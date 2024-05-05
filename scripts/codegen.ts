@@ -7,11 +7,18 @@ import { compile } from 'json-schema-to-typescript';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-function functionToApiDefinition(func: string) {
-  return `export const ${func} = pipeWrapper<FAT<F['$${func}']>, ART<F['$${func}']>>('${func}');`;
-}
-
 const MARKER = '/* GENERATED */';
+
+// ***********
+
+generatePipeApiHelpers();
+generateConfigSchemaTypings();
+generateTypingsFromDbSchema();
+
+simpleWatch('./templates/genesis/config-schema.ts', generateConfigSchemaTypings);
+simpleWatch('./server/api/functions.ts', generatePipeApiHelpers);
+
+// ***********
 
 function generatePipeApiHelpers() {
   const content = fs.readFileSync('./server/api/functions.ts', 'utf8');
@@ -25,23 +32,6 @@ function generatePipeApiHelpers() {
     fs.writeFileSync('./templates/genesis/lib/pipes.ts', `${firstPart}${MARKER}\n\n${generated}`);
     console.log('Pipes helpers regenerated');
   }
-}
-
-generatePipeApiHelpers();
-
-fs.watch('./server/api/functions.ts', (eventType, filename) => {
-  if (eventType === 'change') {
-    generatePipeApiHelpers();
-  }
-});
-
-async function freshImport(givenPath: string) {
-  const schemaPath = path.resolve(__dirname, givenPath);
-  const symlinkPath = schemaPath.replace(/\.ts$/, `-${Date.now()}.ts`);
-  fs.copyFileSync(schemaPath, symlinkPath);
-  const results = await import(symlinkPath);
-  fs.rmSync(symlinkPath);
-  return results;
 }
 
 async function generateConfigSchemaTypings() {
@@ -68,14 +58,30 @@ async function generateConfigSchemaTypings() {
   }
 }
 
-generateConfigSchemaTypings();
+function generateTypingsFromDbSchema() {
+  exec(`pnpm pg-to-ts generate -c ${process.env.DEV_DATABASE_URL} -o ./server/db/schema.ts`);
+  console.log('DB Schema types generated');
+}
 
-fs.watch('./templates/genesis/config-schema.ts', async (eventType, filename) => {
-  if (eventType === 'change') {
-    generateConfigSchemaTypings();
-  }
-});
+// Utils
 
-// run command
-exec(`pnpm pg-to-ts generate -c ${process.env.DEV_DATABASE_URL} -o ./server/db/schema.ts`);
-console.log('DB Schema types generated');
+function simpleWatch(path: string, cb: () => void) {
+  fs.watch(path, (eventType, filename) => {
+    if (eventType === 'change') {
+      cb();
+    }
+  });
+}
+
+async function freshImport(givenPath: string) {
+  const schemaPath = path.resolve(__dirname, givenPath);
+  const symlinkPath = schemaPath.replace(/\.ts$/, `-${Date.now()}.ts`);
+  fs.copyFileSync(schemaPath, symlinkPath);
+  const results = await import(symlinkPath);
+  fs.rmSync(symlinkPath);
+  return results;
+}
+
+function functionToApiDefinition(func: string) {
+  return `export const ${func} = pipeWrapper<FAT<F['$${func}']>, ART<F['$${func}']>>('${func}');`;
+}
