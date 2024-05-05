@@ -38,7 +38,7 @@ import {
   RouteGetMembersAvailabilityQuery,
   RoutePostAuthGoogleRemove,
   RoutePostAuthGoogleRemoveQuery,
-} from '@server/routes/api/types';
+} from '@server/api/types';
 
 import type { MemberAuth } from '@app/lib/AuthContext';
 import { useEffect, useState } from 'preact/hooks';

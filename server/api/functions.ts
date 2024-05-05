@@ -7,11 +7,7 @@ import {
   verifiedTokenFromHeader,
 } from '@server/lib/utils';
 import { Request } from 'express';
-import {
-  ValidationError,
-  valErr,
-  validateConfig,
-} from '../../../templates/genesis/config-validator';
+import { ValidationError, valErr, validateConfig } from '../../templates/genesis/config-validator';
 import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 
@@ -33,9 +29,7 @@ function E(message: string, status: number, data: any) {
 }
 
 export class Functions {
-  constructor(public maybeTokenMember: TokenMember | null) {
-    this.maybeTokenMember = maybeTokenMember;
-  }
+  constructor() {}
 
   // ███████╗██╗  ██╗ █████╗ ██████╗ ███████╗██████╗
   // ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗

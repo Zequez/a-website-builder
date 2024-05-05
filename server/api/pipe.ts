@@ -1,7 +1,6 @@
 import { authorize, jsonParser } from '@server/lib/middlewares';
 import { Request, Response, Router } from 'express';
 import { Functions } from './functions';
-import { validateTokenExpiry, verifiedTokenFromHeader } from '@server/lib/utils';
 
 const router = Router();
 
@@ -11,18 +10,8 @@ router.post('/pipe/:fun', jsonParser, async (req, res) => {
   return await runPipe(fun, query, req, res);
 });
 
-router.get('/pipe/:fun', async (req, res, next) => {
-  const fun = req.params.fun;
-  const query = req.query as any;
-  return await runPipe(fun, query, req, res);
-});
-
 async function runPipe(fun: string, query: any, req: Request, res: Response) {
-  let maybeTokenMember = verifiedTokenFromHeader(req.headers);
-  if (maybeTokenMember && !validateTokenExpiry(maybeTokenMember)) maybeTokenMember = null;
-
-  const functions = new Functions(maybeTokenMember);
-
+  const functions = new Functions();
   const key = `$${fun}` as keyof typeof functions;
 
   if (functions[key]) {

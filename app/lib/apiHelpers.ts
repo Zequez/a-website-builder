@@ -1,13 +1,17 @@
 import { toArr } from '@shared/utils';
 import { getToken, useAuth } from './AuthContext';
 import { useCallback, useEffect, useState } from 'preact/hooks';
-import type { Functions as F } from '@server/routes/api/functions';
+import type { Functions as F } from '@server/api/functions';
 
 export const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_/' : '/_api_/';
 
 export class ApiFetchError extends Error {
   // Define additional properties for the error
-  constructor(message: string, public status: number, public messages: string[]) {
+  constructor(
+    message: string,
+    public status: number,
+    public messages: string[],
+  ) {
     super(message);
     this.name = 'ApiFetchError'; // Set the error name (optional)
     this.status = status;

@@ -11,7 +11,7 @@ import {
   RouteGetFilesQuery,
   RouteGetSites,
   RouteGetSitesQuery,
-} from '@server/routes/api/types';
+} from '@server/api/types';
 
 function onWindowEvent(event: string, cb: (ev: any) => void) {
   window.addEventListener(event, cb);

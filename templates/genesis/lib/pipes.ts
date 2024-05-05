@@ -1,4 +1,4 @@
-import type { Functions as F } from '@server/routes/api/functions';
+import type { Functions as F } from '@server/api/functions';
 import { pipeWrapper } from './api-helper';
 
 type FAT<T> = FirstArgumentType<T>;

@@ -14,7 +14,7 @@ import TextInput from '../TextInput';
 import CheckboxInput from '../CheckboxInput';
 import { cx, gravatarUrl } from '@app/lib/utils';
 import Button from '../Button';
-import { RoutePatchMembersIdQuery } from '@server/routes/api/types';
+import { RoutePatchMembersIdQuery } from '@server/api/types';
 import { toArr } from '@shared/utils';
 
 const validators = {

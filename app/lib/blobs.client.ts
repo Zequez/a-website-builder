@@ -6,7 +6,7 @@ import {
   ListResponse,
   OnUploadCompleteResponse,
   OnUploadCompleteQuery,
-} from '../../server/routes/api/resources/blobs';
+} from '../../server/api/resources/blobs';
 
 export const storageList = apiFetchWrapper<StorageListQuery, StorageListResponse>(
   'GET',

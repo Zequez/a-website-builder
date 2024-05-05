@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { compile } from 'json-schema-to-typescript';
@@ -13,7 +12,7 @@ function functionToApiDefinition(func: string) {
 const MARKER = '/* GENERATED */';
 
 function generatePipeApiHelpers() {
-  const content = fs.readFileSync('./server/routes/api/functions.ts', 'utf8');
+  const content = fs.readFileSync('./server/api/functions.ts', 'utf8');
   const m = content.match(/\$[a-z]+\(/gi);
   if (m) {
     const functions = m.map((s) => s.slice(1, -1));
@@ -28,7 +27,7 @@ function generatePipeApiHelpers() {
 
 generatePipeApiHelpers();
 
-fs.watch('./server/routes/api/functions.ts', (eventType, filename) => {
+fs.watch('./server/api/functions.ts', (eventType, filename) => {
   if (eventType === 'change') {
     generatePipeApiHelpers();
   }
@@ -37,7 +36,6 @@ fs.watch('./server/routes/api/functions.ts', (eventType, filename) => {
 async function freshImport(givenPath: string) {
   const schemaPath = path.resolve(__dirname, givenPath);
   const symlinkPath = schemaPath.replace(/\.ts$/, `-${Date.now()}.ts`);
-  // const symlinkPath = path.join(os.tmpdir(), `${Date.now()}.ts`);
   fs.copyFileSync(schemaPath, symlinkPath);
   const results = await import(symlinkPath);
   fs.rmSync(symlinkPath);

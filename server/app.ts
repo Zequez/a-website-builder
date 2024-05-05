@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { T } from '@db';
-import api from './routes/api';
+import api from './api';
 import { logger, errorHandler } from './lib/middlewares.js';
 import { parseUrlFile } from './lib/utils.js';
 import hostnameParsingMiddleware from './lib/hostnameParsingMiddleware';
