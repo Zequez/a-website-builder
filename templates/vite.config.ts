@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
         input: {
           genesis: resolve(__dirname, 'index.html'),
           editor: resolve(__dirname, 'editor.html'),
+          admin: resolve(__dirname, 'admin.html'),
         },
       },
     },

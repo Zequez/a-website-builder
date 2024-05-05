@@ -1,13 +1,19 @@
-import { T, QQ, Q, sql, File_, Site, FileB64, TSite } from '@db';
+import { T, QQ, Q, sql, File_, Site, FileB64, TSite, Member } from '@db';
 import {
   TokenMember,
+  hashCompare,
   sanitizeMember,
   updateFileToB64,
   validateTokenExpiry,
   verifiedTokenFromHeader,
 } from '@server/lib/utils';
 import { Request } from 'express';
-import { ValidationError, validateConfig } from '../../../templates/genesis/config-validator';
+import {
+  ValidationError,
+  valErr,
+  validateConfig,
+} from '../../../templates/genesis/config-validator';
+import Token from '@server/lib/Token';
 
 export class Err extends Error {
   constructor(message: string, public status: number, public data: any) {
@@ -29,6 +35,13 @@ export class Functions {
 
   authorize() {
     if (!this.maybeTokenMember) throw E('Unauthorized', 401, null);
+  }
+
+  async member() {
+    this.authorize();
+    const member = await T.members.get(this.maybeTokenMember!.id);
+    if (!member) throw E('Unauthorized', 401, null);
+    return member;
   }
 
   async $membersWithSharedResources(): Promise<MemberWithTagOnly[]> {
@@ -65,17 +78,33 @@ export class Functions {
   //    ██║   ███████║██║   ██║   ███████╗███████║
   //    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
 
-  async $tsite(p: { siteId: string; props: string[] }): Promise<TSite> {
-    const validProps = ['config', 'name', 'subdomain', 'domain'];
-    const selectProps = p.props.filter((c) => validProps.indexOf(c) !== -1);
+  tsitePublicProps = ['id', 'config', 'name', 'subdomain', 'domain'];
+  tsiteSanitizedProps(props: string[]) {
+    return props.filter((c) => this.tsitePublicProps.indexOf(c) !== -1);
+  }
+
+  async getSite(siteId: string, props: string[]): Promise<Partial<TSite> | null> {
+    if (!props.length) throw E('No valid properties selected', 400, null);
+    const tsite = (
+      await QQ<Partial<TSite>>`SELECT ${sql.raw(props.join(', '))} FROM tsites WHERE id = ${siteId}`
+    )[0];
+    return tsite || null;
+  }
+
+  async $tsites(p: { props: string[]; token: string }): Promise<Partial<TSite>[]> {
+    await this.adminMemberAuthorized(p.token);
+    const selectProps = this.tsiteSanitizedProps(p.props);
+    if (!selectProps.length) throw E('No valid properties selected', 400, null);
+    const tsites = await QQ<Partial<TSite>>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites`;
+    return tsites;
+  }
+
+  async $tsite(p: { siteId: string; props: string[] }): Promise<Partial<TSite> | null> {
+    const selectProps = this.tsiteSanitizedProps(p.props);
     if (selectProps.length === 0) {
       throw E('No valid properties selected', 400, null);
     }
-    const tsite = (
-      await QQ<TSite>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites WHERE id = ${p.siteId}`
-    )[0];
-    if (!tsite) throw E('Site not found', 404, null);
-    return tsite;
+    return await this.getSite(p.siteId, selectProps);
   }
 
   async $tsiteSetConfig(p: {
@@ -83,7 +112,7 @@ export class Functions {
     config: Config;
   }): Promise<{ errors: ValidationError[] }> {
     const tsite = (await QQ<TSite>`SELECT id FROM tsites WHERE id = ${p.siteId}`)[0];
-    if (!tsite) throw E('Site not found', 404, null);
+    if (!tsite) return { errors: [valErr('Site not found')] };
     const errors = validateConfig(p.config);
     if (errors.length > 0) return { errors };
     else {
@@ -98,6 +127,44 @@ export class Functions {
     )[0];
     if (tsite) return false;
     return true;
+  }
+
+  async $tokenFromAccessKey(p: { siteId: string; plainAccessKey: string }): Promise<string | null> {
+    const tsite = await this.getSite(p.siteId, ['access_key']);
+    if (!tsite) {
+      return null;
+    }
+
+    const isValid = await hashCompare(p.plainAccessKey, tsite.access_key!);
+
+    return isValid ? Token.generate({ siteId: p.siteId, type: 'access-key' }) : null;
+  }
+
+  // ███╗   ███╗███████╗███╗   ███╗██████╗ ███████╗██████╗ ███████╗
+  // ████╗ ████║██╔════╝████╗ ████║██╔══██╗██╔════╝██╔══██╗██╔════╝
+  // ██╔████╔██║█████╗  ██╔████╔██║██████╔╝█████╗  ██████╔╝███████╗
+  // ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══██╗██╔══╝  ██╔══██╗╚════██║
+  // ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║██████╔╝███████╗██║  ██║███████║
+  // ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝
+
+  async adminMemberAuthorized(token: string) {
+    const tokenData = Token.verifyAndGetPayload(token);
+    if (!tokenData) throw E('Unauthorized', 401, null);
+    if (tokenData.type !== 'member') throw E('Unauthorized', 401, null);
+
+    const adminMember = (
+      await QQ<Member>`SELECT * FROM members WHERE id = ${tokenData.memberId} AND is_admin = TRUE`
+    )[0];
+    if (!adminMember) throw E('Unauthorized', 401, null);
+    return adminMember;
+  }
+
+  async $tokenFromMemberCredentials(p: { email: string; password: string }) {
+    const member = await T.members.where({ email: p.email }).one();
+    if (!member) return null;
+    const isValid = await hashCompare(p.password, member.passphrase);
+    if (!isValid) return null;
+    return Token.generate({ memberId: member.id, type: 'member' });
   }
 }
 

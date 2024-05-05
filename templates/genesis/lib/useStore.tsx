@@ -3,13 +3,15 @@ import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import * as pipes from '../lib/pipes';
 import configDefault from '../config-default';
 import createValidator, { ValidationError } from '../config-validator';
+import * as storage from './storage';
 
 type Store = {
   editing: boolean;
   settingsMenuOpen: boolean;
   selectedPageId: null | string;
   siteId: null | string;
-  accessKey: string | null;
+  attemptAccessLoading: boolean;
+  accessKeyToken: string | null;
   siteNeedsToBeCreated: boolean;
 
   // CONFIG STUFF
@@ -40,7 +42,8 @@ export function useStoreBase(init: StoreInit) {
 
     selectedPageId: firstPage?.uuid || null,
     siteId: init.siteId,
-    accessKey: null,
+    attemptAccessLoading: false,
+    accessKeyToken: storage.getAccessKeyToken(init.siteId),
     //
     siteNeedsToBeCreated: !init.siteId,
     configNeedsToLoadFromServer: !init.config,
@@ -102,6 +105,10 @@ export function useStoreBase(init: StoreInit) {
       const rest = this.selectedPage ? this.selectedPage.title : 'Page not found';
       return `${rest} ← ${store.config.title}`;
     }, [this.selectedPage, store.config.title]);
+
+    showPreScreen = useMemo(() => {
+      return store.configNeedsToLoadFromServer;
+    }, [store.configNeedsToLoadFromServer]);
   })();
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
@@ -150,25 +157,27 @@ export function useStoreBase(init: StoreInit) {
   // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
   async function initialize() {
-    if (store.configNeedsToLoadFromServer) {
-      if (store.siteId) {
-        const { config } = await pipes.tsite({ siteId: store.siteId, props: ['config'] });
-        const validator = createValidator();
-        if (validator(config)) {
-          const validConfig = config as Config;
-          patchStore({
-            config: validConfig,
-            savedConfig: { ...validConfig },
-            configNeedsToLoadFromServer: false,
-          });
+    if (store.accessKeyToken) {
+      if (store.configNeedsToLoadFromServer) {
+        if (store.siteId) {
+          const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
+          const validator = createValidator();
+          if (validator(config)) {
+            const validConfig = config as Config;
+            patchStore({
+              config: validConfig,
+              savedConfig: { ...validConfig },
+              configNeedsToLoadFromServer: false,
+            });
+          } else {
+            console.error('Invalid configuration', config);
+            patchStore({
+              invalidConfig: config,
+            });
+          }
         } else {
-          console.error('Invalid configuration', config);
-          patchStore({
-            invalidConfig: config,
-          });
+          console.error('No config or site ID was provided');
         }
-      } else {
-        console.error('No config or site ID was provided');
       }
     }
   }
@@ -202,6 +211,24 @@ export function useStoreBase(init: StoreInit) {
       patchStore({ savedConfig: store.config, configIsSaving: false, remoteSetConfigErrors: [] });
     } else {
       patchStore({ remoteSetConfigErrors: errors, configIsSaving: false });
+    }
+  }
+
+  async function attemptAccess(accessKey: string, saveKey: boolean) {
+    patchStore({ attemptAccessLoading: true });
+    const token = await pipes.tokenFromAccessKey({
+      siteId: store.siteId!,
+      plainAccessKey: accessKey,
+    });
+    if (token) {
+      if (saveKey) {
+        storage.setAccessKeyToken(store.siteId!, token);
+      }
+      patchStore({ accessKeyToken: token, attemptAccessLoading: false });
+      return true;
+    } else {
+      patchStore({ attemptAccessLoading: false });
+      return false;
     }
   }
 
@@ -281,7 +308,8 @@ export function useStoreBase(init: StoreInit) {
     actions: {
       setConfigVal,
       saveConfig,
-      setConfig: retryFixConfig,
+      retryFixConfig,
+      attemptAccess,
       pages,
       navigateTo,
     },

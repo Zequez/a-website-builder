@@ -1,28 +1,10 @@
 import { useState } from 'preact/hooks';
-import { ValidationError, validateConfig } from '../config-validator';
-import useStore from '../lib/useStore';
-
-// function validateValue(config: string) {
-//   let parsedConfig: any;
-//     try {
-//       parsedConfig = JSON.parse(val);
-//       setParseError('');
-//       const validator = createValidator();
-//       if (!validator(parsedConfig)) {
-//         console.log(validator.errors);
-//         setValidatorErrors(['Validation errors']);
-//       } else {
-//         setValidatorErrors([]);
-//       }
-//     } catch (e) {
-//       setParseError((e as any).message);
-//     }
-//       }
-// }
+import { ValidationError, validateConfig } from '../../config-validator';
+import useStore from '../../lib/useStore';
 
 export default function ManualConfigurator({ config }: { config: any }) {
   const {
-    actions: { setConfig },
+    actions: { retryFixConfig },
     store: { remoteSetConfigErrors },
   } = useStore();
   const [val, setVal] = useState(() => JSON.stringify(config, null, 2));
@@ -61,7 +43,7 @@ export default function ManualConfigurator({ config }: { config: any }) {
       </div>
       <button
         disabled={!canSave}
-        onClick={() => setConfig(JSON.parse(val))}
+        onClick={() => retryFixConfig(JSON.parse(val))}
         class="bg-white/20 hover:bg-white/30 rounded-md text-black/40 font-semibold px3 py1 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/20"
       >
         Reintentar

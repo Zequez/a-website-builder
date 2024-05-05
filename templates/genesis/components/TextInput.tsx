@@ -22,7 +22,7 @@ const TextInput = ({
   const [showPass, setShowPass] = useState(false);
 
   return (
-    <div class={cx('relative w-full pt-2', _class)}>
+    <div class={cx('relative w-full', _class)}>
       <div class="relative w-full">
         <input
           aria-label={label}

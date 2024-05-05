@@ -21,7 +21,7 @@ export function CurrentPageUrlVisualizer() {
 
   return (
     <div
-      class="absolute top-0 left-1/2 -translate-x-1/2 z-30 bg-black/50 py-1 px-4 rounded-b-md cursor-copy"
+      class="absolute top-0 left-1/2 -translate-x-1/2 z-30 bg-black/50 py-1 px-4 rounded-b-md cursor-copy whitespace-nowrap"
       onClick={handleClick}
     >
       {justCopied ? (

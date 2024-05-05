@@ -9,6 +9,10 @@ export default function createValidator() {
 
 export type ValidationError = { path: string; message: string; params: any };
 
+export function valErr(msg: string, path?: string, params?: any): ValidationError {
+  return { message: msg, path: path || '*', params: params || {} };
+}
+
 function ajvToValidationError(e: any): ValidationError {
   return {
     path: e.instancePath || '',

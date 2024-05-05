@@ -5,10 +5,10 @@ import TextAreaInput from './TextAreaInput';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
 import PagesList from './PagesList';
-import { LoadingOverlay } from './LoadingOverlay';
+import EditorPreScreen from './EditorPreScreen';
 
 export default function AppWithEditor() {
-  const { store, configChanged, subdomainChanged, actions: A } = useStore();
+  const { store, configChanged, subdomainChanged, showPreScreen, actions: A } = useStore();
 
   function saveConfig() {
     A.saveConfig();
@@ -17,7 +17,7 @@ export default function AppWithEditor() {
 
   const C = store.config;
 
-  if (store.configNeedsToLoadFromServer) return <LoadingOverlay />;
+  if (showPreScreen) return <EditorPreScreen />;
 
   return (
     <div class="h-screen w-screen flex">

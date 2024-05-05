@@ -1,4 +1,4 @@
-import { hydrate } from 'preact';
+import { render } from 'preact';
 import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import App from './components/AppWithEditor';
@@ -11,7 +11,7 @@ dragDropTouchPolyfill();
 
 let { siteId } = urlHash.getData();
 
-hydrate(
+render(
   <StoreContextWrapper
     init={{ siteId: siteId || null, editing: true, config: null, selectedPageId: null }}
   >
