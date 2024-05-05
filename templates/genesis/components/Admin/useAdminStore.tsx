@@ -77,10 +77,15 @@ export function useAdminStoreBase(init: StoreInit) {
     }
   }
 
+  async function setAccessKey(siteId: string, accessKey: string) {
+    return await pipes.setAccessKey({ siteId, accessKey, token: store.accessKeyToken! });
+  }
+
   return {
     store,
     actions: {
       attemptAccess,
+      setAccessKey,
     },
   };
 }

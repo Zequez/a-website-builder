@@ -1,8 +1,6 @@
 import useStore from '../lib/useStore';
-import App, { toHtml } from './App';
-import TextInput from './TextInput';
-import TextAreaInput from './TextAreaInput';
-import { useRef, useState } from 'preact/hooks';
+import App from './App';
+import { TextInput, TextAreaInput, Button } from './ui';
 import { cx } from '@shared/utils';
 import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
@@ -12,7 +10,6 @@ export default function AppWithEditor() {
 
   function saveConfig() {
     A.saveConfig();
-    console.log(toHtml(store.config));
   }
 
   const C = store.config;
@@ -81,13 +78,14 @@ export default function AppWithEditor() {
           )}
         </div>
         <div class="px4">
-          <button
-            class="bg-white/20 hover:bg-white/30 rounded-md w-full px-2 py-1 disabled:text-white/20 disabled:bg-white/10"
+          <Button
+            expandH
             onClick={saveConfig}
+            tint="green"
             disabled={!configChanged || store.subdomainAvailabilityStatus !== 'available'}
           >
             Guardar cambios
-          </button>
+          </Button>
         </div>
       </div>
       <div class={cx('flex-grow hidden sm:block')}>

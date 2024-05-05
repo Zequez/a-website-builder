@@ -15,4 +15,5 @@ export const tsite = pipeWrapper<FAT<F['$tsite']>, ART<F['$tsite']>>('tsite');
 export const tsiteSetConfig = pipeWrapper<FAT<F['$tsiteSetConfig']>, ART<F['$tsiteSetConfig']>>('tsiteSetConfig');
 export const checkSubdomainAvailability = pipeWrapper<FAT<F['$checkSubdomainAvailability']>, ART<F['$checkSubdomainAvailability']>>('checkSubdomainAvailability');
 export const tokenFromAccessKey = pipeWrapper<FAT<F['$tokenFromAccessKey']>, ART<F['$tokenFromAccessKey']>>('tokenFromAccessKey');
+export const setAccessKey = pipeWrapper<FAT<F['$setAccessKey']>, ART<F['$setAccessKey']>>('setAccessKey');
 export const tokenFromMemberCredentials = pipeWrapper<FAT<F['$tokenFromMemberCredentials']>, ART<F['$tokenFromMemberCredentials']>>('tokenFromMemberCredentials');

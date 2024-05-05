@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import useAdminStore from './useAdminStore';
-import TextInput from '../TextInput';
+import TextInput from '../ui/TextInput';
 
 export default function SignIn() {
   const {

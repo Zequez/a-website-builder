@@ -13,7 +13,7 @@ let { siteId } = urlHash.getData();
 
 render(
   <StoreContextWrapper
-    init={{ siteId: siteId || null, editing: true, config: null, selectedPageId: null }}
+    init={{ siteId: siteId || null, editing: true, config: null, initialPath: '/' }}
   >
     <App />
   </StoreContextWrapper>,

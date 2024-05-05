@@ -15,10 +15,8 @@ export function Nav() {
           <div class="flex">
             <NavItem
               onClick={(ev: MouseEvent) => {
-                if (editing) {
-                  ev.preventDefault();
-                  A.navigateTo(path);
-                }
+                ev.preventDefault();
+                A.navigateTo(path);
               }}
               active={uuid === selectedPageId}
               path={path}

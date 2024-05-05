@@ -12,7 +12,8 @@ import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
 
 export default function App() {
   const {
-    store: { editing, config },
+    store: { editing, config, siteId },
+    pathname,
     configChanged,
     selectedPage,
     actions: A,
@@ -27,7 +28,7 @@ export default function App() {
             {!editing ? (
               <a
                 class="block bg-emerald-500 hover:bg-emerald-300 text-white rounded-bl-full h7 w7 p2 text-xs overflow-hidden"
-                href="/templates/editor#fbd06659-405d-44a5-81c6-cd037031bbf6"
+                href={`/templates/editor#siteId=${siteId}&path=${pathname}`}
               >
                 <div class="relative -top-1">
                   <KeyIcon class="-rotate-90" />
@@ -60,7 +61,7 @@ export default function App() {
   );
 }
 
-export function toHtml(config: Config) {
+export function toHtml(config: Config, path: string) {
   const validator = createValidator();
   if (!validator(config)) {
     console.log(validator.errors);
@@ -69,7 +70,7 @@ export function toHtml(config: Config) {
 
   const div = document.createElement('div');
   render(
-    <StoreContextWrapper init={{ config, siteId: null, editing: false, selectedPageId: null }}>
+    <StoreContextWrapper init={{ config, siteId: null, editing: false, initialPath: path }}>
       <App />
     </StoreContextWrapper>,
     div,

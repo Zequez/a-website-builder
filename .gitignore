@@ -5,6 +5,5 @@ lib/bs/*
 elm-stuff
 .env
 .DS_Store
-.vscode/*
 .vercel
 independent-preact/bundle.js

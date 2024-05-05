@@ -1,0 +1,25 @@
+{
+  "autorun": false,
+  "terminals": [
+    {
+      "name": "Dev",
+      "description": "This is a description",
+      "focus": true,
+      "command": "pnpm dev:template",
+      "persistent": "dev"
+    },
+    {
+      "name": "Codegen",
+      "split": "Dev",
+      "command": "pnpm codegen:watch",
+      "persistent": "codegen"
+    },
+    {
+      "name": "Dev Server",
+      "split": "Dev",
+      "command": "pnpm dev:server",
+      "persistent": "dev_server"
+    }
+
+  ]
+}

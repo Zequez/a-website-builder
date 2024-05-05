@@ -4,7 +4,7 @@ import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
 import FloatingMenu from '@shared/components/FloatingMenu';
 import useStore from '../lib/useStore';
-import EmojiPicker from './EmojiPicker';
+import { EmojiPicker, Button } from './ui';
 
 export default function PagesList() {
   const { store, navPages, hiddenPages, actions: A } = useStore();
@@ -52,12 +52,7 @@ export default function PagesList() {
       </PagesDroppableWrapper>
       {hiddenPages.map(pageWidget)}
       <div class="flexcc mt-2">
-        <button
-          class="bg-white/20 hover:bg-white/30 rounded-md py1 px2"
-          onClick={() => A.pages.add()}
-        >
-          Agregar
-        </button>
+        <Button onClick={() => A.pages.add()}>Agregar</Button>
       </div>
     </div>
   );
@@ -146,13 +141,14 @@ function PageWidget(p: {
         >
           <GripLinesIcon />
         </div>
-        <button
-          ref={iconRef}
+        <Button
+          reff={iconRef}
           onClick={() => setEmojiPickerOpen(true)}
-          class="relative z-20 mr-2 flexcc w-12 h-full bg-white/20 hover:bg-white/30 rounded-md p1"
+          customSize
+          class="relative z-20 mr-2 flexcc w-12 h-full p1"
         >
           {p.page.icon}
-        </button>
+        </Button>
         <input
           type="text"
           class="relative z-20 w-full h-full text-black/60 rounded-md px-2 py-1 mr-2"
@@ -160,12 +156,9 @@ function PageWidget(p: {
           onInput={(e) => p.onChange({ title: e.currentTarget.value })}
           onFocus={() => p.onSelect()}
         />
-        <button
-          class="relative z-20 h-full bg-white/20 hover:bg-white/30 rounded-md p1"
-          onClick={() => setMenuOpen(true)}
-        >
+        <Button customSize class="relative z-20 h-full p1" onClick={() => setMenuOpen(true)}>
           <MenuEllipsisVIcon class="-mx-1" />
-        </button>
+        </Button>
       </div>
       <div
         class={cx('absolute z-10 w-full h-full', {

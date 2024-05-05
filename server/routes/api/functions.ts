@@ -1,7 +1,6 @@
 import { T, QQ, Q, sql, File_, Site, FileB64, TSite, Member } from '@db';
 import {
   TokenMember,
-  hashCompare,
   sanitizeMember,
   updateFileToB64,
   validateTokenExpiry,
@@ -14,9 +13,14 @@ import {
   validateConfig,
 } from '../../../templates/genesis/config-validator';
 import Token from '@server/lib/Token';
+import { hashPass, hashCompare } from '@server/lib/passwords';
 
 export class Err extends Error {
-  constructor(message: string, public status: number, public data: any) {
+  constructor(
+    message: string,
+    public status: number,
+    public data: any,
+  ) {
     super(message);
     this.name = 'ErrorWithStatusAndData';
     this.status = status;
@@ -138,6 +142,17 @@ export class Functions {
     const isValid = await hashCompare(p.plainAccessKey, tsite.access_key!);
 
     return isValid ? Token.generate({ siteId: p.siteId, type: 'access-key' }) : null;
+  }
+
+  async $setAccessKey(p: { siteId: string; accessKey: string; token: string }): Promise<boolean> {
+    try {
+      await this.adminMemberAuthorized(p.token);
+      const hashedPass = await hashPass(p.accessKey);
+      await QQ`UPDATE tsites SET access_key = ${hashedPass} WHERE id = ${p.siteId}`;
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // ███╗   ███╗███████╗███╗   ███╗██████╗ ███████╗██████╗ ███████╗

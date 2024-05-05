@@ -4,6 +4,7 @@ import * as pipes from '../lib/pipes';
 import configDefault from '../config-default';
 import createValidator, { ValidationError } from '../config-validator';
 import * as storage from './storage';
+import urlHash from './urlHash';
 
 type Store = {
   editing: boolean;
@@ -29,8 +30,8 @@ type Store = {
 type StoreInit = {
   config: Config | null;
   siteId: string | null;
+  initialPath: string;
   editing: boolean;
-  selectedPageId: string | null;
 };
 
 export function useStoreBase(init: StoreInit) {
@@ -40,7 +41,8 @@ export function useStoreBase(init: StoreInit) {
   const INITIAL_STATE: Store = {
     editing: init.editing,
 
-    selectedPageId: firstPage?.uuid || null,
+    selectedPageId:
+      initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
     siteId: init.siteId,
     attemptAccessLoading: false,
     accessKeyToken: storage.getAccessKeyToken(init.siteId),
@@ -109,6 +111,10 @@ export function useStoreBase(init: StoreInit) {
     showPreScreen = useMemo(() => {
       return store.configNeedsToLoadFromServer;
     }, [store.configNeedsToLoadFromServer]);
+
+    pathname = useMemo(() => {
+      return this.selectedPage ? this.selectedPage.path : window.location.pathname;
+    }, [this.selectedPage]);
   })();
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
@@ -296,9 +302,15 @@ export function useStoreBase(init: StoreInit) {
     const page = store.config.pages.find((page) => page.path === path);
     if (page) {
       patchStore({ selectedPageId: page.uuid });
+      if (import.meta.env.DEV) {
+        const { siteId } = urlHash.getData();
+        const newPath = window.location.pathname + '#' + urlHash.generate({ siteId, path });
+        history.pushState({}, '', newPath);
+      } else {
+        history.pushState({}, '', path);
+      }
     } else {
-      console.error('Page not found', path);
-      // TODO: Add some sort of 404 handling
+      patchStore({ selectedPageId: null });
     }
   }
 

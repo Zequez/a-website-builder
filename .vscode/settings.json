@@ -1,0 +1,30 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.ruby-lsp": true,
+    "**/*.sass.d.ts": true,
+    "node_modules": true,
+    ".vercel": true,
+    ".DS_Store": true,
+    "pnpm-lock.yaml": true,
+    ".git": true,
+    ".vscode": true,
+    "api": true,
+    "dist": true,
+    ".env": true,
+    ".prettierignore": true,
+    ".prettierrc": true,
+    "vercel.json": true
+  },
+  "explorerExclude.backup": {},
+  "vitest.nodeEnv": {
+    "SILENCE_SQL_LOGS": "true",
+    "NODE_ENV": "test"
+  },
+  "vitest.disableWorkspaceWarning": true
+}
