@@ -37,55 +37,64 @@ export class Functions {
     this.maybeTokenMember = maybeTokenMember;
   }
 
-  authorize() {
-    if (!this.maybeTokenMember) throw E('Unauthorized', 401, null);
+  // ███████╗██╗  ██╗ █████╗ ██████╗ ███████╗██████╗
+  // ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗
+  // ███████╗███████║███████║██████╔╝█████╗  ██║  ██║
+  // ╚════██║██╔══██║██╔══██║██╔══██╗██╔══╝  ██║  ██║
+  // ███████║██║  ██║██║  ██║██║  ██║███████╗██████╔╝
+  // ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═════╝
+
+  //  +-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+
+  //  |A|U|T|H|O|R|I|Z|A|T|I|O|N| |H|E|L|P|E|R|S|
+  //  +-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+
+
+  async memberAuthorizeOnly(token: string) {
+    const tokenData = Token.verifyAndGetPayload(token);
+    if (!tokenData) throw E('Unauthorized', 401, null);
+    if (tokenData.type !== 'member') throw E('Unauthorized', 401, null);
+    return tokenData;
   }
 
-  async member() {
-    this.authorize();
-    const member = await T.members.get(this.maybeTokenMember!.id);
+  async memberAuthorized(token: string) {
+    const { memberId } = await this.memberAuthorizeOnly(token);
+    const member = await T.members.get(memberId);
     if (!member) throw E('Unauthorized', 401, null);
     return member;
   }
 
-  async $membersWithSharedResources(): Promise<MemberWithTagOnly[]> {
-    const members = await QQ<MemberWithTagOnly>`SELECT id, tag FROM members WHERE tag IS NOT NULL`;
-    const sitesMembers = await QQ<{
-      member_id: number;
-    }>`SELECT DISTINCT member_id FROM files WHERE site_id IS NULL`;
-    const membersWithSharedResources: MemberWithTagOnly[] = [];
-    sitesMembers.forEach(({ member_id }) => {
-      const member = members.find((m) => m.id === member_id);
-      if (member?.tag) membersWithSharedResources.push(member);
-    });
-    return membersWithSharedResources;
+  async adminMemberAuthorized(token: string) {
+    const tokenData = await this.memberAuthorizeOnly(token);
+
+    const adminMember = (
+      await QQ<Member>`SELECT * FROM members WHERE id = ${tokenData.memberId} AND is_admin = TRUE`
+    )[0];
+    if (!adminMember) throw E('Unauthorized', 401, null);
+    return adminMember;
   }
 
-  async $sharedResourcesByMemberId(p: { memberId: number }): Promise<FileB64[]> {
-    return (
-      await QQ<File_>`SELECT * FROM files WHERE member_id = ${p.memberId} AND is_dist = FALSE AND site_id IS NULL`
-    ).map(updateFileToB64);
+  async accessKeyAuthorizeOnly(token: string, siteId: string) {
+    const tokenData = Token.verifyAndGetPayload(token);
+    if (!tokenData) throw E('Unauthorized', 401, null);
+    // For admin members allow to edit any site
+    if (tokenData.type === 'member') {
+      if (await this.isAdminMember(tokenData.memberId)) {
+        return tokenData;
+      } else {
+        // TODO: Allow members to own multiple sites and do the check here
+      }
+    } else if (tokenData.type === 'access-key') {
+      if (tokenData.siteId !== siteId) throw E('Unauthorized', 401, null);
+    }
+    return tokenData;
   }
 
-  async $memberSites(p: { memberId: number }): Promise<Site[]> {
-    return await T.sites.where({ member_id: p.memberId }).all();
+  async isAdminMember(id: number | string) {
+    return !!(await QQ<Member>`SELECT * FROM members WHERE id = ${id} AND is_admin = TRUE`)[0];
   }
 
-  async $siteFiles(p: { siteId: string }): Promise<FileB64[]> {
-    return (await T.files.where({ site_id: p.siteId, is_dist: false }).all()).map(updateFileToB64);
-  }
-
-  // ████████╗███████╗██╗████████╗███████╗███████╗
-  // ╚══██╔══╝██╔════╝██║╚══██╔══╝██╔════╝██╔════╝
-  //    ██║   ███████╗██║   ██║   █████╗  ███████╗
-  //    ██║   ╚════██║██║   ██║   ██╔══╝  ╚════██║
-  //    ██║   ███████║██║   ██║   ███████╗███████║
-  //    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚══════╝╚══════╝
-
-  tsitePublicProps = ['id', 'config', 'name', 'subdomain', 'domain'];
-  tsiteSanitizedProps(props: string[]) {
-    return props.filter((c) => this.tsitePublicProps.indexOf(c) !== -1);
-  }
+  //  +-+-+ +-+-+-+-+-+-+-+
+  //  |D|B| |H|E|L|P|E|R|S|
+  //  +-+-+ +-+-+-+-+-+-+-+
 
   async getSite(siteId: string, props: string[]): Promise<Partial<TSite> | null> {
     if (!props.length) throw E('No valid properties selected', 400, null);
@@ -95,6 +104,49 @@ export class Functions {
     return tsite || null;
   }
 
+  // ██╗   ██╗ █████╗ ██╗     ██╗██████╗  █████╗ ████████╗██╗ ██████╗ ███╗   ██╗███████╗
+  // ██║   ██║██╔══██╗██║     ██║██╔══██╗██╔══██╗╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+  // ██║   ██║███████║██║     ██║██║  ██║███████║   ██║   ██║██║   ██║██╔██╗ ██║███████╗
+  // ╚██╗ ██╔╝██╔══██║██║     ██║██║  ██║██╔══██║   ██║   ██║██║   ██║██║╚██╗██║╚════██║
+  //  ╚████╔╝ ██║  ██║███████╗██║██████╔╝██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║███████║
+  //   ╚═══╝  ╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+  tsitePublicProps = ['id', 'config', 'name', 'subdomain', 'domain'];
+  tsiteSanitizedProps(props: string[]) {
+    return props.filter((c) => this.tsitePublicProps.indexOf(c) !== -1);
+  }
+
+  //  ██████╗ ███████╗████████╗████████╗███████╗██████╗ ███████╗
+  // ██╔════╝ ██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝
+  // ██║  ███╗█████╗     ██║      ██║   █████╗  ██████╔╝███████╗
+  // ██║   ██║██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗╚════██║
+  // ╚██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║███████║
+  //  ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝
+
+  async $tsite(p: { siteId: string; props: string[] }): Promise<Partial<TSite> | null> {
+    const selectProps = this.tsiteSanitizedProps(p.props);
+    if (selectProps.length === 0) {
+      throw E('No valid properties selected', 400, null);
+    }
+    return await this.getSite(p.siteId, selectProps);
+  }
+
+  //  +-+-+-+-+-+-+-+-+
+  //  |C|H|E|C|K|E|R|S|
+  //  +-+-+-+-+-+-+-+-+
+
+  async $checkSubdomainAvailability(p: { subdomain: string; siteId: string }): Promise<boolean> {
+    const tsite = (
+      await QQ`SELECT id FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId}`
+    )[0];
+    if (tsite) return false;
+    return true;
+  }
+
+  //  +-+-+-+-+-+
+  //  |A|D|M|I|N|
+  //  +-+-+-+-+-+
+
   async $tsites(p: { props: string[]; token: string }): Promise<Partial<TSite>[]> {
     await this.adminMemberAuthorized(p.token);
     const selectProps = this.tsiteSanitizedProps(p.props);
@@ -103,12 +155,26 @@ export class Functions {
     return tsites;
   }
 
-  async $tsite(p: { siteId: string; props: string[] }): Promise<Partial<TSite> | null> {
-    const selectProps = this.tsiteSanitizedProps(p.props);
-    if (selectProps.length === 0) {
-      throw E('No valid properties selected', 400, null);
+  //  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+  // ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+  // ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+  // ██╔══██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+  // ██║  ██║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+  // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+  //  +-+-+-+-+-+
+  //  |A|D|M|I|N|
+  //  +-+-+-+-+-+
+
+  async $setAccessKey(p: { siteId: string; accessKey: string; token: string }): Promise<boolean> {
+    try {
+      await this.adminMemberAuthorized(p.token);
+      const hashedPass = await hashPass(p.accessKey);
+      await QQ`UPDATE tsites SET access_key = ${hashedPass} WHERE id = ${p.siteId}`;
+      return true;
+    } catch (e) {
+      return false;
     }
-    return await this.getSite(p.siteId, selectProps);
   }
 
   async $tsiteSetConfig(p: {
@@ -125,13 +191,9 @@ export class Functions {
     }
   }
 
-  async $checkSubdomainAvailability(p: { subdomain: string; siteId: string }): Promise<boolean> {
-    const tsite = (
-      await QQ`SELECT id FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId}`
-    )[0];
-    if (tsite) return false;
-    return true;
-  }
+  //  +-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+
+  //  |T|O|K|E|N|S| |G|E|N|E|R|A|T|I|O|N|
+  //  +-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+
 
   async $tokenFromAccessKey(p: { siteId: string; plainAccessKey: string }): Promise<string | null> {
     const tsite = await this.getSite(p.siteId, ['access_key']);
@@ -144,36 +206,6 @@ export class Functions {
     return isValid ? Token.generate({ siteId: p.siteId, type: 'access-key' }) : null;
   }
 
-  async $setAccessKey(p: { siteId: string; accessKey: string; token: string }): Promise<boolean> {
-    try {
-      await this.adminMemberAuthorized(p.token);
-      const hashedPass = await hashPass(p.accessKey);
-      await QQ`UPDATE tsites SET access_key = ${hashedPass} WHERE id = ${p.siteId}`;
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // ███╗   ███╗███████╗███╗   ███╗██████╗ ███████╗██████╗ ███████╗
-  // ████╗ ████║██╔════╝████╗ ████║██╔══██╗██╔════╝██╔══██╗██╔════╝
-  // ██╔████╔██║█████╗  ██╔████╔██║██████╔╝█████╗  ██████╔╝███████╗
-  // ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══██╗██╔══╝  ██╔══██╗╚════██║
-  // ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║██████╔╝███████╗██║  ██║███████║
-  // ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝
-
-  async adminMemberAuthorized(token: string) {
-    const tokenData = Token.verifyAndGetPayload(token);
-    if (!tokenData) throw E('Unauthorized', 401, null);
-    if (tokenData.type !== 'member') throw E('Unauthorized', 401, null);
-
-    const adminMember = (
-      await QQ<Member>`SELECT * FROM members WHERE id = ${tokenData.memberId} AND is_admin = TRUE`
-    )[0];
-    if (!adminMember) throw E('Unauthorized', 401, null);
-    return adminMember;
-  }
-
   async $tokenFromMemberCredentials(p: { email: string; password: string }) {
     const member = await T.members.where({ email: p.email }).one();
     if (!member) return null;
@@ -183,12 +215,9 @@ export class Functions {
   }
 }
 
-type MemberWithTagOnly = { id: number; tag: string };
+// type MemberWithTagOnly = { id: number; tag: string };
 
-// const P = Functions.prototype;
-
-// P.$withSharedResources = async (): Promise<withSharedResourcesResponse> => {
-//   this.authorize();
+// async membersWithSharedResources(): Promise<MemberWithTagOnly[]> {
 //   const members = await QQ<MemberWithTagOnly>`SELECT id, tag FROM members WHERE tag IS NOT NULL`;
 //   const sitesMembers = await QQ<{
 //     member_id: number;
@@ -199,25 +228,18 @@ type MemberWithTagOnly = { id: number; tag: string };
 //     if (member?.tag) membersWithSharedResources.push(member);
 //   });
 //   return membersWithSharedResources;
-// };
-
-// function authRequest(req: Request) {
-//   let maybeTokenMember = verifiedTokenFromHeader(req.headers);
-//   if (maybeTokenMember && !validateTokenExpiry(maybeTokenMember)) maybeTokenMember = null;
-//   if (!maybeTokenMember) throw E('Unauthorized', 401, null);
-//   return maybeTokenMember;
 // }
 
-// export async function withSharedResources(req: Request): Promise<withSharedResourcesResponse> {
+// async sharedResourcesByMemberId(p: { memberId: number }): Promise<FileB64[]> {
+//   return (
+//     await QQ<File_>`SELECT * FROM files WHERE member_id = ${p.memberId} AND is_dist = FALSE AND site_id IS NULL`
+//   ).map(updateFileToB64);
+// }
 
-//   const members = await QQ<MemberWithTagOnly>`SELECT id, tag FROM members WHERE tag IS NOT NULL`;
-//   const sitesMembers = await QQ<{
-//     member_id: number;
-//   }>`SELECT DISTINCT member_id FROM files WHERE site_id IS NULL`;
-//   const membersWithSharedResources: MemberWithTagOnly[] = [];
-//   sitesMembers.forEach(({ member_id }) => {
-//     const member = members.find((m) => m.id === member_id);
-//     if (member?.tag) membersWithSharedResources.push(member);
-//   });
-//   return membersWithSharedResources;
+// async memberSites(p: { memberId: number }): Promise<Site[]> {
+//   return await T.sites.where({ member_id: p.memberId }).all();
+// }
+
+// async siteFiles(p: { siteId: string }): Promise<FileB64[]> {
+//   return (await T.files.where({ site_id: p.siteId, is_dist: false }).all()).map(updateFileToB64);
 // }
