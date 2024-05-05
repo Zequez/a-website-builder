@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
+import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import { compile } from 'json-schema-to-typescript';
 
@@ -73,3 +75,7 @@ fs.watch('./templates/genesis/config-schema.ts', async (eventType, filename) => 
     generateConfigSchemaTypings();
   }
 });
+
+// run command
+exec(`pnpm pg-to-ts generate -c ${process.env.DEV_DATABASE_URL} -o ./server/db/schema.ts`);
+console.log('DB Schema types generated');

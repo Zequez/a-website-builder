@@ -132,6 +132,7 @@
   "devDependencies": {
     "@vitest/browser": "^1.4.0",
     "jsdom": "^24.0.0",
-    "json-schema-to-typescript": "^14.0.4"
+    "json-schema-to-typescript": "^14.0.4",
+    "pg-to-ts": "^4.1.1"
   }
 }
