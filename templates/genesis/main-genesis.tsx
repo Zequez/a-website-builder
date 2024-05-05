@@ -6,12 +6,17 @@ import createValidator from './config-validator';
 import configSchema from './config-schema.yml';
 import configDefault from './config-default';
 import { StoreContextWrapper } from './lib/useStore';
+import urlHash from './lib/urlHash';
 
 const configEl = document.getElementById('config')!;
 
 if (import.meta.env.DEV) {
+  const hashData = urlHash.getData();
+  if (!hashData.siteId) {
+    throw 'Missing site id on URL';
+  }
   configEl.innerHTML = JSON.stringify(configDefault, null, 2);
-  configEl.setAttribute('data-site-id', window.location.hash.slice(1));
+  configEl.setAttribute('data-site-id', hashData.siteId);
 }
 
 function getDocumentConfig() {
@@ -44,7 +49,7 @@ const siteId = configEl.getAttribute('data-site-id');
 const config = getDocumentConfig();
 
 hydrate(
-  <StoreContextWrapper initialConfig={config} siteId={siteId} editing={false}>
+  <StoreContextWrapper init={{ config, siteId, editing: false, selectedPageId: null }}>
     <App />
   </StoreContextWrapper>,
   document.getElementById('root')!,

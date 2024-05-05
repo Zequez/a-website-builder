@@ -1,7 +1,6 @@
 import { createContext } from 'preact';
 import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import * as pipes from '../lib/pipes';
-import configDefault from '../config-default';
 
 type Store = {
   editing: boolean;
@@ -14,17 +13,24 @@ type Store = {
   subdomainAvailabilityStatus: 'unknown' | 'available' | 'taken';
 };
 
-export function useStoreBase(initialConfig: Config, siteId: string | null, editing: boolean) {
-  const INITIAL_STATE: Store = {
-    editing: editing,
+type StoreInit = {
+  config: Config;
+  siteId: string | null;
+  editing: boolean;
+  selectedPageId: string | null;
+};
 
-    selectedPageId: initialConfig.pages[0].uuid,
-    siteId: siteId,
+export function useStoreBase(init: StoreInit) {
+  const INITIAL_STATE: Store = {
+    editing: init.editing,
+
+    selectedPageId: init.config.pages[0].uuid,
+    siteId: init.siteId,
     accessKey: null,
 
     //
-    savedConfig: { ...initialConfig },
-    config: { ...initialConfig },
+    savedConfig: { ...init.config },
+    config: { ...init.config },
 
     //
     subdomainAvailabilityStatus: 'available',
@@ -220,20 +226,17 @@ export function useStoreBase(initialConfig: Config, siteId: string | null, editi
   };
 }
 
+//  ██████╗ ██████╗ ███╗   ██╗████████╗███████╗██╗  ██╗████████╗
+// ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝
+// ██║     ██║   ██║██╔██╗ ██║   ██║   █████╗   ╚███╔╝    ██║
+// ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══╝   ██╔██╗    ██║
+// ╚██████╗╚██████╔╝██║ ╚████║   ██║   ███████╗██╔╝ ██╗   ██║
+//  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝
+
 const StoreContext = createContext<ReturnType<typeof useStoreBase>>(undefined!);
 
-export const StoreContextWrapper = ({
-  children,
-  initialConfig,
-  siteId,
-  editing,
-}: {
-  children: any;
-  initialConfig?: Config;
-  siteId: string | null;
-  editing: boolean;
-}) => {
-  const store = useStoreBase(initialConfig || configDefault, siteId, editing);
+export const StoreContextWrapper = ({ init, children }: { init: StoreInit; children: any }) => {
+  const store = useStoreBase(init);
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 };
 

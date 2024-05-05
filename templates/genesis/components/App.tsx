@@ -98,7 +98,7 @@ export function toHtml(config: Config) {
 
   const div = document.createElement('div');
   render(
-    <StoreContextWrapper initialConfig={config} siteId={null} editing={false}>
+    <StoreContextWrapper init={{ config, siteId: null, editing: false, selectedPageId: null }}>
       <App />
     </StoreContextWrapper>,
     div,

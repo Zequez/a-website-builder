@@ -3,20 +3,19 @@ import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import App from './components/AppWithEditor';
 import { StoreContextWrapper } from './lib/useStore';
-import { validateUuid } from '@shared/utils';
 // @ts-ignore
 import dragDropTouchPolyfill from './lib/drag-drop-touch-polyfill';
+import configDefault from './config-default';
+import urlHash from './lib/urlHash';
 
 dragDropTouchPolyfill();
 
-const hashSiteId = window.location.hash.slice(1);
-let siteId = null;
-if (validateUuid(hashSiteId)) {
-  siteId = hashSiteId;
-}
+let { siteId } = urlHash.getData();
 
 hydrate(
-  <StoreContextWrapper siteId={siteId} editing={true}>
+  <StoreContextWrapper
+    init={{ siteId: siteId || null, editing: true, config: configDefault, selectedPageId: null }}
+  >
     <App />
   </StoreContextWrapper>,
   document.getElementById('root')!,
