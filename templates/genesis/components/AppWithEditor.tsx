@@ -7,11 +7,20 @@ import EditorPreScreen from './EditorPreScreen';
 import { useState } from 'preact/hooks';
 
 export default function AppWithEditor() {
-  const { store, configChanged, subdomainChanged, showPreScreen, actions: A } = useStore();
+  const {
+    store,
+    configChanged,
+    subdomainChanged,
+    publishedConfigIsDifferent,
+    showPreScreen,
+    actions: A,
+  } = useStore();
 
   function saveConfig() {
     A.saveConfig();
   }
+
+  const [previewing, _previewing] = useState(false);
 
   const [deploySiteResult, setDeploySiteResult] = useState(true);
   async function handleDeploySite() {
@@ -24,22 +33,19 @@ export default function AppWithEditor() {
 
   return (
     <div class="h-screen w-screen flex">
-      <div class="w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb4  overflow-auto">
+      <div class="relative w-full sm:w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 py2 px4">
         <Separator>Sitio</Separator>
-        <div class="flexcc mb4 px-4">
-          <TextInput
-            label="Titulo"
-            value={C.title}
-            onChange={(val) => A.setConfigVal('title', val)}
-          />
-        </div>
-        <div class="px4 mb4">
-          <TextAreaInput
-            label="Descripción"
-            value={C.description}
-            onChange={(val) => A.setConfigVal('description', val)}
-          />
-        </div>
+        <TextInput
+          label="Titulo"
+          value={C.title}
+          onChange={(val) => A.setConfigVal('title', val)}
+        />
+        <TextAreaInput
+          label="Descripción"
+          value={C.description}
+          onChange={(val) => A.setConfigVal('description', val)}
+        />
+
         {/* <Separator>Diseño</Separator>
         <div class="flexcc mb2 px-4">
           Color principal <input type="color" value={C.themeColor} />
@@ -56,23 +62,21 @@ export default function AppWithEditor() {
         <div class="flex-grow"></div>
 
         <Separator>Dirección</Separator>
-        <div class="flexcc mb2 px-4">
-          <TextInput
-            label="Subdominio"
-            value={C.subdomain}
-            onChange={(val) => A.setConfigVal('subdomain', val)}
-          />
-        </div>
-        <div class="flexcc mb2 px-4">
-          <select
-            disabled={true}
-            onChange={(val) => A.setConfigVal('domain', val)}
-            class="w-full text-black/70 rounded-md py2 px2 h-10"
-          >
-            <option value="hoja.ar">.{C.domain}</option>
-          </select>
-        </div>
-        <div class="px4">
+        <TextInput
+          label="Subdominio"
+          value={C.subdomain}
+          onChange={(val) => A.setConfigVal('subdomain', val)}
+        />
+
+        <select
+          disabled={true}
+          onChange={(val) => A.setConfigVal('domain', val)}
+          class="w-full text-black/70 rounded-md py2 px2 h-10 flex-shrink-0"
+        >
+          <option value="hoja.ar">.{C.domain}</option>
+        </select>
+
+        {/* <div class="px4">
           {store.subdomainAvailabilityStatus === 'unknown' && (
             <div class="mb2">Checkeando disponibilidad...</div>
           )}
@@ -82,35 +86,61 @@ export default function AppWithEditor() {
           {store.subdomainAvailabilityStatus === 'taken' && (
             <div class="text-center text-red-500 mb2">Subdominio no disponible</div>
           )}
-        </div>
-        <div class="px4 flex flex-col space-y-2">
-          <Button
-            expandH
-            onClick={saveConfig}
-            tint="green"
-            disabled={
-              !configChanged ||
-              store.subdomainAvailabilityStatus !== 'available' ||
-              store.configIsSaving
-            }
-          >
-            {store.configIsSaving ? 'Guardando...' : 'Guardar'}
-          </Button>
-          <Button
-            tint="green"
-            disabled={store.deploySiteInProgress}
-            expandH
-            onClick={handleDeploySite}
-          >
-            {store.deploySiteInProgress
-              ? 'Publicando...'
-              : deploySiteResult
-                ? 'Publicar'
-                : 'Error. Reintentar?'}
-          </Button>
+        </div> */}
+
+        <Button
+          expandH
+          onClick={saveConfig}
+          tint="green"
+          disabled={
+            !configChanged ||
+            store.subdomainAvailabilityStatus !== 'available' ||
+            store.configIsSaving
+          }
+        >
+          {store.configIsSaving ? 'Guardando...' : 'Guardar'}
+        </Button>
+        <Button
+          tint="green"
+          disabled={configChanged || store.deploySiteInProgress || !publishedConfigIsDifferent}
+          expandH
+          onClick={handleDeploySite}
+        >
+          {store.deploySiteInProgress
+            ? 'Publicando...'
+            : deploySiteResult
+              ? 'Publicar'
+              : 'Error. Reintentar?'}
+        </Button>
+        <div
+          class={cx('sm:hidden pt[1px] z-50 -mx4 sticky bottom-0 ', {
+            'bg-gray-600 shadow-md': !previewing,
+          })}
+        >
+          {previewing ? (
+            <Button tint="teal" class="ml1 mb1 w7 h7" customSize onClick={() => _previewing(false)}>
+              &larr;
+            </Button>
+          ) : (
+            <Button
+              joinL
+              joinR
+              tint="teal"
+              align="right"
+              class="w-full"
+              onClick={() => _previewing(true)}
+            >
+              Ver &rarr;
+            </Button>
+          )}
         </div>
       </div>
-      <div class={cx('flex-grow hidden sm:block')}>
+      <div
+        class={cx('flex-grow sm:(inset-none! block! relative! overflow-none!) bg-white z-40', {
+          'fixed inset-0 block overflow-auto': previewing,
+          'hidden ': !previewing,
+        })}
+      >
         <App />
       </div>
     </div>
@@ -118,9 +148,5 @@ export default function AppWithEditor() {
 }
 
 const Separator = (p: { children: any }) => (
-  <div class="text-center text-xl py-2 px-4">{p.children}</div>
+  <div class="text-center text-xl px-4">{p.children}</div>
 );
-
-// function PagesDragSpace(p: { children: any }) {
-//   const
-// }

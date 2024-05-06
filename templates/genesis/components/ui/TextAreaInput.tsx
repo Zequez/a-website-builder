@@ -38,7 +38,7 @@ const TextAreaInput = ({
           for={label}
           class={cx(
             `
-          absolute top-1/2 transition-all bg-white px-1 rounded-md -translate-y-1/2 left-3 text-black/40 pointer-events-none
+          absolute top-1/2 transition-all bg-white px-1 rounded-md -translate-y-1/2 left-1 text-black/40 pointer-events-none
           peer-not-placeholder-shown:(top-0 text-white bg-slate-6 scale-90)
           peer-focus:(top-0 text-white bg-slate-6 scale-90)`,
             {

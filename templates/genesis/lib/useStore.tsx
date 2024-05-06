@@ -22,6 +22,7 @@ type Store = {
   // CONFIG STUFF
   config: Config;
   savedConfig: Config;
+  publishedConfig: Config;
   configNeedsToLoadFromServer: boolean;
   invalidConfig: null | Record<string, any>;
   remoteSetConfigErrors: ValidationError[];
@@ -58,6 +59,7 @@ export function useStoreBase(init: StoreInit) {
     configIsSaving: false,
     savedConfig: { ...initialConfig },
     config: { ...initialConfig },
+    publishedConfig: { ...initialConfig },
     invalidConfig: null,
     remoteSetConfigErrors: [],
 
@@ -93,6 +95,10 @@ export function useStoreBase(init: StoreInit) {
     configChanged = useMemo(() => {
       return JSON.stringify(store.config) !== JSON.stringify(store.savedConfig);
     }, [store]);
+
+    publishedConfigIsDifferent = useMemo(() => {
+      return JSON.stringify(store.config) !== JSON.stringify(store.publishedConfig);
+    }, [store.savedConfig, store.publishedConfig]);
 
     navPages = useMemo(() => {
       return store.config.pages.filter((page) => page.onNav);
@@ -169,6 +175,7 @@ export function useStoreBase(init: StoreInit) {
           patchStore({
             config: validConfig,
             savedConfig: { ...validConfig },
+            publishedConfig: { ...validConfig },
             configNeedsToLoadFromServer: false,
             selectedPageId: initialPage?.uuid || null,
           });
@@ -204,6 +211,7 @@ export function useStoreBase(init: StoreInit) {
         patchStore({
           config,
           savedConfig: { ...config },
+          publishedConfig: { ...config },
           configNeedsToLoadFromServer: false,
           remoteSetConfigErrors: [],
         });
@@ -246,7 +254,7 @@ export function useStoreBase(init: StoreInit) {
           token: store.accessToken!,
         });
       }
-      patchStore({ deploySiteInProgress: false });
+      patchStore({ deploySiteInProgress: false, publishedConfig: store.config });
     }
     return result;
   }
@@ -318,7 +326,6 @@ export function useStoreBase(init: StoreInit) {
     }
 
     move(uuid: string, target: { uuid?: string; nav: boolean }) {
-      console.log(uuid, target);
       let page = store.config.pages.find((page) => page.uuid === uuid)!;
       page = { ...page, onNav: target.nav };
       let pages = store.config.pages.filter((page) => page.uuid !== uuid);

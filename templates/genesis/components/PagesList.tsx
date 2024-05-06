@@ -2,7 +2,7 @@ import GripLinesIcon from '~icons/fa6-solid/grip-lines';
 import MenuEllipsisVIcon from '~icons/fa6-solid/ellipsis-vertical';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
-import FloatingMenu from '@shared/components/FloatingMenu';
+import FloatingMenu from './ui/FloatingMenu';
 import useStore from '../lib/useStore';
 import { EmojiPicker, Button } from './ui';
 
@@ -34,24 +34,26 @@ export default function PagesList() {
   );
 
   return (
-    <div class="flex flex-col">
+    <div class="flex flex-col -mx4">
       <PagesDroppableWrapper
+        key="nav"
         onDragDrop={(pageUuid) => handleMovePage(pageUuid, { nav: true })}
         isDraggedOver={draggedOverId === 'nav'}
         onDragOver={() => setDraggedOverId('nav')}
       >
-        <div class="text-center">Navegación</div>
+        <div class="text-center mb2">Navegación</div>
       </PagesDroppableWrapper>
       {navPages.map(pageWidget)}
       <PagesDroppableWrapper
+        key="other"
         onDragDrop={(pageUuid) => handleMovePage(pageUuid, { nav: false })}
         isDraggedOver={draggedOverId === 'no-nav'}
         onDragOver={() => setDraggedOverId('no-nav')}
       >
-        <div class="text-center">Otras</div>
+        <div class="text-center mb2">Otras</div>
       </PagesDroppableWrapper>
       {hiddenPages.map(pageWidget)}
-      <div class="flexcc mt-2">
+      <div class="flexcc mt-2" key="add">
         <Button onClick={() => A.pages.add()}>Agregar</Button>
       </div>
     </div>
@@ -99,7 +101,7 @@ function PageWidget(p: {
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-  const elRef = useRef<HTMLDivElement>(null);
+  const menuRelativeToRef = useRef<HTMLButtonElement>(null);
   const iconRef = useRef<HTMLButtonElement>(null);
 
   const menuOptions = {
@@ -108,14 +110,15 @@ function PageWidget(p: {
 
   return (
     <div
-      ref={elRef}
-      class={cx('relative flexcc px-2 py-1 hover:bg-white/10')}
-      draggable={true}
+      key={p.page.uuid}
+      class={cx('relative hover:bg-white/10 mb-2 h8')}
+      // draggable={true}
       onDragOver={(ev) => {
         ev.preventDefault();
         p.onDragOver();
       }}
       onDragStart={(ev) => {
+        console.log(ev);
         if (!p.dragEnabled) ev.preventDefault();
         ev.dataTransfer!.setData('text/plain', p.page.uuid);
       }}
@@ -135,9 +138,12 @@ function PageWidget(p: {
         })}
       >
         <div
-          class={cx('relative z-20 text-white/50 mr-2 pointer-events-none', {
+          class={cx('relative z-20 h-full px-2 hover:bg-white/20 rounded-md text-white/50 flexcc', {
             'opacity-25 ': !p.dragEnabled,
+            'cursor-move': p.dragEnabled,
+            'cursor-not-allowed': !p.dragEnabled,
           })}
+          draggable={true}
         >
           <GripLinesIcon />
         </div>
@@ -145,7 +151,7 @@ function PageWidget(p: {
           reff={iconRef}
           onClick={() => setEmojiPickerOpen(true)}
           customSize
-          class="relative z-20 mr-2 flexcc w-12 h-full p1"
+          class="relative z-20 mr-2 flexcc w-8 h-full p1"
         >
           {p.page.icon}
         </Button>
@@ -156,20 +162,28 @@ function PageWidget(p: {
           onInput={(e) => p.onChange({ title: e.currentTarget.value })}
           onFocus={() => p.onSelect()}
         />
-        <Button customSize class="relative z-20 h-full p1" onClick={() => setMenuOpen(true)}>
+        <Button
+          reff={menuRelativeToRef}
+          customSize
+          class="relative z-20 h-full p1 mr2"
+          onClick={() => setMenuOpen(true)}
+        >
           <MenuEllipsisVIcon class="-mx-1" />
         </Button>
       </div>
-      <div
-        class={cx('absolute z-10 w-full h-full', {
+      {/* <div
+        class={cx('absolute z-10 top-0 left-0 w-full h-full', {
           'cursor-move': p.dragEnabled,
           'cursor-not-allowed': !p.dragEnabled,
         })}
-      ></div>
+      ></div> */}
       {menuOpen && (
         <FloatingMenu
-          target={elRef.current!}
+          target={menuRelativeToRef.current!}
           items={menuOptions}
+          position="left"
+          side="left"
+          spacing={8}
           onClose={() => setMenuOpen(false)}
         />
       )}
