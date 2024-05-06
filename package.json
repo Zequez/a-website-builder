@@ -127,9 +127,7 @@
     "vite-tsconfig-paths": "^4.3.1",
     "vitefu": "^0.2.5",
     "vitest": "^1.4.0",
-    "wait-port": "^1.1.0"
-  },
-  "devDependencies": {
+    "wait-port": "^1.1.0",
     "@vitest/browser": "^1.4.0",
     "jsdom": "^24.0.0",
     "json-schema-to-typescript": "^14.0.4",
