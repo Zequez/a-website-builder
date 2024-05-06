@@ -16,15 +16,15 @@ generateConfigSchemaTypings();
 generateTypingsFromDbSchema();
 
 simpleWatch('./templates/genesis/config-schema.ts', generateConfigSchemaTypings);
-simpleWatch('./server/api/functions.ts', generatePipeApiHelpers);
+simpleWatch('./server/api/functions.ts', generatePipeApiHelpers, 2000);
 
 // ***********
 
 function generatePipeApiHelpers() {
   const content = fs.readFileSync('./server/api/functions.ts', 'utf8');
-  const m = content.match(/\$[a-z]+\(/gi);
+  const m = content.match(/async \$[a-z]+\(/gi);
   if (m) {
-    const functions = m.map((s) => s.slice(1, -1));
+    const functions = m.map((s) => s.slice(7, -1));
     const generated = functions.map(functionToApiDefinition).join('\n');
     const pipesContent = fs.readFileSync('./templates/genesis/lib/pipes.ts', 'utf8');
     const [firstPart] = pipesContent.split(MARKER);
@@ -64,10 +64,12 @@ function generateTypingsFromDbSchema() {
 
 // Utils
 
-function simpleWatch(path: string, cb: () => void) {
+function simpleWatch(path: string, cb: () => void, wait: number = 0) {
   fs.watch(path, (eventType, filename) => {
     if (eventType === 'change') {
-      cb();
+      setTimeout(() => {
+        cb();
+      }, wait);
     }
   });
 }

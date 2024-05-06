@@ -67,7 +67,7 @@ export default function AppWithEditor() {
           <select
             disabled={true}
             onChange={(val) => A.setConfigVal('domain', val)}
-            class="w-full text-black/70 rounded-md py2 px2"
+            class="w-full text-black/70 rounded-md py2 px2 h-10"
           >
             <option value="hoja.ar">.{C.domain}</option>
           </select>

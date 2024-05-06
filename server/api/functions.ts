@@ -164,12 +164,22 @@ export class Functions {
       if (!p.content || !p.path) return false;
     });
 
-    await QQ`UPDATE tsites SET deploy_config = ${p.deployConfig} WHERE id = ${p.siteId};`;
+    const subdomain = p.deployConfig.subdomain;
+
+    if (!(await this.$checkSubdomainAvailability({ subdomain, siteId: p.siteId }))) {
+      return false;
+    }
+
+    await QQ`UPDATE tsites SET subdomain = ${subdomain}, deploy_config = ${p.deployConfig} WHERE id = ${p.siteId};`;
     await QQ`DELETE FROM prerendered WHERE tsite_id = ${p.siteId};`;
     await QQ`INSERT INTO prerendered ${spreadInsert(
       ...p.prerenderedPages.map(({ path, content }) => ({ tsite_id: p.siteId, path, content })),
     )};`;
     return true;
+  }
+
+  async $createSite(p: { token: string }) {
+    await this.adminMemberAuthorized(p.token);
   }
 
   //  +-+-+-+-+-+

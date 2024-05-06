@@ -27,8 +27,8 @@ export default function Tools() {
 function SiteControl(p: { site: Partial<TSite> }) {
   const { actions: A } = useAdminStore();
   const [accessKey, setAccessKey] = useState('');
-  const [domain, setDomain] = useState('');
-  const [subdomain, setSubdomain] = useState('');
+  const [domain, setDomain] = useState(p.site.domain!);
+  const [subdomain, setSubdomain] = useState(p.site.subdomain!);
   const [settingAccessKey, setSettingAccessKey] = useState(false);
 
   async function handleSetAccessKey() {
@@ -57,7 +57,7 @@ function SiteControl(p: { site: Partial<TSite> }) {
       <div class="flex space-x-4 mb4">
         <TextInput label="Subdominio" value={subdomain} onChange={setSubdomain} />
         <TextInput label="Dominio" value={domain} onChange={setDomain} />
-        <Button>Establecer</Button>
+        <Button class="flex-shrink-0">Establecer</Button>
       </div>
       <div class="flex space-x-2">
         <div class="w-40">

@@ -144,7 +144,6 @@ export type Prerendered = {
   tsite_id: string;
   path: string;
   content: string;
-  assets_hash_key: string;
   created_at: Date | null;
 }
 export type PrerenderedInput = {
@@ -152,13 +151,12 @@ export type PrerenderedInput = {
   tsite_id: string;
   path: string;
   content: string;
-  assets_hash_key: string;
   created_at?: Date | null;
 }
 const prerendered = {
   tableName: 'prerendered',
-  columns: ['id', 'tsite_id', 'path', 'content', 'assets_hash_key', 'created_at'],
-  requiredForInsert: ['tsite_id', 'path', 'content', 'assets_hash_key'],
+  columns: ['id', 'tsite_id', 'path', 'content', 'created_at'],
+  requiredForInsert: ['tsite_id', 'path', 'content'],
   primaryKey: 'id',
   foreignKeys: { tsite_id: { table: 'tsites', column: 'id', $type: null as unknown as Tsites }, },
   $type: null as unknown as Prerendered,
@@ -203,7 +201,6 @@ export type Tsites = {
   subdomain: string;
   domain: string;
   access_key: string;
-  rendered_pages: Json;
   created_at: Date | null;
   updated_at: Date | null;
   deploy_config: Json | null;
@@ -216,15 +213,14 @@ export type TsitesInput = {
   subdomain: string;
   domain: string;
   access_key: string;
-  rendered_pages: Json;
   created_at?: Date | null;
   updated_at?: Date | null;
   deploy_config?: Json | null;
 }
 const tsites = {
   tableName: 'tsites',
-  columns: ['id', 'config', 'template', 'name', 'subdomain', 'domain', 'access_key', 'rendered_pages', 'created_at', 'updated_at', 'deploy_config'],
-  requiredForInsert: ['config', 'template', 'name', 'subdomain', 'domain', 'access_key', 'rendered_pages'],
+  columns: ['id', 'config', 'template', 'name', 'subdomain', 'domain', 'access_key', 'created_at', 'updated_at', 'deploy_config'],
+  requiredForInsert: ['config', 'template', 'name', 'subdomain', 'domain', 'access_key'],
   primaryKey: 'id',
   foreignKeys: {},
   $type: null as unknown as Tsites,
