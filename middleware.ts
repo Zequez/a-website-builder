@@ -14,7 +14,7 @@ export const config = {
      * 3. /_static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
-    '/((?!_api_/|_member_site_/|assets/chunks|assets/entries|assets/static|templates/assets|templates/(index|editor|admin).html).*)',
+    '/((?!_api_/|_member_site_/|assets/chunks|assets/entries|assets/static|templates/assets|templates/index\\.html|templates/editor\\.html|templates/admin\\.html).*)',
   ],
 };
 
