@@ -6,10 +6,13 @@ import { StoreContextWrapper } from './lib/useStore';
 // @ts-ignore
 import dragDropTouchPolyfill from './lib/drag-drop-touch-polyfill';
 import { hash } from './lib/url-helpers';
+import UnhandledErrorsDisplay from './components/UnhandledErrorsDisplay';
 
 dragDropTouchPolyfill();
 
 const { siteId, path } = hash.getData();
+
+render(<UnhandledErrorsDisplay />, document.getElementById('unhandled-errors')!);
 
 render(
   <StoreContextWrapper

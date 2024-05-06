@@ -1,20 +1,12 @@
-import { render } from 'preact';
-import { useEffect, useMemo } from 'preact/hooks';
-
 import KeyIcon from '~icons/fa6-solid/key';
-import { cx } from '@shared/utils';
-import indexHtml from '../../index.html?raw';
-import createValidator from '../config-validator';
-import useStore, { StoreContextWrapper } from '../lib/useStore';
+import useStore from '../lib/useStore';
 import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
 import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
 
 export default function App() {
   const {
-    store: { editing, config, siteId },
-    pathname,
-    configChanged,
+    store: { editing, config },
     selectedPage,
     editorUrl,
     actions: A,

@@ -1,10 +1,13 @@
-import { hydrate } from 'preact';
+import { hydrate, render } from 'preact';
 import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import App from './components/App';
 import { StoreContextWrapper } from './lib/useStore';
 import { hash } from './lib/url-helpers';
 import { tsite as getSite } from './lib/pipes';
+import UnhandledErrorsDisplay from './components/UnhandledErrorsDisplay';
+
+render(<UnhandledErrorsDisplay />, document.getElementById('unhandled-errors')!);
 
 const configEl = document.getElementById('config')!;
 
