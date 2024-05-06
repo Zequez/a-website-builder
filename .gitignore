@@ -7,3 +7,4 @@ elm-stuff
 .DS_Store
 .vercel
 independent-preact/bundle.js
+.vscode/settings.json
