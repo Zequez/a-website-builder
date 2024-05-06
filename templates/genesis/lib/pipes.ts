@@ -13,6 +13,7 @@ export const deploySite = pipeWrapper<FAT<F['$deploySite']>, ART<F['$deploySite'
 export const tsiteSetConfig = pipeWrapper<FAT<F['$tsiteSetConfig']>, ART<F['$tsiteSetConfig']>>('tsiteSetConfig');
 export const setAccessKey = pipeWrapper<FAT<F['$setAccessKey']>, ART<F['$setAccessKey']>>('setAccessKey');
 export const adminSaveSite = pipeWrapper<FAT<F['$adminSaveSite']>, ART<F['$adminSaveSite']>>('adminSaveSite');
+export const adminCreateSite = pipeWrapper<FAT<F['$adminCreateSite']>, ART<F['$adminCreateSite']>>('adminCreateSite');
 export const setSiteName = pipeWrapper<FAT<F['$setSiteName']>, ART<F['$setSiteName']>>('setSiteName');
 export const createSite = pipeWrapper<FAT<F['$createSite']>, ART<F['$createSite']>>('createSite');
 export const tokenFromAccessKey = pipeWrapper<FAT<F['$tokenFromAccessKey']>, ART<F['$tokenFromAccessKey']>>('tokenFromAccessKey');

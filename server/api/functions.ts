@@ -4,6 +4,7 @@ import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered, Tsites } from '@db/schema';
 import { spreadInsert } from '@db/squid';
+import { randomAlphaNumericString } from '@shared/utils';
 
 export class Err extends Error {
   constructor(
@@ -123,9 +124,11 @@ export class Functions {
   //  |C|H|E|C|K|E|R|S|
   //  +-+-+-+-+-+-+-+-+
 
-  async $checkSubdomainAvailability(p: { subdomain: string; siteId: string }): Promise<boolean> {
+  async $checkSubdomainAvailability(p: { subdomain: string; siteId?: string }): Promise<boolean> {
+    console.log('Checking SUBDOMAIN', p.subdomain, p.siteId);
+    console.log(await QQ`SELECT id, name, subdomain FROM tsites;`);
     const tsite = (
-      await QQ`SELECT id FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId}`
+      await QQ`SELECT id, name FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId || null}`
     )[0];
     if (tsite) return false;
     return true;
@@ -251,9 +254,44 @@ export class Functions {
         subdomain = ${p.subdomain},
         config = jsonb_set(config, '{subdomain}', to_jsonb(${p.subdomain}::text)),
         updated_at = now(),
-        deploy_config = jsonb_set(deploy_config, '{subdomain}', to_jsonb(${p.subdomain}::text));
+        deploy_config = jsonb_set(deploy_config, '{subdomain}', to_jsonb(${p.subdomain}::text))
+      WHERE id = ${p.siteId};
     `;
     return true;
+  }
+
+  async $adminCreateSite(p: { token: string; site: { name: string; config: Config } }): Promise<{
+    errors: ValidationError[];
+    site: Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain'> | null;
+  }> {
+    await this.adminMemberAuthorized(p.token);
+
+    if (!p.site) return { errors: [valErr('Missing site', 'site')], site: null };
+    if (!p.site.config) return { errors: [valErr('Missing config', 'config')], site: null };
+    if (!p.site.name) return { errors: [valErr('Missing name', 'name')], site: null };
+
+    const errors = validateConfig(p.site.config);
+    if (errors.length) {
+      return { errors, site: null };
+    }
+
+    const subdomain = p.site.config.subdomain;
+    if (!(await this.$checkSubdomainAvailability({ subdomain }))) {
+      return { errors: [valErr('Subdomain not available', 'subdomain')], site: null };
+    }
+
+    const domain = 'hoja.ar';
+    p.site.config.domain = domain;
+    const { id } = await T.tsites.insert({
+      name: p.site.name,
+      config: p.site.config,
+      subdomain,
+      domain,
+      template: 'genesis',
+      access_key: await hashPass(randomAlphaNumericString()),
+    });
+
+    return { errors: [], site: { id, name: p.site.name, subdomain, domain } };
   }
 
   async $setSiteName(p: { siteId: string; name: string; token: string }) {

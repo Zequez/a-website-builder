@@ -4,7 +4,7 @@ import { groupBy } from '@shared/utils';
 import { updateFileToB64 } from '../lib/utils.js';
 import { Member, Site, File_, Blob_, TSite } from './types';
 import { sql, spreadAnd, spreadUpdate, spreadInsert } from './squid';
-import { Prerendered } from './schema';
+import { Prerendered, Tsites } from './schema';
 
 export { sql, Q };
 export const query = Q;
@@ -49,7 +49,7 @@ const members = select<Member>('members');
 const sites = select<Site>('sites');
 const files = select<File_>('files');
 const blobs = select<Blob_>('blobs');
-const tsites = select<TSite>('tsites');
+const tsites = select<Tsites>('tsites');
 const prerendered = select<Prerendered>('prerendered');
 
 export type FileB64 = Omit<File_, 'data' | 'data_size'> & {

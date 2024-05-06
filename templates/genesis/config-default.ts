@@ -1,51 +1,10 @@
 const configDefault: Config = {
-  title: 'Your Website',
+  title: 'Título',
   subdomain: 'your-website',
   domain: 'hoja.ar',
-  description: 'This is my website',
+  description: 'Esto es un sitio web',
   themeColor: 'hsl(90, 50%, 50%)',
-  pages: [
-    {
-      uuid: 'a',
-      title: 'Inicio',
-      icon: '🏠',
-      path: '/',
-      onNav: true,
-      content: '#Hello there\nPotato',
-    },
-    {
-      uuid: 'b',
-      title: 'Sobre mí',
-      icon: '👤',
-      path: '/sobre-mi',
-      onNav: true,
-      content: '#Hello there\nPotato',
-    },
-    {
-      uuid: 'c',
-      title: 'Dónde estoy',
-      icon: '🌎',
-      path: '/donde-estoy',
-      onNav: true,
-      content: '#Hello foo\nBar',
-    },
-    {
-      uuid: 'd',
-      title: 'Consultas',
-      icon: '💬',
-      path: '/consultas',
-      onNav: true,
-      content: '#Hello foo\nBar',
-    },
-    {
-      uuid: 'e',
-      title: 'Secreto',
-      icon: '🔒',
-      path: '/secreto',
-      onNav: false,
-      content: '#Hello foo\nBar',
-    },
-  ],
+  pages: [],
 };
 
 export default configDefault;

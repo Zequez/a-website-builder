@@ -7,7 +7,7 @@ export default function Admin() {
   const { store } = useAdminStore();
 
   return (
-    <div class="bg-emerald-500 h-screen p-4 text-white/80">
+    <div class="bg-emerald-500 min-h-screen p-4 text-white/80">
       {store.accessKeyToken ? <Tools /> : <SignIn />}
     </div>
   );

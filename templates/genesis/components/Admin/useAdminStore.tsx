@@ -3,6 +3,9 @@ import * as pipes from '../../lib/pipes';
 import * as storage from '../../lib/storage';
 import { createContext } from 'preact';
 import { Tsites } from '@db/schema';
+import configDefault from '../../config-default';
+import { randomAlphaNumericString } from '@shared/utils';
+import { ValidationError } from '../../config-validator';
 
 export type PartialSite = Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain'>;
 
@@ -10,6 +13,8 @@ type AdminStore = {
   accessKeyToken: string | null;
   attemptAccessLoading: boolean;
   sites: PartialSite[] | null;
+  createSiteInProgress: boolean;
+  createSiteErrors: ValidationError[];
 };
 
 type StoreInit = {};
@@ -19,6 +24,8 @@ export function useAdminStoreBase(init: StoreInit) {
     accessKeyToken: storage.getMemberToken(),
     attemptAccessLoading: false,
     sites: null,
+    createSiteInProgress: false,
+    createSiteErrors: [],
   });
 
   function setStore(store: AdminStore) {
@@ -118,12 +125,28 @@ export function useAdminStoreBase(init: StoreInit) {
     }
   }
 
+  async function createSite() {
+    patchStore({ createSiteErrors: [], createSiteInProgress: true });
+    const config = { ...configDefault };
+    config.subdomain = randomAlphaNumericString();
+    const { errors, site } = await pipes.adminCreateSite({
+      token: store.accessKeyToken!,
+      site: { name: 'Nuevo sitio', config },
+    });
+    patchStore({
+      createSiteErrors: errors,
+      sites: site ? [...store.sites!, site] : store.sites,
+      createSiteInProgress: false,
+    });
+  }
+
   return {
     store,
     actions: {
       attemptAccess,
       setAccessKey,
       saveSite,
+      createSite,
     },
   };
 }

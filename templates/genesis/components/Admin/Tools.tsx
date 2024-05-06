@@ -8,17 +8,28 @@ import { editorUrl, publicSiteUrl } from '../../lib/url-helpers';
 
 export default function Tools() {
   const {
-    store: { sites },
+    store: { sites, createSiteInProgress, createSiteErrors },
+    actions: A,
   } = useAdminStore();
+
+  const sortedSites = useMemo(() => {
+    return (
+      sites &&
+      [...sites].sort((a, b) =>
+        a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()),
+      )
+    );
+  }, [sites]);
 
   return (
     <div>
       <h1 class="text-3xl mb4">Herramientas de Administración</h1>
       <div class="flex flex-col space-y-4">
-        {sites && sites.map((s) => <SiteControl site={s} />)}
+        {sortedSites && sortedSites.map((s) => <SiteControl key={s.id} site={s} />)}
         <div class="flexcc">
-          <Button>
-            <PlusIcon class="mr-2" /> Agregar
+          <ErrorsListDisplay class="w-full" errors={createSiteErrors} />
+          <Button onClick={A.createSite}>
+            <PlusIcon class="mr-2" /> {createSiteInProgress ? 'Agregando...' : 'Agregar'}
           </Button>
         </div>
       </div>
