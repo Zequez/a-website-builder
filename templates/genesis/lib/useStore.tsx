@@ -357,7 +357,7 @@ export function useStoreBase(init: StoreInit) {
     const page = store.config.pages.find((page) => page.path === path);
     if (page) {
       patchStore({ selectedPageId: page.uuid });
-      if (import.meta.env.DEV) {
+      if (import.meta.env.DEV || store.editing) {
         const { siteId } = urlHelpers.hash.getData();
         const newPath =
           window.location.pathname + '#!' + urlHelpers.hash.generate({ siteId, path });
