@@ -122,6 +122,11 @@ export function useStoreBase(init: StoreInit) {
     pathname = useMemo(() => {
       return this.selectedPage ? this.selectedPage.path : window.location.pathname;
     }, [this.selectedPage]);
+
+    editorUrl = useMemo(() => {
+      const host = import.meta.env.DEV ? 'http://localhost:3000' : 'https://hoja.ar';
+      return `${host}/templates/editor.html#${urlHash.generate({ siteId: store.siteId!, path: this.pathname })}`;
+    }, [store.siteId, this.pathname]);
   })();
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
@@ -152,15 +157,27 @@ export function useStoreBase(init: StoreInit) {
     }
   }, [store.config.subdomain, store.savedConfig.subdomain, store.siteId]);
 
-  // useEffect(() => {
-  //   if (store.siteId && store.editing) {
-  //     pipes
-  //       .tsite({ siteId: store.siteId, props: ['config', 'subdomain', 'domain'] })
-  //       .then((tsite) => {
-  //         patchStore({ loadedSiteData: tsite });
-  //       });
-  //   }
-  // }, [store.siteId, store.editing]);
+  useEffect(() => {
+    (async () => {
+      if (store.accessToken && store.siteId && store.configNeedsToLoadFromServer) {
+        const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
+        const validator = createValidator();
+        if (validator(config)) {
+          const validConfig = config as Config;
+          patchStore({
+            config: validConfig,
+            savedConfig: { ...validConfig },
+            configNeedsToLoadFromServer: false,
+          });
+        } else {
+          console.error('Invalid configuration', config);
+          patchStore({
+            invalidConfig: config,
+          });
+        }
+      }
+    })();
+  }, [store.accessToken, store.siteId, store.configNeedsToLoadFromServer]);
 
   //  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
   // ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
@@ -171,29 +188,6 @@ export function useStoreBase(init: StoreInit) {
 
   async function initialize() {
     console.log('Store initialized with', init, store);
-    if (store.accessToken) {
-      if (store.configNeedsToLoadFromServer) {
-        if (store.siteId) {
-          const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
-          const validator = createValidator();
-          if (validator(config)) {
-            const validConfig = config as Config;
-            patchStore({
-              config: validConfig,
-              savedConfig: { ...validConfig },
-              configNeedsToLoadFromServer: false,
-            });
-          } else {
-            console.error('Invalid configuration', config);
-            patchStore({
-              invalidConfig: config,
-            });
-          }
-        } else {
-          console.error('No config or site ID was provided');
-        }
-      }
-    }
   }
 
   async function retryFixConfig(config: Config) {
@@ -279,8 +273,8 @@ export function useStoreBase(init: StoreInit) {
     });
   }
 
-  function setPages(pages: Page[]) {
-    setConfigVal('pages', setPagesPaths(pages));
+  function setPages(pages: Page[], regenerateUrls: boolean = true) {
+    setConfigVal('pages', regenerateUrls ? setPagesPaths(pages) : pages);
   }
 
   const pages = new (class {
@@ -293,13 +287,13 @@ export function useStoreBase(init: StoreInit) {
             return page;
           }
         }),
+        patch.title ? true : false,
       );
     }
 
     add() {
       const uuid = crypto.randomUUID();
-      setConfigVal(
-        'pages',
+      setPages(
         store.config.pages.concat({
           uuid,
           path: '/' + uuid,
@@ -308,6 +302,7 @@ export function useStoreBase(init: StoreInit) {
           onNav: false,
           content: '',
         }),
+        false,
       );
     }
 
@@ -323,11 +318,14 @@ export function useStoreBase(init: StoreInit) {
       } else {
         pages.unshift(page);
       }
-      setPages(pages);
+      setPages(pages, true);
     }
 
     remove(uuid: string) {
-      setPages(store.config.pages.filter((page) => page.uuid !== uuid));
+      setPages(
+        store.config.pages.filter((page) => page.uuid !== uuid),
+        true,
+      );
     }
   })();
 

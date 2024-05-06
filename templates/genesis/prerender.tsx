@@ -12,7 +12,7 @@ export default async function prerender(siteId: string, config: Config) {
 
   const htmlPath = import.meta.env.DEV
     ? 'http://localhost:3000/templates/index.html'
-    : '/templates/index.html';
+    : 'https://hoja.ar/templates/index.html';
 
   const response = await fetch(htmlPath);
   const htmlBase = await response.text();
@@ -29,14 +29,12 @@ type PrerenderedPage = {
 function toHtml(siteId: string, config: Config, path: string, htmlBase: string): PrerenderedPage {
   const div = document.createElement('div');
   render(
-    <StoreContextWrapper init={{ config, siteId: null, editing: false, initialPath: path }}>
+    <StoreContextWrapper init={{ config, siteId, editing: false, initialPath: path }}>
       <App />
     </StoreContextWrapper>,
     div,
   );
   const preRendered = div.innerHTML;
-
-  console.log(preRendered);
 
   render(null, div);
 

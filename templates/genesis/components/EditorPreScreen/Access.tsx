@@ -10,14 +10,17 @@ export default function AccessScreen() {
   const [accessKey, setAccessKey] = useState('');
   const [accessAttemptError, setAccessAttemptError] = useState<boolean>(false);
 
-  async function handleAccessClick() {
-    setAccessAttemptError(!(await attemptAccess(accessKey, true)));
+  async function handleAccessClick(ev: SubmitEvent) {
+    ev.preventDefault();
+    if (accessKey && !attemptAccessLoading) {
+      setAccessAttemptError(!(await attemptAccess(accessKey, true)));
+    }
   }
 
   return (
     <div class="flexcs h-full w-full flex-col space-y-4">
       <div class="text-2xl text-center">Ingrese la clave de acceso para continuar</div>
-      <div class="flex flex-col space-y-4 bg-white/20 rounded-lg p-4">
+      <form class="flex flex-col space-y-4 bg-white/20 rounded-lg p-4" onSubmit={handleAccessClick}>
         <div>
           <TextInput
             label="Clave de acceso"
@@ -37,11 +40,10 @@ export default function AccessScreen() {
         <button
           disabled={!accessKey || attemptAccessLoading}
           class="bg-white/40 hover:bg-white/50 text-white rounded-md px-2 py-1 disabled:opacity-50 font-bold tracking-wider"
-          onClick={handleAccessClick}
         >
           {attemptAccessLoading ? 'Checkeando...' : 'Ingresar'}
         </button>
-      </div>
+      </form>
     </div>
   );
 }
