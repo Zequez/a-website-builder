@@ -28,7 +28,7 @@ export default function Tools() {
         {sortedSites && sortedSites.map((s) => <SiteControl key={s.id} site={s} />)}
         <div class="flexcc">
           <ErrorsListDisplay class="w-full" errors={createSiteErrors} />
-          <Button onClick={A.createSite}>
+          <Button onClick={A.createSite} disabled={createSiteInProgress}>
             <PlusIcon class="mr-2" /> {createSiteInProgress ? 'Agregando...' : 'Agregar'}
           </Button>
         </div>

@@ -1,5 +1,6 @@
 import { cx } from '@shared/utils';
 import useStore from '../lib/useStore';
+import { useRef } from 'preact/hooks';
 
 export function Nav() {
   const {
@@ -14,7 +15,7 @@ export function Nav() {
         navPages.map(({ uuid, path, title, icon }) => (
           <div class="flex">
             <NavItem
-              onClick={(ev: MouseEvent) => {
+              onClick={(ev: MouseEvent | TouchEvent) => {
                 ev.preventDefault();
                 A.navigateTo(path);
               }}
@@ -34,7 +35,7 @@ export function NavItem(p: {
   icon: string;
   title: string;
   active?: boolean;
-  onClick: (ev: MouseEvent) => void;
+  onClick: (ev: MouseEvent | TouchEvent) => void;
 }) {
   return (
     <a
@@ -46,6 +47,7 @@ export function NavItem(p: {
         },
       )}
       onClick={p.onClick}
+      onTouchStart={p.onClick}
       href={p.path}
     >
       <span class="whitespace-nowrap">
