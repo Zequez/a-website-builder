@@ -2,7 +2,7 @@ import { T, QQ, sql, TSite, Member } from '@db';
 import { ValidationError, valErr, validateConfig } from '../../templates/genesis/config-validator';
 import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
-import { Prerendered } from '@db/schema';
+import { Prerendered, Tsites } from '@db/schema';
 import { spreadInsert } from '@db/squid';
 
 export class Err extends Error {
@@ -135,11 +135,11 @@ export class Functions {
   //  |A|D|M|I|N|
   //  +-+-+-+-+-+
 
-  async $tsites(p: { props: string[]; token: string }): Promise<Partial<TSite>[]> {
+  async $tsites(p: { props: string[]; token: string }): Promise<Partial<Tsites>[]> {
     await this.adminMemberAuthorized(p.token);
     const selectProps = this.tsiteSanitizedProps(p.props);
     if (!selectProps.length) throw E('No valid properties selected', 400, null);
-    const tsites = await QQ<Partial<TSite>>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites`;
+    const tsites = await QQ<Partial<Tsites>>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites`;
     return tsites;
   }
 
@@ -156,7 +156,7 @@ export class Functions {
     prerenderedPages: { content: string; path: string }[];
     token: string;
   }): Promise<boolean> {
-    this.accessKeyAuthorizeOnly(p.token, p.siteId);
+    await this.accessKeyAuthorizeOnly(p.token, p.siteId);
     const errors = validateConfig(p.deployConfig);
     if (errors.length > 0) return false;
     if (!p.prerenderedPages || !Array.isArray(p.prerenderedPages)) return false;
@@ -170,7 +170,12 @@ export class Functions {
       return false;
     }
 
-    await QQ`UPDATE tsites SET subdomain = ${subdomain}, deploy_config = ${p.deployConfig} WHERE id = ${p.siteId};`;
+    await QQ`UPDATE tsites
+      SET
+        subdomain = ${subdomain},
+        deploy_config = ${p.deployConfig},
+        deployed_at = now()
+      WHERE id = ${p.siteId};`;
     await QQ`DELETE FROM prerendered WHERE tsite_id = ${p.siteId};`;
     await QQ`INSERT INTO prerendered ${spreadInsert(
       ...p.prerenderedPages.map(({ path, content }) => ({ tsite_id: p.siteId, path, content })),
@@ -178,8 +183,20 @@ export class Functions {
     return true;
   }
 
-  async $createSite(p: { token: string }) {
-    await this.adminMemberAuthorized(p.token);
+  async $tsiteSetConfig(p: {
+    siteId: string;
+    config: Config;
+    token: string;
+  }): Promise<{ errors: ValidationError[] }> {
+    await this.accessKeyAuthorizeOnly(p.token, p.siteId);
+    const tsite = (await QQ<Pick<Tsites, 'id'>>`SELECT id FROM tsites WHERE id = ${p.siteId}`)[0];
+    if (!tsite) return { errors: [valErr('Site not found')] };
+    const errors = validateConfig(p.config);
+    if (errors.length > 0) return { errors };
+    else {
+      await T.tsites.update(p.siteId, { config: p.config, updated_at: new Date() });
+      return { errors: [] };
+    }
   }
 
   //  +-+-+-+-+-+
@@ -197,18 +214,60 @@ export class Functions {
     }
   }
 
-  async $tsiteSetConfig(p: {
+  async $adminSaveSite(p: {
     siteId: string;
-    config: Config;
-  }): Promise<{ errors: ValidationError[] }> {
-    const tsite = (await QQ<TSite>`SELECT id FROM tsites WHERE id = ${p.siteId}`)[0];
-    if (!tsite) return { errors: [valErr('Site not found')] };
-    const errors = validateConfig(p.config);
-    if (errors.length > 0) return { errors };
-    else {
-      await T.tsites.update(p.siteId, { config: p.config });
-      return { errors: [] };
+    site: { name?: string; subdomain?: string; domain?: string };
+    token: string;
+  }) {
+    await this.adminMemberAuthorized(p.token);
+    if (p.site.subdomain) {
+      if (!(await this.setSubdomain({ siteId: p.siteId, subdomain: p.site.subdomain }))) {
+        return { errors: [valErr('Subdomain not available', 'subdomain')] };
+      }
     }
+    const update = {
+      ...(p.site.name && { name: p.site.name }),
+      ...(p.site.domain && { domain: p.site.domain }),
+    };
+    if (Object.keys(update).length) {
+      await T.tsites.update(p.siteId, update);
+    }
+    return { errors: [] };
+  }
+
+  async setSubdomain(p: { siteId: string; subdomain: string }) {
+    const tsite = (
+      await QQ<Tsites>`SELECT id, config, deploy_config FROM tsites WHERE id = ${p.siteId}`
+    )[0];
+    if (!p.subdomain) return false;
+    if (!tsite) return false;
+    if (!(await this.$checkSubdomainAvailability({ subdomain: p.subdomain, siteId: p.siteId }))) {
+      return false;
+    }
+
+    await QQ`
+      UPDATE tsites
+      SET
+        subdomain = ${p.subdomain},
+        config = jsonb_set(config, '{subdomain}', to_jsonb(${p.subdomain}::text)),
+        updated_at = now(),
+        deploy_config = jsonb_set(deploy_config, '{subdomain}', to_jsonb(${p.subdomain}::text));
+    `;
+    return true;
+  }
+
+  async $setSiteName(p: { siteId: string; name: string; token: string }) {
+    await this.adminMemberAuthorized(p.token);
+    try {
+      await T.tsites.update(p.siteId, { name: p.name });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async $createSite(p: { token: string }) {
+    await this.adminMemberAuthorized(p.token);
   }
 
   //  +-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+

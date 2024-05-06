@@ -12,3 +12,4 @@ export * as m1714448783_tsites from './m1714448783_tsites';
 export * as m1714943124_prerendered from './m1714943124_prerendered';
 export * as m1714948054_add_deploy_config_to_tsites from './m1714948054_add_deploy_config_to_tsites';
 export * as m1714949177_remove_unused_columns from './m1714949177_remove_unused_columns';
+export * as m1714976988_add_deployed_at_to_tsites from './m1714976988_add_deployed_at_to_tsites';

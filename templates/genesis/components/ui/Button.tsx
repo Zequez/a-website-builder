@@ -5,15 +5,17 @@ export default function Button(p: {
   children: any;
   onClick?: () => void;
   disabled?: boolean;
-  tint?: 'red' | 'green';
+  tint?: 'red' | 'green' | 'green-brighter';
   expandH?: boolean;
   class?: string;
   reff?: Ref<HTMLButtonElement>;
   customSize?: boolean;
+  joinL?: boolean;
 }) {
   const tintClass = {
     red: 'bg-red-500',
     green: 'bg-emerald-500',
+    'green-brighter': 'bg-green-500',
     '': '',
   }[p.tint || ''];
 
@@ -21,6 +23,7 @@ export default function Button(p: {
   const paddingClass = p.customSize ? '' : 'px2 py1';
   const minWClass = p.customSize ? '' : 'min-w-20';
   const heightClass = p.customSize ? '' : 'h-10';
+  const roundedClass = p.joinL ? 'rounded-r-md' : 'rounded-md';
 
   return (
     <button
@@ -28,7 +31,6 @@ export default function Button(p: {
       class={cx(
         `
         flexcc
-        rounded-md
         bg-gradient-to-b from-white/30 to-white/20
         text-white  text-shadow-1 font-semibold tracking-wider
         b b-white/10 b-t-white/30
@@ -42,6 +44,7 @@ export default function Button(p: {
         active:scale-98
         active:shadow-none
       `,
+        roundedClass,
         heightClass,
         paddingClass,
         minWClass,

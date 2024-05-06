@@ -4,9 +4,9 @@ import * as pipes from '../lib/pipes';
 import configDefault from '../config-default';
 import createValidator, { ValidationError } from '../config-validator';
 import * as storage from './storage';
-import urlHash from './urlHash';
 import prerender from '../prerender';
 import { slugify, wait } from '@shared/utils';
+import * as urlHelpers from './url-helpers';
 
 type Store = {
   editing: boolean;
@@ -124,13 +124,7 @@ export function useStoreBase(init: StoreInit) {
     }, [this.selectedPage]);
 
     editorUrl = useMemo(() => {
-      const host = import.meta.env.DEV
-        ? 'http://localhost:5174'
-        : window.location.hostname === 'localhost'
-          ? 'http://localhost:3000'
-          : 'https://hoja.ar';
-
-      return `${host}/templates/editor.html#!${urlHash.generate({ siteId: store.siteId!, path: this.pathname })}`;
+      return urlHelpers.editorUrl(store.siteId!, this.pathname);
     }, [store.siteId, this.pathname]);
   })();
 
@@ -200,7 +194,11 @@ export function useStoreBase(init: StoreInit) {
 
   async function retryFixConfig(config: Config) {
     if (store.siteId) {
-      const { errors } = await pipes.tsiteSetConfig({ siteId: store.siteId, config });
+      const { errors } = await pipes.tsiteSetConfig({
+        siteId: store.siteId,
+        config,
+        token: store.accessToken!,
+      });
       if (errors.length === 0) {
         patchStore({
           config,
@@ -222,7 +220,11 @@ export function useStoreBase(init: StoreInit) {
 
   async function saveConfig() {
     patchStore({ configIsSaving: true });
-    const { errors } = await pipes.tsiteSetConfig({ siteId: store.siteId!, config: store.config });
+    const { errors } = await pipes.tsiteSetConfig({
+      siteId: store.siteId!,
+      config: store.config,
+      token: store.accessToken!,
+    });
     if (errors.length === 0) {
       patchStore({ savedConfig: store.config, configIsSaving: false, remoteSetConfigErrors: [] });
     } else {
@@ -346,8 +348,9 @@ export function useStoreBase(init: StoreInit) {
     if (page) {
       patchStore({ selectedPageId: page.uuid });
       if (import.meta.env.DEV) {
-        const { siteId } = urlHash.getData();
-        const newPath = window.location.pathname + '#!' + urlHash.generate({ siteId, path });
+        const { siteId } = urlHelpers.hash.getData();
+        const newPath =
+          window.location.pathname + '#!' + urlHelpers.hash.generate({ siteId, path });
         history.pushState({}, '', newPath);
       } else {
         history.pushState({}, '', path);

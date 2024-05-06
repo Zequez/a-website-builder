@@ -9,7 +9,6 @@ import useStore, { StoreContextWrapper } from '../lib/useStore';
 import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
 import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
-import urlHash from '../lib/urlHash';
 
 export default function App() {
   const {
@@ -20,18 +19,6 @@ export default function App() {
     editorUrl,
     actions: A,
   } = useStore();
-
-  // const appRenderedContext = import.meta.env.DEV
-  //   ? editing
-  //     ? 'dev-editor'
-  //     : 'dev-app'
-  //   : location.port === '3000'
-  //     ? editing
-  //       ? 'dev-server-editor'
-  //       : 'dev-server-app'
-  //     : editing
-  //       ? 'prod-editor'
-  //       : 'prod-app';
 
   return (
     <>

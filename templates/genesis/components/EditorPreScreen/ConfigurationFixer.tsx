@@ -1,6 +1,7 @@
-import { useState } from 'preact/hooks';
-import { ValidationError, validateConfig } from '../../config-validator';
+import { useMemo, useState } from 'preact/hooks';
+import { ValidationError, valErr, validateConfig } from '../../config-validator';
 import useStore from '../../lib/useStore';
+import ErrorsListDisplay from '../ui/ErrorsListDisplay';
 
 export default function ManualConfigurator({ config }: { config: any }) {
   const {
@@ -8,12 +9,12 @@ export default function ManualConfigurator({ config }: { config: any }) {
     store: { remoteSetConfigErrors },
   } = useStore();
   const [val, setVal] = useState(() => JSON.stringify(config, null, 2));
-  const [parseError, setParseError] = useState('');
+  const [parseError, setParseError] = useState<ValidationError | null>(null);
   const [validatorErrors, setValidatorErrors] = useState<ValidationError[]>(() =>
     validateConfig(config),
   );
 
-  const canSave = parseError === '' && validatorErrors.length === 0;
+  const canSave = !parseError && validatorErrors.length === 0;
 
   function handleInput(val: string) {
     setVal(val);
@@ -21,12 +22,18 @@ export default function ManualConfigurator({ config }: { config: any }) {
     let parsedConfig: any;
     try {
       parsedConfig = JSON.parse(val);
-      setParseError('');
+      setParseError(null);
       setValidatorErrors(validateConfig(parsedConfig));
     } catch (e) {
-      setParseError((e as any).message);
+      setParseError(valErr((e as any).message));
     }
   }
+
+  const errors = useMemo(() => {
+    const errs = [...validatorErrors, ...remoteSetConfigErrors];
+    if (parseError) errs.push(parseError);
+    return errs;
+  }, [validatorErrors, remoteSetConfigErrors, parseError]);
 
   return (
     <div>
@@ -36,11 +43,7 @@ export default function ManualConfigurator({ config }: { config: any }) {
         value={val}
         onChange={({ currentTarget }) => handleInput(currentTarget.value)}
       />
-      <div class="text-red-500">
-        {!!parseError && <div class="mb-2">{parseError}</div>}
-        {validatorErrors.map(validationErrorToMessage)}
-        {remoteSetConfigErrors.map(validationErrorToMessage)}
-      </div>
+      <ErrorsListDisplay errors={errors} />
       <button
         disabled={!canSave}
         onClick={() => retryFixConfig(JSON.parse(val))}
@@ -50,17 +53,4 @@ export default function ManualConfigurator({ config }: { config: any }) {
       </button>
     </div>
   );
-}
-
-function validationErrorToMessage(error: ValidationError) {
-  return (
-    <div class="mb-2">
-      [{error.path}] {capitalizeFirstLetter(error.message)}
-      <div>{JSON.stringify(error.params)}</div>
-    </div>
-  );
-}
-
-function capitalizeFirstLetter(str: string) {
-  return str.charAt(0).toLocaleUpperCase() + str.slice(1);
 }

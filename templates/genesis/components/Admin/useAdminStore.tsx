@@ -2,12 +2,14 @@ import { useContext, useEffect, useState } from 'preact/hooks';
 import * as pipes from '../../lib/pipes';
 import * as storage from '../../lib/storage';
 import { createContext } from 'preact';
-import { TSite } from '@db';
+import { Tsites } from '@db/schema';
+
+export type PartialSite = Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain'>;
 
 type AdminStore = {
   accessKeyToken: string | null;
   attemptAccessLoading: boolean;
-  sites: Partial<TSite>[] | null;
+  sites: PartialSite[] | null;
 };
 
 type StoreInit = {};
@@ -26,6 +28,19 @@ export function useAdminStoreBase(init: StoreInit) {
 
   function patchStore(patch: Partial<AdminStore>) {
     setStore({ ...store, ...patch });
+  }
+
+  function patchSite(siteId: string, patch: Partial<PartialSite>) {
+    setStore({
+      ...store,
+      sites: store.sites!.map((site) => {
+        if (site.id === siteId) {
+          return { ...site, ...patch };
+        } else {
+          return site;
+        }
+      }),
+    });
   }
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
@@ -56,10 +71,10 @@ export function useAdminStoreBase(init: StoreInit) {
 
   async function loadAllSites() {
     if (store.accessKeyToken) {
-      const sites = await pipes.tsites({
+      const sites = (await pipes.tsites({
         props: ['id', 'name', 'subdomain', 'domain'],
         token: store.accessKeyToken,
-      });
+      })) as PartialSite[];
       patchStore({ sites });
     }
   }
@@ -81,11 +96,34 @@ export function useAdminStoreBase(init: StoreInit) {
     return await pipes.setAccessKey({ siteId, accessKey, token: store.accessKeyToken! });
   }
 
+  async function saveSite(site: PartialSite) {
+    const currentSite = store.sites!.find((s) => s.id === site.id)!;
+    const sitePatch = {
+      ...(site.name !== currentSite.name && { name: site.name }),
+      ...(site.subdomain !== currentSite.subdomain && { subdomain: site.subdomain }),
+      ...(site.domain !== currentSite.domain && { domain: site.domain }),
+    };
+    if (Object.keys(sitePatch).length > 0) {
+      const response = await pipes.adminSaveSite({
+        siteId: site.id!,
+        site: sitePatch,
+        token: store.accessKeyToken!,
+      });
+      if (!response.errors.length) {
+        patchSite(site.id!, sitePatch);
+      }
+      return response;
+    } else {
+      return { errors: [] };
+    }
+  }
+
   return {
     store,
     actions: {
       attemptAccess,
       setAccessKey,
+      saveSite,
     },
   };
 }

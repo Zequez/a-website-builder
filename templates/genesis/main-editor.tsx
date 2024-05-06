@@ -5,11 +5,11 @@ import App from './components/AppWithEditor';
 import { StoreContextWrapper } from './lib/useStore';
 // @ts-ignore
 import dragDropTouchPolyfill from './lib/drag-drop-touch-polyfill';
-import urlHash from './lib/urlHash';
+import { hash } from './lib/url-helpers';
 
 dragDropTouchPolyfill();
 
-const { siteId, path } = urlHash.getData();
+const { siteId, path } = hash.getData();
 
 render(
   <StoreContextWrapper
