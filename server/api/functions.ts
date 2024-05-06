@@ -3,7 +3,7 @@ import { ValidationError, valErr, validateConfig } from '../../templates/genesis
 import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered } from '@db/schema';
-import { spreadInsert } from 'squid/pg';
+import { spreadInsert } from '@db/squid';
 
 export class Err extends Error {
   constructor(
