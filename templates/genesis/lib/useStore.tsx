@@ -144,16 +144,17 @@ export function useStoreBase(init: StoreInit) {
   }, [computed.documentTitle]);
 
   useEffect(() => {
-    if (store.siteId) {
-      if (store.config.subdomain !== store.savedConfig.subdomain) {
-        patchStore({ subdomainAvailabilityStatus: 'unknown' });
-        pipes
-          .checkSubdomainAvailability({ subdomain: store.config.subdomain, siteId: store.siteId })
-          .then((status) => {
-            patchStore({ subdomainAvailabilityStatus: status ? 'available' : 'taken' });
-          });
-      }
-    }
+    // Let's disable this for now, the server checks on saving
+    // if (store.siteId) {
+    //   if (store.config.subdomain !== store.savedConfig.subdomain) {
+    //     patchStore({ subdomainAvailabilityStatus: 'unknown' });
+    //     pipes
+    //       .checkSubdomainAvailability({ subdomain: store.config.subdomain, siteId: store.siteId })
+    //       .then((status) => {
+    //         patchStore({ subdomainAvailabilityStatus: status ? 'available' : 'taken' });
+    //       });
+    //   }
+    // }
   }, [store.config.subdomain, store.savedConfig.subdomain, store.siteId]);
 
   // Load Configuration

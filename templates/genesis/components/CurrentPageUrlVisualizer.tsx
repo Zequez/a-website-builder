@@ -2,11 +2,16 @@ import { useState, useRef } from 'preact/hooks';
 import useStore from '../lib/useStore';
 
 export function CurrentPageUrlVisualizer() {
-  const { selectedPage } = useStore();
+  const {
+    selectedPage,
+    store: {
+      savedConfig: { subdomain },
+    },
+  } = useStore();
   const [justCopied, setJustCopied] = useState(false);
   const copiedTimeout = useRef<any>(null);
 
-  const pageUrl = selectedPage ? `https://hoja.ar${selectedPage.path}` : '';
+  const pageUrl = selectedPage ? `https://${subdomain}.hoja.ar${selectedPage.path}` : '';
 
   function handleClick() {
     if (pageUrl) {
