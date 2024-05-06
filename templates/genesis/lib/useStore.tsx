@@ -6,7 +6,7 @@ import createValidator, { ValidationError } from '../config-validator';
 import * as storage from './storage';
 import urlHash from './urlHash';
 import prerender from '../prerender';
-import { wait } from '@shared/utils';
+import { slugify, wait } from '@shared/utils';
 
 type Store = {
   editing: boolean;
@@ -170,6 +170,7 @@ export function useStoreBase(init: StoreInit) {
   // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
   async function initialize() {
+    console.log('Store initialized with', init, store);
     if (store.accessToken) {
       if (store.configNeedsToLoadFromServer) {
         if (store.siteId) {
@@ -267,10 +268,24 @@ export function useStoreBase(init: StoreInit) {
   //  |P|A|G|E|S|
   //  +-+-+-+-+-+
 
+  function setPagesPaths(pages: Page[]): Page[] {
+    return pages.map((page, i) => {
+      const newPath = i === 0 ? '/' : '/' + (page.title ? slugify(page.title) : page.uuid);
+      if (newPath !== page.path) {
+        return { ...page, path: newPath };
+      } else {
+        return page;
+      }
+    });
+  }
+
+  function setPages(pages: Page[]) {
+    setConfigVal('pages', setPagesPaths(pages));
+  }
+
   const pages = new (class {
     patch(uuid: string, patch: Partial<Page>) {
-      setConfigVal(
-        'pages',
+      setPages(
         store.config.pages.map((page) => {
           if (page.uuid === uuid) {
             return { ...page, ...patch };
@@ -308,14 +323,11 @@ export function useStoreBase(init: StoreInit) {
       } else {
         pages.unshift(page);
       }
-      setConfigVal('pages', pages);
+      setPages(pages);
     }
 
     remove(uuid: string) {
-      setConfigVal(
-        'pages',
-        store.config.pages.filter((page) => page.uuid !== uuid),
-      );
+      setPages(store.config.pages.filter((page) => page.uuid !== uuid));
     }
   })();
 

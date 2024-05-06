@@ -41,7 +41,7 @@ export function NavItem(p: {
       class={cx(
         'relative px3 sm:px4 py1 sm:py2 -mt1 -mb1 rounded-lg flexcc text-black/40 font-light hover:z-30',
         {
-          'bg-emerald-500 text-white  shadow-md': p.active,
+          'bg-emerald-500 text-white shadow-md': p.active,
           'hover:bg-white/40': !p.active,
         },
       )}

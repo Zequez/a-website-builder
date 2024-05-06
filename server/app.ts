@@ -33,23 +33,38 @@ app.all('*', async (req, res, next) => {
     }
     return appDist(req, res, next);
   } else {
-    console.log('Site new URL ', url.toString());
+    // On Vercel it serves the app directly without going through here
+    const { fileName, mimeType } = parseUrlFile(url);
+    if (fileName.match(/templates\/assets\/.*/)) {
+      return appDist(req, res, next);
+    }
+
+    // TODO: Consider top-level-domains too
     const tsite = await T.tsites.where({ subdomain: req.subDomain }).one();
     if (tsite) {
-      const { fileName, mimeType } = parseUrlFile(url);
-      if (fileName.match(/\/assets\/.*/)) {
-        return appDist(req, res, next);
+      let page = await T.prerendered.where({ path: url.pathname, tsite_id: tsite.id }).one();
+      if (!page) {
+        // Not found page
+        page = await T.prerendered.where({ path: '', tsite_id: tsite.id }).one();
       }
-      if (templatesIndexes[tsite.template]) {
-        console.log(fileName);
-        res.status(200);
-        res.setHeader('Content-Type', 'text/html');
-        res.write(templatesIndexes[tsite.template]);
-        res.end();
-      } else {
-        res.status(500).json({ error: 'Invalid site configuration, template unavailable' });
+
+      if (!page) {
+        return next();
       }
-    } else {
+      const m = templatesIndexes.genesis.match(/<!--{{TEMPLATE_ASSETS}}-->([^]*)<\/head>/);
+      if (!m || !m[1]) throw 'Could not find template assets';
+      const contentWithLatestAssetsLinks = page.content.replace(
+        /<!--{{TEMPLATE_ASSETS}}-->([^]*)<\/head>/,
+        `<!--Latest assets-->${m[1]}</head>`,
+      );
+
+      res.status(page.path === '' ? 404 : 200);
+      res.setHeader('Content-Type', 'text/html');
+      res.write(contentWithLatestAssetsLinks);
+      res.end();
+    }
+    // I might deprecate this soon
+    else {
       const site = await T.sites.where({ local_name: req.subDomain }).one();
       if (!site) return next();
       const { fileName, mimeType } = parseUrlFile(url);

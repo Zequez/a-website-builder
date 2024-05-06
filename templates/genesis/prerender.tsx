@@ -17,6 +17,7 @@ export default async function prerender(siteId: string, config: Config) {
   const response = await fetch(htmlPath);
   const htmlBase = await response.text();
   const renderedPages = config.pages.map((page) => toHtml(siteId, config, page.path, htmlBase));
+  renderedPages.push(toHtml(siteId, config, '', htmlBase)); // Empty page for 404
   return renderedPages;
 }
 
@@ -34,6 +35,8 @@ function toHtml(siteId: string, config: Config, path: string, htmlBase: string):
     div,
   );
   const preRendered = div.innerHTML;
+
+  console.log(preRendered);
 
   render(null, div);
 

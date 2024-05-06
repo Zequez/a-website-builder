@@ -4,7 +4,6 @@ import UnoCSS from 'unocss/vite';
 import Icons from 'unplugin-icons/vite';
 import preact from '@preact/preset-vite';
 import viteYaml from '@modyfi/vite-plugin-yaml';
-import codegen from 'vite-plugin-codegen';
 
 export default defineConfig(({ mode }) => {
   return {

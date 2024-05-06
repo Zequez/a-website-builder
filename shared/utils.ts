@@ -3,20 +3,26 @@ import { encode, decode } from 'js-base64';
 export { default as cx } from 'classnames';
 
 export function groupBy<T extends { [key: string]: any }>(arr: T[], key: string) {
-  return arr.reduce((acc, obj) => {
-    const val = obj[key];
-    acc[val] = (acc[val] || []).concat(obj);
-    return acc;
-  }, {} as { [key: string]: T[] });
+  return arr.reduce(
+    (acc, obj) => {
+      const val = obj[key];
+      acc[val] = (acc[val] || []).concat(obj);
+      return acc;
+    },
+    {} as { [key: string]: T[] },
+  );
 }
 
 export function keyBy<T extends { [key: string]: any }>(arr: T[], key: string) {
-  return arr.reduce((acc, obj) => {
-    const val = obj[key];
-    if (acc[val]) console.warn('Duplicate key: ' + val);
-    acc[val] = obj;
-    return acc;
-  }, {} as { [key: string]: T });
+  return arr.reduce(
+    (acc, obj) => {
+      const val = obj[key];
+      if (acc[val]) console.warn('Duplicate key: ' + val);
+      acc[val] = obj;
+      return acc;
+    },
+    {} as { [key: string]: T },
+  );
 }
 
 export function validateEmail(email: string) {
@@ -54,4 +60,12 @@ export function toArr(x: string | string[]) {
 
 export function wait(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+export function slugify(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
