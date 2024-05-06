@@ -67,7 +67,7 @@ export default function App() {
           </main>
         </div>
 
-        <NetworksLinks />
+        {/* <NetworksLinks /> */}
       </div>
     </>
   );

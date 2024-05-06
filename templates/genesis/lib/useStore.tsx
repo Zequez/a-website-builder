@@ -146,8 +146,10 @@ export function useStoreBase(init: StoreInit) {
   }, []);
 
   useEffect(() => {
-    window.document.title = computed.documentTitle;
-  }, [computed.documentTitle]);
+    if (!store.editing) {
+      window.document.title = computed.documentTitle;
+    }
+  }, [computed.documentTitle, store.editing]);
 
   useEffect(() => {
     // Let's disable this for now, the server checks on saving

@@ -6,11 +6,13 @@ export default function UnhandledErrorsDisplay() {
 
   useEffect(() => {
     function handleError(err: ErrorEvent) {
-      _errors([...errors, err.message]);
+      console.error(err);
+      _errors([...errors, (err && err.message) || '???']);
     }
 
     function handlePromiseError(err: PromiseRejectionEvent) {
-      _errors([...errors, err.reason.message]);
+      console.error(err);
+      _errors([...errors, (err && err.reason && err.reason.message) || '???']);
     }
 
     window.addEventListener('error', handleError);
