@@ -50,7 +50,7 @@ export default function App() {
               </a>
             ) : null}
           </div>
-          <header class="bg-emerald-300 max-w-screen-lg rounded-lg mb-4 shadow-sm">
+          <header class="bg-emerald-300 max-w-screen-lg mx-auto rounded-lg mb-4 shadow-sm">
             <div class="relative">
               <h1 class="text-center text-3xl sm:text-5xl font-black h-40 flexcc tracking-widest text-white/80">
                 <a

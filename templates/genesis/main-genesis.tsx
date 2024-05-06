@@ -6,6 +6,7 @@ import createValidator from './config-validator';
 import configDefault from './config-default';
 import { StoreContextWrapper } from './lib/useStore';
 import urlHash from './lib/urlHash';
+import * as pipes from './lib/pipes';
 
 const configEl = document.getElementById('config')!;
 
@@ -15,10 +16,13 @@ let initialPath = window.location.pathname;
 // the pre-rendered site. So we load it from URL parameters for testing purposes.
 if (import.meta.env.DEV) {
   const { siteId, path } = urlHash.getData();
+
   if (!siteId) {
     throw 'Missing site id on URL';
   }
-  configEl.innerHTML = JSON.stringify(configDefault, null, 2);
+
+  const { config } = (await pipes.tsite({ siteId: siteId, props: ['config'] }))!;
+  configEl.innerHTML = JSON.stringify(config, null, 2);
   configEl.setAttribute('data-site-id', siteId);
   initialPath = path || '/';
 }

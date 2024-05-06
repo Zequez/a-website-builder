@@ -124,8 +124,13 @@ export function useStoreBase(init: StoreInit) {
     }, [this.selectedPage]);
 
     editorUrl = useMemo(() => {
-      const host = import.meta.env.DEV ? 'http://localhost:3000' : 'https://hoja.ar';
-      return `${host}/templates/editor.html#${urlHash.generate({ siteId: store.siteId!, path: this.pathname })}`;
+      const host = import.meta.env.DEV
+        ? 'http://localhost:5174'
+        : window.location.hostname === 'localhost'
+          ? 'http://localhost:3000'
+          : 'https://hoja.ar';
+
+      return `${host}/templates/editor.html#!${urlHash.generate({ siteId: store.siteId!, path: this.pathname })}`;
     }, [store.siteId, this.pathname]);
   })();
 
@@ -157,6 +162,7 @@ export function useStoreBase(init: StoreInit) {
     }
   }, [store.config.subdomain, store.savedConfig.subdomain, store.siteId]);
 
+  // Load Configuration
   useEffect(() => {
     (async () => {
       if (store.accessToken && store.siteId && store.configNeedsToLoadFromServer) {
@@ -164,10 +170,12 @@ export function useStoreBase(init: StoreInit) {
         const validator = createValidator();
         if (validator(config)) {
           const validConfig = config as Config;
+          const initialPage = validConfig.pages.find((page) => page.path === init.initialPath);
           patchStore({
             config: validConfig,
             savedConfig: { ...validConfig },
             configNeedsToLoadFromServer: false,
+            selectedPageId: initialPage?.uuid || null,
           });
         } else {
           console.error('Invalid configuration', config);
@@ -339,7 +347,7 @@ export function useStoreBase(init: StoreInit) {
       patchStore({ selectedPageId: page.uuid });
       if (import.meta.env.DEV) {
         const { siteId } = urlHash.getData();
-        const newPath = window.location.pathname + '#' + urlHash.generate({ siteId, path });
+        const newPath = window.location.pathname + '#!' + urlHash.generate({ siteId, path });
         history.pushState({}, '', newPath);
       } else {
         history.pushState({}, '', path);

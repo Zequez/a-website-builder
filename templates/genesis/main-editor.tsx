@@ -9,11 +9,11 @@ import urlHash from './lib/urlHash';
 
 dragDropTouchPolyfill();
 
-let { siteId } = urlHash.getData();
+const { siteId, path } = urlHash.getData();
 
 render(
   <StoreContextWrapper
-    init={{ siteId: siteId || null, editing: true, config: null, initialPath: '/' }}
+    init={{ siteId: siteId || null, editing: true, config: null, initialPath: path || '/' }}
   >
     <App />
   </StoreContextWrapper>,
