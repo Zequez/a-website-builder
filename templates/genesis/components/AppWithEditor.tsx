@@ -88,9 +88,13 @@ export default function AppWithEditor() {
             expandH
             onClick={saveConfig}
             tint="green"
-            disabled={!configChanged || store.subdomainAvailabilityStatus !== 'available'}
+            disabled={
+              !configChanged ||
+              store.subdomainAvailabilityStatus !== 'available' ||
+              store.configIsSaving
+            }
           >
-            Guardar
+            {store.configIsSaving ? 'Guardando...' : 'Guardar'}
           </Button>
           <Button
             tint="green"
