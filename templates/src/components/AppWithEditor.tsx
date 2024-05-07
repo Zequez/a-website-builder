@@ -1,10 +1,10 @@
 import useStore from '../lib/useStore';
 import App from './App';
-import { TextInput, TextAreaInput, Button } from './ui';
+import { TextInput, TextAreaInput, Button, EmojiPicker } from './ui';
 import { cx } from '@shared/utils';
 import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 
 export default function AppWithEditor() {
   const {
@@ -16,13 +16,11 @@ export default function AppWithEditor() {
     actions: A,
   } = useStore();
 
-  function saveConfig() {
-    A.saveConfig();
-  }
-
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const faviconButtonRef = useRef<HTMLButtonElement>(null);
   const [previewing, _previewing] = useState(false);
-
   const [deploySiteResult, setDeploySiteResult] = useState(true);
+
   async function handleDeploySite() {
     setDeploySiteResult(await A.deploySite());
   }
@@ -35,11 +33,33 @@ export default function AppWithEditor() {
     <div class="h-screen w-screen flex">
       <div class="relative w-full sm:w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 pt2 pb14 sm:pb2 px4">
         <Separator>Sitio</Separator>
-        <TextInput
-          label="Titulo"
-          value={C.title}
-          onChange={(val) => A.setConfigVal('title', val)}
-        />
+        <div class="flex">
+          <Button
+            reff={faviconButtonRef}
+            onClick={() => setEmojiPickerOpen(true)}
+            customSize
+            class="relative z-20 mr-2 flexcc w-10 h-full p1"
+          >
+            {C.icon.value}
+          </Button>
+          {emojiPickerOpen && (
+            <EmojiPicker
+              target={faviconButtonRef.current!}
+              onClose={() => {
+                setEmojiPickerOpen(false);
+              }}
+              onSelect={(val) => {
+                setEmojiPickerOpen(false);
+                A.setConfigVal('icon', { type: 'emoji', value: val });
+              }}
+            />
+          )}
+          <TextInput
+            label="Titulo"
+            value={C.title}
+            onChange={(val) => A.setConfigVal('title', val)}
+          />
+        </div>
         <TextAreaInput
           label="Descripción"
           value={C.description}
@@ -90,7 +110,7 @@ export default function AppWithEditor() {
 
         <Button
           expandH
-          onClick={saveConfig}
+          onClick={A.saveConfig}
           tint="green"
           disabled={
             !configChanged ||

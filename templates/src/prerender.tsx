@@ -44,7 +44,7 @@ function toHtml(siteId: string, config: Config, path: string, htmlBase: string):
     .replace('{{THEME_COLOR}}', config.themeColor)
     .replace('<!--{{PRE_RENDERED}}-->', preRendered)
     .replace('{{SITE_ID}}', siteId)
-    .replace('{{ICON}}', '🏠')
+    .replace('{{ICON}}', config.icon.value)
     .replace('{{CONFIG}}', JSON.stringify(config));
 
   return { content: preRenderedIndex, path };
