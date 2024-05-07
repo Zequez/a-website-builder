@@ -8,10 +8,13 @@ export default function ErrorsListDisplay(p: { errors: ValidationError[]; class?
 }
 
 function validationErrorToMessage(error: ValidationError) {
+  console.log(error);
   return (
     <div class="text-red-500">
-      [{error.path}] {capitalizeFirstLetter(error.message)}
-      {Object.keys(error.params).length ? <div>{JSON.stringify(error.params)}</div> : null}
+      {error.path ? `[${error.path}]` : null} {capitalizeFirstLetter(error.message)}
+      {Object.keys(error.params).length ? (
+        <div class="font-mono text-black/60 text-sm opacity-50">{JSON.stringify(error.params)}</div>
+      ) : null}
     </div>
   );
 }

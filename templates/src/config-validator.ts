@@ -21,6 +21,16 @@ function ajvToValidationError(e: any): ValidationError {
   };
 }
 
+export function parseAndValidateConfig(config: string): [Config | null, ValidationError[]] {
+  let parsedConfig: any;
+  try {
+    parsedConfig = JSON.parse(config);
+    return [parsedConfig, validateConfig(parsedConfig)];
+  } catch (e) {
+    return [null, [valErr((e as any).message)]];
+  }
+}
+
 export function validateConfig(config: any): ValidationError[] {
   const validator = createValidator();
   if (validator(config)) {

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'preact/hooks';
 
-export function usePatchableStore<T>(init: T) {
+export function usePatchableStore<T>(init: T | (() => T)) {
   const [store, setStore] = useState<T>(init);
 
   const withholdPatches = useRef(false);

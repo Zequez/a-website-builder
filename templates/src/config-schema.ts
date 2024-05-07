@@ -39,6 +39,20 @@ const config: JSONSchemaType<Config> = {
     themeColor: {
       type: 'string',
     },
+    icon: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['emoji'],
+        },
+        value: {
+          type: 'string',
+        },
+      },
+      additionalProperties: false,
+      required: ['type', 'value'],
+    },
     domain: {
       type: 'string',
     },
@@ -51,7 +65,7 @@ const config: JSONSchemaType<Config> = {
     },
   },
   additionalProperties: false,
-  required: ['title', 'description', 'subdomain', 'domain', 'themeColor', 'pages'],
+  required: ['title', 'description', 'subdomain', 'domain', 'themeColor', 'pages', 'icon'],
 };
 
 export default config;
