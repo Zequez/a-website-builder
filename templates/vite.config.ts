@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       rollupOptions: {
         input: {
-          genesis: resolve(__dirname, 'index.html'),
+          pub: resolve(__dirname, 'index.html'),
           editor: resolve(__dirname, 'editor.html'),
           admin: resolve(__dirname, 'admin.html'),
         },

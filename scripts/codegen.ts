@@ -15,7 +15,7 @@ generatePipeApiHelpers();
 generateConfigSchemaTypings();
 generateTypingsFromDbSchema();
 
-simpleWatch('./templates/genesis/config-schema.ts', generateConfigSchemaTypings);
+simpleWatch('./templates/src/config-schema.ts', generateConfigSchemaTypings);
 simpleWatch('./server/api/functions.ts', generatePipeApiHelpers, 2000);
 
 // ***********
@@ -26,16 +26,16 @@ function generatePipeApiHelpers() {
   if (m) {
     const functions = m.map((s) => s.slice(7, -1));
     const generated = functions.map(functionToApiDefinition).join('\n');
-    const pipesContent = fs.readFileSync('./templates/genesis/lib/pipes.ts', 'utf8');
+    const pipesContent = fs.readFileSync('./templates/src/lib/pipes.ts', 'utf8');
     const [firstPart] = pipesContent.split(MARKER);
 
-    fs.writeFileSync('./templates/genesis/lib/pipes.ts', `${firstPart}${MARKER}\n\n${generated}`);
+    fs.writeFileSync('./templates/src/lib/pipes.ts', `${firstPart}${MARKER}\n\n${generated}`);
     console.log('Pipes helpers regenerated');
   }
 }
 
 async function generateConfigSchemaTypings() {
-  const { default: config, page } = await freshImport('../templates/genesis/config-schema.ts');
+  const { default: config, page } = await freshImport('../templates/src/config-schema.ts');
 
   if (page && config) {
     const pageType = await compile(page, 'Page', { bannerComment: '' });
@@ -46,7 +46,7 @@ async function generateConfigSchemaTypings() {
     }
 
     fs.writeFileSync(
-      './templates/genesis/config.d.ts',
+      './templates/src/config.d.ts',
       `${MARKER}\n\n${interfaceToType(pageType)}\n\n${replacePageType(interfaceToType(configType))}`,
     );
 

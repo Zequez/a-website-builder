@@ -14,7 +14,7 @@
     "types": [
       "./node_modules/unplugin-icons/types/preact.d.ts",
       "./templates/types.d.ts",
-      "./templates/genesis/config.d.ts",
+      "./templates/src/config.d.ts",
     ],
     "paths": {
       "@db": ["./server/db"],

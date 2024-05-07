@@ -25,7 +25,7 @@
     "test:app": "NODE_ENV=test vitest -c vitest.config.ts -r app/",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --silent=false  -c vitest.config.ts -r server/",
     "postinstall": "[ -f independent-preact/bundle.js ] || pnpm rollup -c independent-preact/rollup.config.js",
-    "codegen:watch": "tsx watch --ignore ./templates/genesis/config-schema-*.ts  ./scripts/codegen.ts",
+    "codegen:watch": "tsx watch --ignore ./templates/src/config-schema-*.ts  ./scripts/codegen.ts",
     "codegen:build": "tsx ./scripts/codegen.ts"
   },
   "type": "module",

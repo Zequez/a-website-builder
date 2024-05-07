@@ -1,5 +1,5 @@
 import { T, QQ, sql, TSite, Member } from '@db';
-import { ValidationError, valErr, validateConfig } from '../../templates/genesis/config-validator';
+import { ValidationError, valErr, validateConfig } from '../../templates/src/config-validator';
 import Token from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered, Tsites } from '@db/schema';

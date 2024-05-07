@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
-import * as pipes from '../lib/pipes';
+import * as pipes from './pipes';
 import configDefault from '../config-default';
 import createValidator, { ValidationError } from '../config-validator';
 import * as storage from './storage';
