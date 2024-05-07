@@ -202,29 +202,6 @@ export function useStoreBase(init: StoreInit) {
     console.log('Store initialized with', init, store);
   }
 
-  async function retryFixConfig(config: Config) {
-    if (store.siteId) {
-      const { errors } = await pipes.tsiteSetConfig({
-        siteId: store.siteId,
-        config,
-        token: store.accessToken!,
-      });
-      if (errors.length === 0) {
-        patchStore({
-          config,
-          savedConfig: { ...config },
-          publishedConfig: { ...config },
-          configNeedsToLoadFromServer: false,
-          remoteSetConfigErrors: [],
-        });
-      } else {
-        patchStore({
-          remoteSetConfigErrors: errors,
-        });
-      }
-    }
-  }
-
   function setConfigVal(key: string, val: any) {
     patchStore({ config: { ...store.config, [key]: val } });
   }
@@ -377,7 +354,6 @@ export function useStoreBase(init: StoreInit) {
       setConfigVal,
       saveConfig,
       deploySite,
-      retryFixConfig,
       attemptAccess,
       pages,
       navigateTo,

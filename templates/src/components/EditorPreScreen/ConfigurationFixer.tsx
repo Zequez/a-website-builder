@@ -1,12 +1,6 @@
 import TriangleExclamationIcon from '~icons/fa6-solid/triangle-exclamation';
-import { useEffect, useMemo, useState } from 'preact/hooks';
-import {
-  ValidationError,
-  parseAndValidateConfig,
-  valErr,
-  validateConfig,
-} from '../../config-validator';
-import useStore from '../../lib/useStore';
+import { useEffect, useMemo } from 'preact/hooks';
+import { ValidationError, parseAndValidateConfig, validateConfig } from '../../config-validator';
 import ErrorsListDisplay from '../ui/ErrorsListDisplay';
 import { Button, TextAreaInput } from '../ui';
 import migrateConfig from '../../config-migrator';
@@ -116,6 +110,7 @@ export default function ConfigurationFixer(p: {
 
   useEffect(() => {
     if (store.done) {
+      // This one could be improved so that it works without reloading the page
       window.location.reload();
     }
   }, [store.done]);
