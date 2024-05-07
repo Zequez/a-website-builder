@@ -59,7 +59,7 @@ export default function App() {
                   onChange={(v) => A.pages.patch(selectedPage.uuid, { content: v })}
                 />
               ) : (
-                selectedPage.content
+                <div class="whitespace-pre">{selectedPage.content}</div>
               )
             ) : (
               'Page not found'
