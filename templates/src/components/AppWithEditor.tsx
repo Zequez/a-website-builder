@@ -33,7 +33,7 @@ export default function AppWithEditor() {
 
   return (
     <div class="h-screen w-screen flex">
-      <div class="relative w-full sm:w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 py2 px4">
+      <div class="relative w-full sm:w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 pt2 pb14 sm:pb2 px4">
         <Separator>Sitio</Separator>
         <TextInput
           label="Titulo"
@@ -113,8 +113,8 @@ export default function AppWithEditor() {
               : 'Error. Reintentar?'}
         </Button>
         <div
-          class={cx('sm:hidden pt[1px] z-50 -mx4 sticky bottom-0 ', {
-            'bg-gray-600 shadow-md': !previewing,
+          class={cx('sm:hidden pt[1px] z-50 -mx4 fixed bottom-0 ', {
+            'bg-gray-600 shadow-md w-full': !previewing,
           })}
         >
           {previewing ? (
