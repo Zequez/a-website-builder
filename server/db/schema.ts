@@ -205,6 +205,7 @@ export type Tsites = {
   updated_at: Date | null;
   deploy_config: Json | null;
   deployed_at: Date | null;
+  deleted_at: Date | null;
 }
 export type TsitesInput = {
   id?: string;
@@ -218,10 +219,11 @@ export type TsitesInput = {
   updated_at?: Date | null;
   deploy_config?: Json | null;
   deployed_at?: Date | null;
+  deleted_at?: Date | null;
 }
 const tsites = {
   tableName: 'tsites',
-  columns: ['id', 'config', 'template', 'name', 'subdomain', 'domain', 'access_key', 'created_at', 'updated_at', 'deploy_config', 'deployed_at'],
+  columns: ['id', 'config', 'template', 'name', 'subdomain', 'domain', 'access_key', 'created_at', 'updated_at', 'deploy_config', 'deployed_at', 'deleted_at'],
   requiredForInsert: ['config', 'template', 'name', 'subdomain', 'domain', 'access_key'],
   primaryKey: 'id',
   foreignKeys: {},

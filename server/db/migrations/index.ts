@@ -14,3 +14,5 @@ export * as m1714948054_add_deploy_config_to_tsites from './m1714948054_add_depl
 export * as m1714949177_remove_unused_columns from './m1714949177_remove_unused_columns';
 export * as m1714976988_add_deployed_at_to_tsites from './m1714976988_add_deployed_at_to_tsites';
 export * as m1714979487_remove_domain_unique_from_tsites from './m1714979487_remove_domain_unique_from_tsites';
+export * as m1715039880_tsite_deleted_marker from './m1715039880_tsite_deleted_marker';
+export * as m1715040023_tsite_subdomain_and_domain_nullable from './m1715040023_tsite_subdomain_and_domain_nullable';

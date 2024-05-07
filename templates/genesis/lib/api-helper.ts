@@ -5,7 +5,11 @@ export const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3000/_api_/'
 
 export class ApiFetchError extends Error {
   // Define additional properties for the error
-  constructor(message: string, public status: number, public messages: string[]) {
+  constructor(
+    message: string,
+    public status: number,
+    public messages: string[],
+  ) {
     super(message);
     this.name = 'ApiFetchError'; // Set the error name (optional)
     this.status = status;
@@ -41,8 +45,23 @@ export async function pipeFetch<QueryT, ResponseT>(
 export function pipeWrapper<QueryT, ResponseT>(fun: string) {
   return async (query: QueryT, authorization?: string) => {
     const { data } = (await pipeFetch<QueryT, ResponseT>(fun, query, authorization)) as any;
+    if (data) {
+      if (Array.isArray(data)) {
+        data.forEach(datifyProps);
+      } else if (typeof data === 'object') {
+        datifyProps(data);
+      }
+    }
     return data as ResponseT;
   };
+}
+
+function datifyProps(data: any) {
+  for (let k in data) {
+    if (k.endsWith('_at') && data[k] != null) {
+      data[k] = new Date(data[k]);
+    }
+  }
 }
 
 export async function apiFetch<QueryT, ResponseT>(
@@ -84,36 +103,3 @@ export async function apiFetch<QueryT, ResponseT>(
     throw new ApiFetchError(message, res.status, errors);
   }
 }
-
-// export function useRemoteResource<QueryT extends Record<string, any>, ResponseT>(
-//   apiEndpoint: ApiEndpoint<QueryT, ResponseT>,
-//   config: { waitForAuth?: boolean; query: QueryT },
-// ) {
-//   const { memberAuth } = useAuth();
-//   const [resource, setResource] = useState<ResponseT | null>(null);
-//   const [error, setError] = useState<ApiFetchError | null>(null);
-//   const [loading, setLoading] = useState(false);
-
-//   const fetchResource = useCallback(() => {
-//     setLoading(true);
-//     return apiEndpoint(config.query, memberAuth?.token)
-//       .then((data) => {
-//         setResource(data);
-//         setError(null);
-//       })
-//       .catch((e) => {
-//         setError(e);
-//       })
-//       .finally(() => {
-//         setLoading(false);
-//       });
-//   }, [JSON.stringify(config.query), config.waitForAuth ? memberAuth : null]);
-
-//   useEffect(() => {
-//     if ((config.waitForAuth && memberAuth) || !config.waitForAuth) {
-//       fetchResource();
-//     }
-//   }, [fetchResource]);
-
-//   return { resource, error, setResource, loading, refetch: fetchResource };
-// }

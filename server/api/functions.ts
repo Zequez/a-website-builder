@@ -100,9 +100,8 @@ export class Functions {
   //  ╚████╔╝ ██║  ██║███████╗██║██████╔╝██║  ██║   ██║   ██║╚██████╔╝██║ ╚████║███████║
   //   ╚═══╝  ╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 
-  tsitePublicProps = ['id', 'config', 'name', 'subdomain', 'domain'];
-  tsiteSanitizedProps(props: string[]) {
-    return props.filter((c) => this.tsitePublicProps.indexOf(c) !== -1);
+  tsiteSanitizedProps(props: string[], allowed: string[]) {
+    return props.filter((c) => allowed.indexOf(c) !== -1);
   }
 
   //  ██████╗ ███████╗████████╗████████╗███████╗██████╗ ███████╗
@@ -113,7 +112,13 @@ export class Functions {
   //  ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝
 
   async $tsite(p: { siteId: string; props: string[] }): Promise<Partial<TSite> | null> {
-    const selectProps = this.tsiteSanitizedProps(p.props);
+    const selectProps = this.tsiteSanitizedProps(p.props, [
+      'id',
+      'config',
+      'name',
+      'subdomain',
+      'domain',
+    ]);
     if (selectProps.length === 0) {
       throw E('No valid properties selected', 400, null);
     }
@@ -138,9 +143,16 @@ export class Functions {
   //  |A|D|M|I|N|
   //  +-+-+-+-+-+
 
-  async $tsites(p: { props: string[]; token: string }): Promise<Partial<Tsites>[]> {
+  async $adminTsites(p: { props: string[]; token: string }): Promise<Partial<Tsites>[]> {
     await this.adminMemberAuthorized(p.token);
-    const selectProps = this.tsiteSanitizedProps(p.props);
+    const selectProps = this.tsiteSanitizedProps(p.props, [
+      'id',
+      'config',
+      'name',
+      'subdomain',
+      'domain',
+      'deleted_at',
+    ]);
     if (!selectProps.length) throw E('No valid properties selected', 400, null);
     const tsites = await QQ<Partial<Tsites>>`SELECT ${sql.raw(selectProps.join(', '))} FROM tsites`;
     return tsites;
@@ -229,8 +241,8 @@ export class Functions {
       }
     }
     const update = {
-      ...(p.site.name && { name: p.site.name }),
-      ...(p.site.domain && { domain: p.site.domain }),
+      ...(p.site.name !== undefined && { name: p.site.name }),
+      ...(p.site.domain !== undefined && { domain: p.site.domain }),
     };
     if (Object.keys(update).length) {
       await T.tsites.update(p.siteId, update);
@@ -238,14 +250,16 @@ export class Functions {
     return { errors: [] };
   }
 
-  async setSubdomain(p: { siteId: string; subdomain: string }) {
+  async setSubdomain(p: { siteId: string; subdomain?: string }) {
     const tsite = (
       await QQ<Tsites>`SELECT id, config, deploy_config FROM tsites WHERE id = ${p.siteId}`
     )[0];
     if (!p.subdomain) return false;
     if (!tsite) return false;
-    if (!(await this.$checkSubdomainAvailability({ subdomain: p.subdomain, siteId: p.siteId }))) {
-      return false;
+    if (p.subdomain) {
+      if (!(await this.$checkSubdomainAvailability({ subdomain: p.subdomain, siteId: p.siteId }))) {
+        return false;
+      }
     }
 
     await QQ`
@@ -262,7 +276,7 @@ export class Functions {
 
   async $adminCreateSite(p: { token: string; site: { name: string; config: Config } }): Promise<{
     errors: ValidationError[];
-    site: Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain'> | null;
+    site: Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain' | 'deleted_at'> | null;
   }> {
     await this.adminMemberAuthorized(p.token);
 
@@ -291,21 +305,27 @@ export class Functions {
       access_key: await hashPass(randomAlphaNumericString()),
     });
 
-    return { errors: [], site: { id, name: p.site.name, subdomain, domain } };
+    return { errors: [], site: { id, name: p.site.name, subdomain, domain, deleted_at: null } };
   }
 
-  async $setSiteName(p: { siteId: string; name: string; token: string }) {
+  async $adminDeleteSite(p: { token: string; siteId: string }) {
     await this.adminMemberAuthorized(p.token);
-    try {
-      await T.tsites.update(p.siteId, { name: p.name });
-      return true;
-    } catch (e) {
-      return false;
-    }
+    await QQ`UPDATE tsites SET deleted_at = now(), subdomain = '', domain = '' WHERE id = ${p.siteId}`;
+    await QQ`DELETE FROM prerendered WHERE tsite_id = ${p.siteId}`;
   }
 
-  async $createSite(p: { token: string }) {
+  async $adminRestoreSite(p: { token: string; siteId: string }) {
     await this.adminMemberAuthorized(p.token);
+    await QQ`UPDATE tsites SET
+      deleted_at = null,
+      domain = 'hoja.ar',
+      subdomain = ${randomAlphaNumericString()}
+    WHERE id = ${p.siteId}`;
+  }
+
+  async $adminDeleteSiteForGood(p: { token: string; siteId: string }) {
+    await this.adminMemberAuthorized(p.token);
+    await QQ`DELETE FROM tsites WHERE id = ${p.siteId}`;
   }
 
   //  +-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+
