@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
+import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import * as pipes from '../../lib/pipes';
 import * as storage from '../../lib/storage';
 import { createContext } from 'preact';
@@ -6,6 +6,7 @@ import { Tsites } from '@db/schema';
 import configDefault from '../../config-default';
 import { randomAlphaNumericString } from '@shared/utils';
 import { ValidationError } from '../../config-validator';
+import { usePatchableStore } from '../../lib/usePatchableStore';
 
 export type PartialSite = Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain' | 'deleted_at'>;
 
@@ -13,8 +14,9 @@ type AdminStore = {
   accessKeyToken: string | null;
   attemptAccessLoading: boolean;
   sites: PartialSite[] | null;
-  createSiteInProgress: boolean;
-  createSiteErrors: ValidationError[];
+  errors: {
+    createSite: ValidationError[];
+  };
   inProgress: {
     deleteSite: boolean;
     restoreSite: boolean;
@@ -26,32 +28,21 @@ type AdminStore = {
 type StoreInit = {};
 
 export function useAdminStoreBase(init: StoreInit) {
-  const [store, setStoreBase] = useState<AdminStore>({
-    accessKeyToken: storage.getMemberToken(),
-    attemptAccessLoading: false,
-    sites: null,
-    createSiteInProgress: false,
-    createSiteErrors: [],
-    inProgress: {
-      deleteSite: false,
-      restoreSite: false,
-      deleteSiteForGood: false,
-      createSite: false,
-    },
-  });
-
-  function setStore(store: AdminStore | ((currentStore: AdminStore) => AdminStore)) {
-    setStoreBase(store);
-  }
-
-  function patchStore(
-    patch: Partial<AdminStore> | ((currentStore: AdminStore) => Partial<AdminStore>),
-  ) {
-    setStore((currentStore) => ({
-      ...currentStore,
-      ...(typeof patch === 'function' ? patch(currentStore) : patch),
-    }));
-  }
+  const { store, setStore, beginTransaction, endTransaction, patchStore } =
+    usePatchableStore<AdminStore>({
+      accessKeyToken: storage.getMemberToken(),
+      attemptAccessLoading: false,
+      sites: null,
+      errors: {
+        createSite: [],
+      },
+      inProgress: {
+        deleteSite: false,
+        restoreSite: false,
+        deleteSiteForGood: false,
+        createSite: false,
+      },
+    });
 
   function patchSite(siteId: string, patch: Partial<PartialSite>) {
     patchStore((st) => ({
@@ -73,6 +64,10 @@ export function useAdminStoreBase(init: StoreInit) {
     patchStore((st) => ({ inProgress: { ...st.inProgress, [key]: false } }));
   }
 
+  function errorsSet(key: keyof AdminStore['errors'], val: ValidationError[]) {
+    patchStore((st) => ({ errors: { ...st.errors, [key]: val } }));
+  }
+
   //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗
   // ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║   ██║╚══██╔══╝██╔════╝██╔══██╗
   // ██║     ██║   ██║██╔████╔██║██████╔╝██║   ██║   ██║   █████╗  ██║  ██║
@@ -82,7 +77,6 @@ export function useAdminStoreBase(init: StoreInit) {
 
   const computed = new (class {
     activeSites = useMemo(() => {
-      console.log('Recalculating active sites');
       return store.sites?.filter((site) => !site.deleted_at) || null;
     }, [store.sites]);
 
@@ -90,10 +84,6 @@ export function useAdminStoreBase(init: StoreInit) {
       return store.sites?.filter((site) => !!site.deleted_at) || null;
     }, [store.sites]);
   })();
-
-  useEffect(() => {
-    console.log('SITES changed');
-  }, [store.sites]);
 
   // ███████╗███████╗███████╗███████╗ ██████╗████████╗███████╗
   // ██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝╚══██╔══╝██╔════╝
@@ -105,6 +95,10 @@ export function useAdminStoreBase(init: StoreInit) {
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    console.log('Store changed', store);
+  }, [store]);
 
   useEffect(() => {
     if (store.accessKeyToken) {
@@ -172,7 +166,8 @@ export function useAdminStoreBase(init: StoreInit) {
     }
 
     async createSite() {
-      patchStore({ createSiteErrors: [], createSiteInProgress: true });
+      inProgressStart('createSite');
+      errorsSet('createSite', []);
       const config = { ...configDefault };
       config.subdomain = randomAlphaNumericString();
       const { errors, site } = await pipes.adminCreateSite({
@@ -180,31 +175,37 @@ export function useAdminStoreBase(init: StoreInit) {
         site: { name: 'Nuevo sitio', config },
       });
       patchStore({
-        createSiteErrors: errors,
         sites: site ? [...store.sites!, site] : store.sites,
-        createSiteInProgress: false,
       });
+      errorsSet('createSite', errors);
+      inProgressEnd('createSite');
     }
 
     async deleteSite(siteId: string) {
       inProgressStart('deleteSite');
       await pipes.adminDeleteSite({ siteId, token: store.accessKeyToken! });
+      beginTransaction();
       patchSite(siteId, { deleted_at: new Date() });
       inProgressEnd('deleteSite');
+      endTransaction();
     }
 
     async restoreSite(siteId: string) {
       inProgressStart('restoreSite');
       await pipes.adminRestoreSite({ siteId, token: store.accessKeyToken! });
+      beginTransaction();
       patchSite(siteId, { deleted_at: null });
       inProgressEnd('restoreSite');
+      endTransaction();
     }
 
     async deleteSiteForGood(siteId: string) {
       inProgressStart('deleteSiteForGood');
       await pipes.adminDeleteSiteForGood({ siteId, token: store.accessKeyToken! });
+      beginTransaction();
       patchStore({ sites: store.sites!.filter((s) => s.id !== siteId) });
       inProgressEnd('deleteSiteForGood');
+      endTransaction();
     }
   })();
 

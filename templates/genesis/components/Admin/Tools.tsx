@@ -8,7 +8,7 @@ import { editorUrl, publicSiteUrl } from '../../lib/url-helpers';
 
 export default function Tools() {
   const {
-    store: { sites, inProgress, createSiteInProgress, createSiteErrors },
+    store: { inProgress, errors },
     computed: { deletedSites, activeSites },
     actions: A,
   } = useAdminStore();
@@ -22,17 +22,15 @@ export default function Tools() {
     );
   }, [activeSites]);
 
-  console.log(activeSites);
-
   return (
     <div class="max-w-screen-md mx-auto">
       <h1 class="text-3xl mb4">Herramientas de Administración</h1>
       <div class="flex flex-col space-y-4">
         {sortedSites && sortedSites.map((s) => <SiteControl key={s.id} site={s} />)}
         <div class="flexcc">
-          <ErrorsListDisplay class="w-full" errors={createSiteErrors} />
-          <Button onClick={A.createSite} disabled={createSiteInProgress} class="shadow-md!">
-            <PlusIcon class="mr-2" /> {createSiteInProgress ? 'Agregando...' : 'Agregar'}
+          <ErrorsListDisplay class="w-full" errors={errors.createSite} />
+          <Button onClick={A.createSite} disabled={inProgress.createSite} class="shadow-md!">
+            <PlusIcon class="mr-2" /> {inProgress.createSite ? 'Agregando...' : 'Agregar'}
           </Button>
         </div>
         {deletedSites?.length ? (
