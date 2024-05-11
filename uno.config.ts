@@ -79,6 +79,15 @@ export default defineConfig({
       xl: '1280px',
       '2xl': '1536px',
     },
+    colors: {
+      main: (() => {
+        let colors: [string, string][] = [];
+        for (let i = 10; i <= 90; i += 10) {
+          colors.push([`${i}0`, `hsl(var(--main-hue), var(--main-saturation), ${i}%)`]);
+        }
+        return Object.fromEntries(colors);
+      })(),
+    },
   },
 });
 
@@ -88,7 +97,7 @@ const getSpread = (s) =>
     md: '3px',
     lg: '5px',
     xl: '8px',
-  }[s] || `${s}px`);
+  })[s] || `${s}px`;
 
 const getSize = (s) =>
   ({
@@ -96,4 +105,4 @@ const getSize = (s) =>
     md: '4px',
     lg: '6px',
     xl: '8px',
-  }[s] || `${s}px`);
+  })[s] || `${s}px`;

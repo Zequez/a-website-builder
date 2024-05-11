@@ -36,8 +36,36 @@ const config: JSONSchemaType<Config> = {
     description: {
       type: 'string',
     },
-    themeColor: {
-      type: 'string',
+    theme: {
+      type: 'object',
+      properties: {
+        hue: {
+          type: 'number',
+          minimum: 0,
+          maximum: 360,
+        },
+        saturation: {
+          type: 'number',
+          minimum: 0,
+          maximum: 100,
+        },
+        lightness: {
+          type: 'number',
+          minimum: 0,
+          maximum: 100,
+        },
+        pattern: {
+          type: 'string',
+          enum: ['noise', 'none'],
+        },
+        patternIntensity: {
+          type: 'number',
+          minimum: 0,
+          maximum: 100,
+        },
+      },
+      additionalProperties: false,
+      required: ['hue', 'saturation', 'lightness', 'pattern', 'patternIntensity'],
     },
     icon: {
       type: 'object',
@@ -65,7 +93,7 @@ const config: JSONSchemaType<Config> = {
     },
   },
   additionalProperties: false,
-  required: ['title', 'description', 'subdomain', 'domain', 'themeColor', 'pages', 'icon'],
+  required: ['title', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon'],
 };
 
 export default config;

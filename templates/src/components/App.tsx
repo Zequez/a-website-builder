@@ -3,6 +3,10 @@ import useStore from '../lib/useStore';
 import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
 import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
+import { useEffect } from 'preact/hooks';
+import Header from './Header';
+import noiseImg from '../assets/noise.png';
+import TexturePattern from './TexturePattern';
 
 export default function App() {
   const {
@@ -12,10 +16,22 @@ export default function App() {
     actions: A,
   } = useStore();
 
+  // useEffect(() => {
+  //   const r = document.querySelector(':root')!;
+  //   r.style.setProperty('--main-color', '#0F0');
+  // }, []);
+
+  const { hue, saturation, lightness } = config.theme;
+
   return (
     <>
-      <div class="relative overflow-auto bg-emerald-600 text-white min-h-screen w-full">
+      <style>{`:root {
+        --main-hue: ${hue};
+        --main-saturation: ${saturation}%;
+      `}</style>
+      <div class="relative overflow-auto bg-main-500 text-white min-h-screen w-full">
         {editing && <CurrentPageUrlVisualizer />}
+        <TexturePattern />
         <div class="relative w-full h-full overflow-auto p-4 pb-12">
           <div class="absolute top-0 right-0">
             {!editing ? (
@@ -29,29 +45,8 @@ export default function App() {
               </a>
             ) : null}
           </div>
-          <header class="bg-emerald-300 max-w-screen-lg mx-auto rounded-lg mb-4 shadow-sm">
-            <div class="relative">
-              <h1 class="text-center text-3xl sm:text-5xl font-black h-40 flexcc tracking-widest text-white/80">
-                <a
-                  href="/"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                    A.navigateTo('/');
-                  }}
-                >
-                  {config.title}
-                </a>
-              </h1>
-              {!!(selectedPage && !selectedPage.onNav) && (
-                <div class="absolute bottom-2 left-2 bg-black/20 rounded-md px1 py0.5">
-                  <span class="mr-2">{selectedPage.icon}</span>
-                  {selectedPage.title}
-                </div>
-              )}
-            </div>
-            <Nav />
-          </header>
-          <main class="max-w-screen-sm mx-auto bg-white/70 rounded-lg p-4 text-black/60">
+          <Header />
+          <main class="max-w-screen-sm mx-auto bg-main-900 rounded-lg p-4 text-black/60">
             {selectedPage ? (
               editing ? (
                 <PageContentEditor

@@ -13,7 +13,13 @@ type Page = {
 type Config = {
   title: string;
   description: string;
-  themeColor: string;
+  theme: {
+    hue: number;
+    saturation: number;
+    lightness: number;
+    pattern: "noise" | "none";
+    patternIntensity: number;
+  };
   icon: {
     type: "emoji";
     value: string;

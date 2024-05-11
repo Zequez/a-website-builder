@@ -41,7 +41,7 @@ function toHtml(siteId: string, config: Config, path: string, htmlBase: string):
   const preRenderedIndex = htmlBase
     .replace('{{TITLE}}', config.title)
     .replace('{{DESCRIPTION}}', config.description)
-    .replace('{{THEME_COLOR}}', config.themeColor)
+    .replace('{{THEME_COLOR}}', `hsl(${config.theme.hue}, ${config.theme.saturation}%, 50%)`)
     .replace('<!--{{PRE_RENDERED}}-->', preRendered)
     .replace('{{SITE_ID}}', siteId)
     .replace('{{ICON}}', config.icon.value)

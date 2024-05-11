@@ -40,10 +40,10 @@ export function NavItem(p: {
   return (
     <a
       class={cx(
-        'relative px3 sm:px4 py1 sm:py2 -mt1 -mb1 rounded-lg flexcc text-black/40 font-light hover:z-30',
+        'relative px3 group sm:px4 py1 sm:py2 -mt1 -mb1 rounded-lg flexcc font-semibold hover:z-30 tracking-wide',
         {
-          'bg-emerald-500 text-white shadow-md': p.active,
-          'hover:bg-white/40': !p.active,
+          'bg-main-900 text-black/50 shadow-md': p.active,
+          'hover:bg-white/20 text-white/60': !p.active,
         },
       )}
       onClick={p.onClick}
@@ -51,7 +51,7 @@ export function NavItem(p: {
       href={p.path}
     >
       <span class="whitespace-nowrap">
-        <span class="mr-2">{p.icon}</span>
+        <span class="mr-2 text-black/100">{p.icon}</span>
         {p.title}
       </span>
     </a>

@@ -5,6 +5,8 @@ import { cx } from '@shared/utils';
 import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
 import { useRef, useState } from 'preact/hooks';
+import ThemePicker from './ThemePicker';
+import TexturePattern from './TexturePattern';
 
 export default function AppWithEditor() {
   const {
@@ -31,7 +33,8 @@ export default function AppWithEditor() {
 
   return (
     <div class="h-screen w-screen flex">
-      <div class="relative w-full sm:w-60 bg-gray-800 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 pt2 pb14 sm:pb2 px4">
+      <div class="relative w-full sm:w-60 bg-main-200 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 pt2 pb14 sm:pb2 px4">
+        <TexturePattern />
         <Separator>Sitio</Separator>
         <div class="flex">
           <Button
@@ -66,10 +69,8 @@ export default function AppWithEditor() {
           onChange={(val) => A.setConfigVal('description', val)}
         />
 
-        {/* <Separator>Diseño</Separator>
-        <div class="flexcc mb2 px-4">
-          Color principal <input type="color" value={C.themeColor} />
-        </div> */}
+        <Separator>Colores</Separator>
+        <ThemePicker />
 
         <Separator>Páginas</Separator>
         <PagesList />

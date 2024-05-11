@@ -206,6 +206,10 @@ export function useStoreBase(init: StoreInit) {
     patchStore({ config: { ...store.config, [key]: val } });
   }
 
+  function setThemeVal(key: keyof Config['theme'], val: any) {
+    setConfigVal('theme', { ...store.config.theme, [key]: val });
+  }
+
   async function saveConfig() {
     patchStore({ configIsSaving: true });
     const { errors } = await pipes.tsiteSetConfig({
@@ -353,6 +357,7 @@ export function useStoreBase(init: StoreInit) {
     actions: {
       setConfigVal,
       saveConfig,
+      setThemeVal,
       deploySite,
       attemptAccess,
       pages,
