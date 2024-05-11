@@ -50,7 +50,7 @@ export function useStoreBase(init: StoreInit) {
       initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
     siteId: init.siteId,
     attemptAccessLoading: false,
-    accessToken: storage.getAccessKeyToken(init.siteId) || storage.getMemberToken() || null,
+    accessToken: storage.getMemberToken() || storage.getAccessKeyToken(init.siteId) || null,
     //
     siteNeedsToBeCreated: !init.siteId,
     configNeedsToLoadFromServer: !init.config,

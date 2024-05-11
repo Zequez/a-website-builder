@@ -1,4 +1,4 @@
-import { rootHostnames, locales } from './server/root-hostnames';
+import { rootHostnames } from './server/root-hostnames';
 
 // const excludedPaths = [
 //   '_api_/',
@@ -32,13 +32,7 @@ export default async function middleware(req: Request) {
 
   if (isRootHostname) {
     // Serve the normal app distribution; hopefully from the static files
-    const locale = locales[url.hostname];
-    if (locale) {
-      url.pathname = `/${locale}${url.pathname}`;
-      headers.set('x-middleware-rewrite', url.toString());
-    } else {
-      headers.set('x-middleware-next', '1');
-    }
+    headers.set('x-middleware-next', '1');
   } else {
     // It's a member site, rewrite to /_member_site_/ so it does not load the static files
     url.pathname = `/_member_site_${url.pathname}`;

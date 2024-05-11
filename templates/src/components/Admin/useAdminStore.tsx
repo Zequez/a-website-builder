@@ -147,8 +147,10 @@ export function useAdminStoreBase(init: StoreInit) {
       const currentSite = store.sites!.find((s) => s.id === site.id)!;
       const sitePatch = {
         ...(site.name !== currentSite.name && { name: site.name }),
-        ...(site.subdomain !== currentSite.subdomain && { subdomain: site.subdomain }),
-        ...(site.domain !== currentSite.domain && { domain: site.domain }),
+        ...((site.subdomain !== currentSite.subdomain || site.domain !== currentSite.domain) && {
+          subdomain: site.subdomain,
+          domain: site.domain,
+        }),
       };
       if (Object.keys(sitePatch).length > 0) {
         const response = await pipes.adminSaveSite({

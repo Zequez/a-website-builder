@@ -1,4 +1,4 @@
-import { authorize, jsonParser } from '@server/lib/middlewares';
+import { jsonParser } from '@server/lib/middlewares';
 import { Request, Response, Router } from 'express';
 import { Functions } from './functions';
 

@@ -1,10 +1,11 @@
 import { T, QQ, sql, TSite, Member } from '@db';
 import { ValidationError, valErr, validateConfig } from '../../templates/src/config-validator';
-import Token from '@server/lib/Token';
+import Token, { MemberTokenData, TokenData } from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered, Tsites } from '@db/schema';
 import { spreadInsert } from '@db/squid';
 import { randomAlphaNumericString } from '@shared/utils';
+import { publicDomains, adminDomains } from '@server/config';
 
 export class Err extends Error {
   constructor(
@@ -37,9 +38,17 @@ export class Functions {
   //  |A|U|T|H|O|R|I|Z|A|T|I|O|N| |H|E|L|P|E|R|S|
   //  +-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+
 
-  async memberAuthorizeOnly(token: string) {
+  _tokenData!: TokenData;
+  tokenData(token: string) {
+    if (this._tokenData) return this._tokenData;
     const tokenData = Token.verifyAndGetPayload(token);
     if (!tokenData) throw E('Unauthorized', 401, null);
+    this._tokenData = tokenData;
+    return this._tokenData;
+  }
+
+  async memberAuthorizeOnly(token: string) {
+    const tokenData = this.tokenData(token);
     if (tokenData.type !== 'member') throw E('Unauthorized', 401, null);
     return tokenData;
   }
@@ -62,8 +71,7 @@ export class Functions {
   }
 
   async accessKeyAuthorizeOnly(token: string, siteId: string) {
-    const tokenData = Token.verifyAndGetPayload(token);
-    if (!tokenData) throw E('Unauthorized', 401, null);
+    const tokenData = this.tokenData(token);
     // For admin members allow to edit any site
     if (tokenData.type === 'member') {
       if (await this.isAdminMember(tokenData.memberId)) {
@@ -104,6 +112,10 @@ export class Functions {
     return props.filter((c) => allowed.indexOf(c) !== -1);
   }
 
+  domainIsValid(domain: string, asAdmin: boolean = false) {
+    return publicDomains.indexOf(domain) !== -1 || (asAdmin && adminDomains.indexOf(domain) !== -1);
+  }
+
   //  ██████╗ ███████╗████████╗████████╗███████╗██████╗ ███████╗
   // ██╔════╝ ██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗██╔════╝
   // ██║  ███╗█████╗     ██║      ██║   █████╗  ██████╔╝███████╗
@@ -129,11 +141,21 @@ export class Functions {
   //  |C|H|E|C|K|E|R|S|
   //  +-+-+-+-+-+-+-+-+
 
-  async $checkSubdomainAvailability(p: { subdomain: string; siteId?: string }): Promise<boolean> {
+  async $checkDomainAvailability(p: {
+    subdomain: string;
+    domain: string;
+    siteId?: string;
+    asAdmin: boolean;
+  }): Promise<boolean> {
     console.log('Checking SUBDOMAIN', p.subdomain, p.siteId);
-    console.log(await QQ`SELECT id, name, subdomain FROM tsites;`);
+    if (!this.domainIsValid(p.domain, p.asAdmin)) {
+      return false;
+    }
+    if (!p.domain.startsWith('.') && p.subdomain !== '') {
+      return false;
+    }
     const tsite = (
-      await QQ`SELECT id, name FROM tsites WHERE subdomain = ${p.subdomain} AND id != ${p.siteId || null}`
+      await QQ`SELECT id, name FROM tsites WHERE subdomain = ${p.subdomain} AND domain = ${p.domain} AND id != ${p.siteId || null}`
     )[0];
     if (tsite) return false;
     return true;
@@ -180,14 +202,27 @@ export class Functions {
     });
 
     const subdomain = p.deployConfig.subdomain;
+    const domain = p.deployConfig.domain;
 
-    if (!(await this.$checkSubdomainAvailability({ subdomain, siteId: p.siteId }))) {
+    console.log(this._tokenData!);
+
+    if (
+      !(await this.$checkDomainAvailability({
+        subdomain,
+        domain,
+        siteId: p.siteId,
+        asAdmin:
+          this._tokenData!.type === 'member' &&
+          (await this.isAdminMember(this._tokenData!.memberId)),
+      }))
+    ) {
       return false;
     }
 
     await QQ`UPDATE tsites
       SET
         subdomain = ${subdomain},
+        domain = ${domain},
         deploy_config = ${p.deployConfig},
         deployed_at = now()
       WHERE id = ${p.siteId};`;
@@ -235,40 +270,59 @@ export class Functions {
     token: string;
   }) {
     await this.adminMemberAuthorized(p.token);
-    if (p.site.subdomain) {
-      if (!(await this.setSubdomain({ siteId: p.siteId, subdomain: p.site.subdomain }))) {
-        return { errors: [valErr('Subdomain not available', 'subdomain')] };
+    if (p.site.subdomain != undefined && p.site.domain != undefined) {
+      if (
+        !(await this.adminSetDomain({
+          siteId: p.siteId,
+          subdomain: p.site.subdomain,
+          domain: p.site.domain!,
+        }))
+      ) {
+        return { errors: [valErr('Domain not available', 'subdomain')] };
       }
     }
     const update = {
       ...(p.site.name !== undefined && { name: p.site.name }),
       ...(p.site.domain !== undefined && { domain: p.site.domain }),
     };
+
     if (Object.keys(update).length) {
       await T.tsites.update(p.siteId, update);
     }
     return { errors: [] };
   }
 
-  async setSubdomain(p: { siteId: string; subdomain?: string }) {
+  async adminSetDomain(p: { siteId: string; domain: string; subdomain: string }) {
     const tsite = (
       await QQ<Tsites>`SELECT id, config, deploy_config FROM tsites WHERE id = ${p.siteId}`
     )[0];
-    if (!p.subdomain) return false;
+    console.log(p);
+    if (typeof p.subdomain !== 'string') return false;
+    if (!p.domain) return false;
     if (!tsite) return false;
     if (p.subdomain) {
-      if (!(await this.$checkSubdomainAvailability({ subdomain: p.subdomain, siteId: p.siteId }))) {
+      if (
+        !(await this.$checkDomainAvailability({
+          subdomain: p.subdomain,
+          domain: p.domain,
+          siteId: p.siteId,
+          asAdmin: true,
+        }))
+      ) {
         return false;
       }
     }
+
+    // await QQ`SELECT config, deploy`
 
     await QQ`
       UPDATE tsites
       SET
         subdomain = ${p.subdomain},
-        config = jsonb_set(config, '{subdomain}', to_jsonb(${p.subdomain}::text)),
+        domain = ${p.domain},
+        config = config || jsonb_build_object('subdomain', to_jsonb(${p.subdomain}::text), 'domain', to_jsonb(${p.domain}::text)),
         updated_at = now(),
-        deploy_config = jsonb_set(deploy_config, '{subdomain}', to_jsonb(${p.subdomain}::text))
+        deploy_config = deploy_config || jsonb_build_object('subdomain', to_jsonb(${p.subdomain}::text), 'domain', to_jsonb(${p.domain}::text))
       WHERE id = ${p.siteId};
     `;
     return true;
@@ -290,11 +344,11 @@ export class Functions {
     }
 
     const subdomain = p.site.config.subdomain;
-    if (!(await this.$checkSubdomainAvailability({ subdomain }))) {
+    const domain = publicDomains[0];
+    if (!(await this.$checkDomainAvailability({ subdomain, domain, asAdmin: true }))) {
       return { errors: [valErr('Subdomain not available', 'subdomain')], site: null };
     }
 
-    const domain = 'hoja.ar';
     p.site.config.domain = domain;
     const { id } = await T.tsites.insert({
       name: p.site.name,
@@ -318,7 +372,7 @@ export class Functions {
     await this.adminMemberAuthorized(p.token);
     await QQ`UPDATE tsites SET
       deleted_at = null,
-      domain = 'hoja.ar',
+      domain = ${publicDomains[0]},
       subdomain = ${randomAlphaNumericString()}
     WHERE id = ${p.siteId}`;
   }
@@ -351,32 +405,3 @@ export class Functions {
     return Token.generate({ memberId: member.id, type: 'member' });
   }
 }
-
-// type MemberWithTagOnly = { id: number; tag: string };
-
-// async membersWithSharedResources(): Promise<MemberWithTagOnly[]> {
-//   const members = await QQ<MemberWithTagOnly>`SELECT id, tag FROM members WHERE tag IS NOT NULL`;
-//   const sitesMembers = await QQ<{
-//     member_id: number;
-//   }>`SELECT DISTINCT member_id FROM files WHERE site_id IS NULL`;
-//   const membersWithSharedResources: MemberWithTagOnly[] = [];
-//   sitesMembers.forEach(({ member_id }) => {
-//     const member = members.find((m) => m.id === member_id);
-//     if (member?.tag) membersWithSharedResources.push(member);
-//   });
-//   return membersWithSharedResources;
-// }
-
-// async sharedResourcesByMemberId(p: { memberId: number }): Promise<FileB64[]> {
-//   return (
-//     await QQ<File_>`SELECT * FROM files WHERE member_id = ${p.memberId} AND is_dist = FALSE AND site_id IS NULL`
-//   ).map(updateFileToB64);
-// }
-
-// async memberSites(p: { memberId: number }): Promise<Site[]> {
-//   return await T.sites.where({ member_id: p.memberId }).all();
-// }
-
-// async siteFiles(p: { siteId: string }): Promise<FileB64[]> {
-//   return (await T.files.where({ site_id: p.siteId, is_dist: false }).all()).map(updateFileToB64);
-// }

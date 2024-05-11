@@ -1,49 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifiedTokenFromHeader } from './utils.js';
 import bodyParser from 'body-parser';
-import { isDev, isTest } from '@server/config.js';
-import { T } from '@db';
+import { isDev, isTest, vercelMiddlewareMemberSite } from '@server/config.js';
 
-export const logger = (apiPath: string) => (req: Request, res: Response, next: NextFunction) => {
+export const logger = (req: Request, res: Response, next: NextFunction) => {
   const { method } = req;
   const url = new URL(`${req.url}`, `https://${req.headers.host}`);
 
-  // const isAPI = req.url.startsWith(`/${apiPath}`);
-  console.log(`${method} ${url.toString()}}`);
+  console.log(`${method} ${url.toString()}`);
   next();
 };
-
-export function authorize(req: Request, res: Response, next: NextFunction) {
-  const maybeTokenMember = verifiedTokenFromHeader(req.headers);
-
-  if (!maybeTokenMember) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  } else if (new Date(maybeTokenMember.exp * 1000).getTime() < new Date().getTime()) {
-    return res.status(401).json({ error: 'Token expired' });
-  }
-
-  req.tokenMember = maybeTokenMember;
-  next();
-}
-
-async function _authorizeAdmin(req: Request, res: Response, next: NextFunction) {
-  const member = await T.members.find(req.tokenMember!.id);
-  if (!member.is_admin) return res.status(403).json({ error: 'Forbidden' });
-  next();
-}
-
-export function authorizeAdmin(req: Request, res: Response, next: NextFunction) {
-  // Call the original authorize middleware
-  authorize(req, res, (error?: any) => {
-    if (error) {
-      // Forward the error to the next middleware
-      return next(error);
-    }
-
-    // Call the original authorizeAdmin middleware
-    _authorizeAdmin(req, res, next);
-  });
-}
 
 export async function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
   console.error(err);
@@ -55,5 +20,45 @@ export async function errorHandler(err: any, req: Request, res: Response, next: 
     stack: isDev || isTest ? err.stack : {},
   });
 }
+
+import { rootHostnames } from '../root-hostnames';
+
+export const hostnameParsingMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const forwardedHostFromVercel = req.headers['x-forwarded-host'];
+  const headersHost = req.headers['host'];
+  const resolvedHost = forwardedHostFromVercel || headersHost;
+  if (!resolvedHost) throw 'No host?';
+  if (!req.url) throw 'No URL?';
+  const url = new URL(`${req.url}`, `https://${resolvedHost}`);
+
+  let validHostname: null | string = null;
+  let subdomain: null | string = null;
+  for (let hostname of rootHostnames) {
+    if (hostname === url.hostname) {
+      validHostname = hostname;
+      break;
+    } else if (url.hostname.endsWith(hostname)) {
+      subdomain = url.hostname.replace(new RegExp(`\\.${hostname}$`), '');
+      validHostname = hostname;
+      break;
+    }
+  }
+
+  if (!validHostname) {
+    return res.status(400).json({
+      error: `Invalid hostname. Valid hostnames are: ${rootHostnames.join(' or ')}`,
+    });
+  }
+
+  if (subdomain && url.pathname.startsWith(vercelMiddlewareMemberSite)) {
+    url.pathname = url.pathname.replace(vercelMiddlewareMemberSite, '/');
+  }
+
+  req.rootDomain = validHostname;
+  req.subDomain = subdomain;
+  req.resolvedUrl = url;
+
+  next();
+};
 
 export const jsonParser = bodyParser.json();

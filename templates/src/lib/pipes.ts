@@ -7,7 +7,7 @@ type ART<T extends (...args: any) => any> = Awaited<ReturnType<T>>;
 /* GENERATED */
 
 export const tsite = pipeWrapper<FAT<F['$tsite']>, ART<F['$tsite']>>('tsite');
-export const checkSubdomainAvailability = pipeWrapper<FAT<F['$checkSubdomainAvailability']>, ART<F['$checkSubdomainAvailability']>>('checkSubdomainAvailability');
+export const checkDomainAvailability = pipeWrapper<FAT<F['$checkDomainAvailability']>, ART<F['$checkDomainAvailability']>>('checkDomainAvailability');
 export const adminTsites = pipeWrapper<FAT<F['$adminTsites']>, ART<F['$adminTsites']>>('adminTsites');
 export const deploySite = pipeWrapper<FAT<F['$deploySite']>, ART<F['$deploySite']>>('deploySite');
 export const tsiteSetConfig = pipeWrapper<FAT<F['$tsiteSetConfig']>, ART<F['$tsiteSetConfig']>>('tsiteSetConfig');

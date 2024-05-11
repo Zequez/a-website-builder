@@ -36,6 +36,8 @@ function toHtml(siteId: string, config: Config, path: string, htmlBase: string):
   );
   const preRendered = div.innerHTML;
 
+  console.log(preRendered);
+
   render(null, div);
 
   const preRenderedIndex = htmlBase

@@ -1,16 +1,6 @@
-const rootHostnames = [
-  'hoja.ar',
-  'hoja.localhost',
-  'hojaweb.localhost',
-  'localhost',
-  'hojaweb.xyz',
-  'a-website-builder-zequez.vercel.app',
-];
-const allLocales = ['en', 'es'];
-const defaultLocale = 'en';
-const locales: { [key: string]: string } = {
-  'hoja.ar': 'es',
-  'hoja.localhost': 'es',
-};
+const rootHostnames =
+  process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
+    ? ['hoja.localhost', 'hojaweb.localhost', 'localhost']
+    : ['hoja.ar', 'hojaweb.xyz', 'a-website-builder-zequez.vercel.app'];
 
-export { rootHostnames, locales, defaultLocale, allLocales };
+export { rootHostnames };

@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import mime from 'mime';
 import { IncomingHttpHeaders } from 'http';
 import { stringify } from 'querystring';
 import { File_, Member, SanitizedMember } from '@db';
@@ -37,8 +36,7 @@ export function parseUrlFile(url: URL) {
   if (!fileName) fileName = 'index.html';
   if (fileName.endsWith('/')) fileName += 'index.html';
   if (!fileName.match(/\./)) fileName += '.html';
-  const mimeType = mime.getType(fileName);
-  return { fileName, mimeType };
+  return { fileName };
 }
 
 export function removeKeys(obj: Record<string, any>, excluded: string[] = []) {

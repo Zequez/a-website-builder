@@ -8,6 +8,10 @@ import { useRef, useState } from 'preact/hooks';
 import ThemePicker from './ThemePicker';
 import TexturePattern from './TexturePattern';
 
+const publicDomains = import.meta.env.DEV
+  ? ['.hoja.localhost', '.hojaweb.localhost']
+  : ['.hoja.ar', '.hojaweb.xyz'];
+
 export default function AppWithEditor() {
   const {
     store,
@@ -90,11 +94,16 @@ export default function AppWithEditor() {
         />
 
         <select
-          disabled={true}
-          onChange={(val) => A.setConfigVal('domain', val)}
+          onChange={({ currentTarget }) => A.setConfigVal('domain', currentTarget.value)}
+          value={C.domain}
           class="w-full text-black/70 rounded-md py2 px2 h-10 flex-shrink-0"
         >
-          <option value="hoja.ar">.{C.domain}</option>
+          {publicDomains.map((domain) => {
+            return <option value={domain}>{domain}</option>;
+          })}
+          {publicDomains.indexOf(C.domain) === -1 ? (
+            <option value={C.domain}>{C.domain}</option>
+          ) : null}
         </select>
 
         {/* <div class="px4">

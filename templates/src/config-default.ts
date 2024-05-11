@@ -3,7 +3,13 @@ const configDefault: Config = {
   subdomain: 'your-website',
   domain: 'hoja.ar',
   description: 'Esto es un sitio web',
-  themeColor: 'hsl(90, 50%, 50%)',
+  theme: {
+    hue: 0,
+    saturation: 50,
+    lightness: 50,
+    pattern: 'noise',
+    patternIntensity: 10,
+  },
   icon: {
     type: 'emoji',
     value: '👋',

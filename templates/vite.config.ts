@@ -1,12 +1,15 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import UnoCSS from 'unocss/vite';
 import Icons from 'unplugin-icons/vite';
 import preact from '@preact/preset-vite';
-import viteYaml from '@modyfi/vite-plugin-yaml';
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
   return {
+    define: {
+      'process.env': env,
+    },
     resolve: {
       alias: {
         '@shared': resolve(__dirname, '../shared'),
@@ -18,7 +21,6 @@ export default defineConfig(({ mode }) => {
     },
     appType: 'mpa',
     plugins: [
-      viteYaml(),
       preact(),
       UnoCSS({ configFile: resolve(__dirname, '../uno.config.ts') }),
       Icons({ compiler: 'jsx' }),

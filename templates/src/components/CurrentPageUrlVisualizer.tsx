@@ -5,13 +5,13 @@ export function CurrentPageUrlVisualizer() {
   const {
     selectedPage,
     store: {
-      savedConfig: { subdomain },
+      savedConfig: { subdomain, domain },
     },
   } = useStore();
   const [justCopied, setJustCopied] = useState(false);
   const copiedTimeout = useRef<any>(null);
 
-  const pageUrl = selectedPage ? `https://${subdomain}.hoja.ar${selectedPage.path}` : '';
+  const pageUrl = selectedPage ? `https://${subdomain || ''}${domain}${selectedPage.path}` : '';
 
   function handleClick() {
     if (pageUrl) {

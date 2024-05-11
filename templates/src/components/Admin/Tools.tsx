@@ -132,7 +132,6 @@ function SiteControl(p: { site: PartialSite }) {
         />
         <TextInput
           label="Dominio"
-          disabled={true}
           value={site.domain}
           onChange={(domain) => patchSite({ domain })}
         />
