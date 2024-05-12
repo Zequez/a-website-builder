@@ -7,6 +7,7 @@ import { useEffect } from 'preact/hooks';
 import Header from './Header';
 import noiseImg from '../assets/noise.png';
 import TexturePattern from './TexturePattern';
+import PageContentEditor from './PageContentEditor';
 
 export default function App() {
   const {
@@ -50,8 +51,8 @@ export default function App() {
             {selectedPage ? (
               editing ? (
                 <PageContentEditor
-                  content={selectedPage.content}
-                  onChange={(v) => A.pages.patch(selectedPage.uuid, { content: v })}
+                  config={{ elements: [] }}
+                  onConfigChange={(newConfig) => console.log('Page config changed')}
                 />
               ) : (
                 <div class="whitespace-pre-wrap">{selectedPage.content}</div>
@@ -65,15 +66,5 @@ export default function App() {
         {/* <NetworksLinks /> */}
       </div>
     </>
-  );
-}
-
-function PageContentEditor(p: { content: string; onChange: (content: string) => void }) {
-  return (
-    <textarea
-      class="block w-full rounded-md bg-white/20 p2"
-      value={p.content}
-      onChange={({ currentTarget }) => p.onChange(currentTarget.value)}
-    />
   );
 }
