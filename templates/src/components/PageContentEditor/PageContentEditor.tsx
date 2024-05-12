@@ -1,13 +1,15 @@
-import FontIcon from '~icons/fa6-solid/font';
-import ImageIcon from '~icons/fa6-solid/image';
 import IconGripVertical from '~icons/fa6-solid/grip-vertical';
+import EyeIcon from '~icons/fa6-solid/eye';
+import PenIcon from '~icons/fa6-solid/pen';
 import usePageContentEditorStore, {
   Wrapper,
   PageConfig,
   PageElement,
 } from './usePageContentEditorStore';
 import { cx } from '@shared/utils';
-import { useEffect, useRef } from 'preact/hooks';
+import TextEditor from './TextEditor';
+import ElementPicker from './ElementPicker';
+import { Button } from '../ui';
 
 export default function PageContentEditor(p: {
   config: PageConfig;
@@ -24,23 +26,57 @@ function PageContentEditorBase(p: { onConfigChange: (newConfig: PageConfig) => v
   const { state, computed, actions } = usePageContentEditorStore();
 
   return (
-    <main class="max-w-screen-sm mx-auto bg-main-900 rounded-lg p-4 text-black/60">
-      <PageElementsList />
-      <ElementPicker />
+    <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/60">
+      <div
+        class={cx('py4', {
+          hidden: computed.previewing.value,
+        })}
+      >
+        <PageElementsList />
+        <ElementPicker />
+      </div>
+      {computed.previewing.value && <PageElementsRenderer />}
+      <Button
+        customSize
+        class="absolute -right-2 -top-2 h-8 w-8"
+        tint="main"
+        onClick={() =>
+          actions.patchState({ previewLocked: !state.value.previewLocked, previewPeeking: false })
+        }
+      >
+        {state.value.previewLocked ? <PenIcon /> : <EyeIcon />}
+      </Button>
     </main>
+  );
+}
+
+function PageElementsRenderer() {
+  const { state } = usePageContentEditorStore();
+  return state.value.config.elements.length ? (
+    <div class="py4 space-y-2">
+      {state.value.config.elements.map((pageEl) =>
+        pageEl.type === 'Text' ? (
+          <div class="prose" dangerouslySetInnerHTML={{ __html: pageEl.compiledValue }}></div>
+        ) : (
+          <div>{JSON.stringify(pageEl)}</div>
+        ),
+      )}
+    </div>
+  ) : (
+    <div class="py4"></div>
   );
 }
 
 function PageElementsList() {
   const { state } = usePageContentEditorStore();
 
-  return (
+  return state.value.config.elements.length ? (
     <div class="space-y-0.5 mb-4">
       {state.value.config.elements.map((e, i) => (
         <PageElementEditor key={i} element={e}></PageElementEditor>
       ))}
     </div>
-  );
+  ) : null;
 }
 
 function PageElementEditor(p: { element: PageElement }) {
@@ -64,76 +100,15 @@ function PageElementEditor(p: { element: PageElement }) {
       ></div>
       <div class="flexcs relative z-10 flex-grow">
         {p.element.type === 'Text' ? (
-          <PageTextEditor
-            element={p.element}
-            onInteract={() => reportInteraction(p.element.uuid)}
-          />
+          <TextEditor element={p.element} onInteract={() => reportInteraction(p.element.uuid)} />
         ) : (
-          <PageImageEditor
-            element={p.element}
-            onInteract={() => reportInteraction(p.element.uuid)}
-          />
+          <ImageEditor element={p.element} onInteract={() => reportInteraction(p.element.uuid)} />
         )}
       </div>
     </div>
   );
 }
 
-function PageTextEditor(p: { element: PageElement & { type: 'Text' }; onInteract: () => void }) {
-  const {
-    actions: { patchTextElement },
-  } = usePageContentEditorStore();
-
-  const writeAreaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    writeAreaRef.current!;
-  }, [p.element.value]);
-
-  return (
-    <div
-      ref={writeAreaRef}
-      contentEditable={true}
-      value={p.element.value}
-      onChange={({ currentTarget }) =>
-        patchTextElement(p.element.uuid, { value: currentTarget.innerText })
-      }
-      class="block w-full outline-none resize-none bg-transparent py2 line-height-[1rem] text-black/50"
-      onFocus={p.onInteract}
-    />
-  );
-}
-
-function PageImageEditor(p: { element: PageElement & { type: 'Image' }; onInteract: () => void }) {
+function ImageEditor(p: { element: PageElement & { type: 'Image' }; onInteract: () => void }) {
   return <div>{JSON.stringify(p.element)}</div>;
-}
-
-function ElementPicker(p: {}) {
-  const {
-    actions: { addElement },
-  } = usePageContentEditorStore();
-  return (
-    <div class="flex space-x-2">
-      <ElementPickerButton icon={<FontIcon />} onClick={() => addElement('Text')}>
-        Texto
-      </ElementPickerButton>
-      <ElementPickerButton icon={<ImageIcon />} onClick={() => addElement('Image')}>
-        Imagen
-      </ElementPickerButton>
-    </div>
-  );
-}
-
-function ElementPickerButton(p: { children: any; icon: any; onClick: () => void }) {
-  return (
-    <button
-      onClick={p.onClick}
-      class="group bg-white/50 b b-black/10 b-t-black/5 rounded-md h-20 w1/3 flexcc text-2xl font-light tracking-wider text-black/40 hover:bg-white/80 transition-colors shadow-sm"
-    >
-      <div class="flexcc group-hover:scale-110 transition-transform">
-        <div class="w-12 h-8">{p.icon}</div>
-        {p.children}
-      </div>
-    </button>
-  );
 }

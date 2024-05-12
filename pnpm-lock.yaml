@@ -143,6 +143,9 @@ dependencies:
   sucrase:
     specifier: ^3.35.0
     version: 3.35.0
+  tiny-markdown-editor:
+    specifier: ^0.1.14
+    version: 0.1.14
   tsc-alias:
     specifier: ^1.8.8
     version: 1.8.8
@@ -2728,6 +2731,11 @@ packages:
   /cookie@0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /core-js@3.37.0:
+    resolution: {integrity: sha512-fu5vHevQ8ZG4og+LXug8ulUtVxjOcEYvifJr7L5Bfq9GOztVqsKd9/59hUk2ZSbCrS3BqUr3EpaYGIYzq7g3Ug==}
+    requiresBuild: true
     dev: false
 
   /cors@2.8.5:
@@ -5793,6 +5801,12 @@ packages:
     dependencies:
       es5-ext: 0.10.64
       next-tick: 1.1.0
+    dev: false
+
+  /tiny-markdown-editor@0.1.14:
+    resolution: {integrity: sha512-VTpnMP5fsxJgjR9F/+vU7N67rz8daOY8e/gagVQfZlAvUrj7apc6dUXtmsn/5lBXKdeo6/NO++p6F0d9HU/4Pw==}
+    dependencies:
+      core-js: 3.37.0
     dev: false
 
   /tinybench@2.6.0:

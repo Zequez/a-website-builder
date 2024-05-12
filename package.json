@@ -83,6 +83,7 @@
     "rollup": "^4.13.2",
     "squid": "^0.5.2",
     "sucrase": "^3.35.0",
+    "tiny-markdown-editor": "^0.1.14",
     "tsc-alias": "^1.8.8",
     "tsx": "^4.7.1",
     "typescript": "^5.4.2",

@@ -1,6 +1,8 @@
 import { render } from 'preact';
 import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
+import 'tiny-markdown-editor/dist/tiny-mde.min.css';
+import './assets/tiny-mde.css';
 import App from './components/AppWithEditor';
 import { StoreContextWrapper } from './lib/useStore';
 // @ts-ignore

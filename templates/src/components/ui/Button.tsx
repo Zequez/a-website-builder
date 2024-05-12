@@ -3,6 +3,7 @@ import { Ref } from 'preact';
 
 const TINTS = {
   '': '',
+  main: 'bg-main-500',
   red: 'bg-red-500',
   green: 'bg-emerald-500',
   'green-brighter': 'bg-green-500',
@@ -13,6 +14,8 @@ const TINTS = {
 export default function Button(p: {
   children: any;
   onClick?: () => void;
+  onMouseOver?: () => void;
+  onMouseOut?: () => void;
   disabled?: boolean;
   tint?: keyof typeof TINTS;
   expandH?: boolean;
@@ -65,6 +68,8 @@ export default function Button(p: {
         p.class,
       )}
       disabled={p.disabled}
+      onMouseOver={p.onMouseOver}
+      onMouseOut={p.onMouseOut}
       onClick={p.onClick}
     >
       {p.children}

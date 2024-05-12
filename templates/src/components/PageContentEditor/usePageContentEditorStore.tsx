@@ -1,10 +1,12 @@
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
-import { signal, useSignal, useComputed } from '@preact/signals';
+import { signal, useSignal, effect, useComputed } from '@preact/signals';
 
 type State = {
   config: PageConfig;
   interactingWith: string | null;
+  previewLocked: boolean;
+  previewPeeking: boolean;
 };
 
 export type PageConfig = {
@@ -17,6 +19,7 @@ export type TextConfig = {
   uuid: string;
   type: 'Text';
   value: string;
+  compiledValue: string;
   boxColor: 'none' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'indigo' | 'purple' | 'black';
 };
 
@@ -34,6 +37,12 @@ function usePageContentEditorStoreBase(init: PageConfig) {
   const state = useSignal<State>({
     config: init,
     interactingWith: null,
+    previewLocked: false,
+    previewPeeking: false,
+  });
+
+  effect(() => {
+    console.log('PageContent state', state.value);
   });
 
   function patchState(patch: Partial<State>) {
@@ -52,7 +61,9 @@ function usePageContentEditorStoreBase(init: PageConfig) {
     });
   }
 
-  const computed = new (class {})();
+  const computed = new (class {
+    previewing = useComputed(() => state.value.previewLocked || state.value.previewPeeking);
+  })();
 
   const actions = new (class {
     addElement(type: 'Text' | 'Image') {
@@ -65,7 +76,7 @@ function usePageContentEditorStoreBase(init: PageConfig) {
       let specificEl: PageElement;
 
       if (newEl.type === 'Text') {
-        specificEl = { ...newEl, type: 'Text', value: '', boxColor: 'none' };
+        specificEl = { ...newEl, type: 'Text', value: '', compiledValue: '', boxColor: 'none' };
       } else if (newEl.type === 'Image') {
         specificEl = { ...newEl, type: 'Image', url: { large: '', medium: '', small: '' } };
       } else {
@@ -77,10 +88,15 @@ function usePageContentEditorStoreBase(init: PageConfig) {
       }
     }
 
+    // setPreview(previewing: boolean) {
+    // patchState({ previewing });
+    // }
+
     reportInteraction(uuid: string) {
       patchState({ interactingWith: uuid });
     }
 
+    patchState = patchState;
     patchTextElement = patchPageElement<TextConfig>;
     patchImageElement = patchPageElement<ImageConfig>;
   })();

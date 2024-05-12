@@ -1,0 +1,49 @@
+.TinyMDE {
+  padding: 0;
+  background: transparent;
+}
+
+.TMFencedCodeBacktick, .TMFencedCodeTilde, .TMIndentedCode, .TMCode {
+  background-color: hsl(var(--main-hue), 30%, 70%);
+}
+
+.TMMark_TMH1, .TMMark_TMH2, .TMMark_TMUL, .TMMark_TMOL {
+  color: hsl(var(--main-hue), 50%, 50%)
+}
+
+.TMH1 {
+  font-size: 2rem;
+}
+
+.TMH2 {
+  font-size: 1.75rem;
+}
+
+.TMH3 {
+  font-size: 1.375rem;
+}
+
+
+.prose :where(ul):not(:where(.not-prose,.not-prose *)) {
+  margin: 0;
+  line-height: 1.375em;
+}
+
+.prose :where(p):not(:where(.not-prose,.not-prose *)) {
+  margin: 0;
+  line-height: 1.375em;
+}
+
+.prose :where(h1):not(:where(.not-prose,.not-prose *)) {
+  margin: 0;
+}
+
+.prose :where(h2):not(:where(.not-prose,.not-prose *)) {
+  margin-top: 0.5em;
+  margin: 0;
+}
+
+.prose :where(h3):not(:where(.not-prose,.not-prose *)) {
+  margin-top: 0.5em;
+  margin: 0;
+}

@@ -1,5 +1,5 @@
 // Add textShadow
-import { defineConfig } from 'unocss';
+import { defineConfig, presetTypography, presetUno } from 'unocss';
 import { parseColor, theme } from '@unocss/preset-mini';
 import { colorToString } from '@unocss/preset-mini/utils';
 import transformerVariantGroup from '@unocss/transformer-variant-group';
@@ -12,6 +12,7 @@ const FLEX_ALIGNS = {
 };
 
 export default defineConfig({
+  presets: [presetUno(), presetTypography()],
   transformers: [transformerVariantGroup()],
   rules: [
     [
