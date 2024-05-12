@@ -47,20 +47,18 @@ export default function App() {
             ) : null}
           </div>
           <Header />
-          <main class="max-w-screen-sm mx-auto bg-main-900 rounded-lg p-4 text-black/60">
-            {selectedPage ? (
-              editing ? (
-                <PageContentEditor
-                  config={{ elements: [] }}
-                  onConfigChange={(newConfig) => console.log('Page config changed')}
-                />
-              ) : (
-                <div class="whitespace-pre-wrap">{selectedPage.content}</div>
-              )
+          {selectedPage ? (
+            editing ? (
+              <PageContentEditor
+                config={{ elements: [] }}
+                onConfigChange={(newConfig) => console.log('Page config changed')}
+              />
             ) : (
-              'Page not found'
-            )}
-          </main>
+              <div class="whitespace-pre-wrap">{selectedPage.content}</div>
+            )
+          ) : (
+            'Page not found'
+          )}
         </div>
 
         {/* <NetworksLinks /> */}
