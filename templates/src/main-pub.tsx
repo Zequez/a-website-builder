@@ -1,6 +1,7 @@
 import { hydrate, render } from 'preact';
 import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
+import './assets/markdown.css';
 import App from './components/App';
 import { StoreContextWrapper } from './lib/useStore';
 import { hash } from './lib/url-helpers';

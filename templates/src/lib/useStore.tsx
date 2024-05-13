@@ -264,7 +264,7 @@ export function useStoreBase(init: StoreInit) {
   //  |P|A|G|E|S|
   //  +-+-+-+-+-+
 
-  function setPagesPaths(pages: Page[]): Page[] {
+  function setPagesPaths(pages: PageConfig[]): PageConfig[] {
     return pages.map((page, i) => {
       const newPath = i === 0 ? '/' : '/' + (page.title ? slugify(page.title) : page.uuid);
       if (newPath !== page.path) {
@@ -275,12 +275,12 @@ export function useStoreBase(init: StoreInit) {
     });
   }
 
-  function setPages(pages: Page[], regenerateUrls: boolean = true) {
+  function setPages(pages: PageConfig[], regenerateUrls: boolean = true) {
     setConfigVal('pages', regenerateUrls ? setPagesPaths(pages) : pages);
   }
 
   const pages = new (class {
-    patch(uuid: string, patch: Partial<Page>) {
+    patch(uuid: string, patch: Partial<PageConfig>) {
       setPages(
         store.config.pages.map((page) => {
           if (page.uuid === uuid) {
@@ -302,7 +302,7 @@ export function useStoreBase(init: StoreInit) {
           title: '',
           icon: '',
           onNav: false,
-          content: '',
+          elements: [],
         }),
         false,
       );
@@ -351,6 +351,10 @@ export function useStoreBase(init: StoreInit) {
     }
   }
 
+  function toggleEditing() {
+    patchStore({ editing: !store.editing });
+  }
+
   return {
     store,
     ...computed,
@@ -362,6 +366,7 @@ export function useStoreBase(init: StoreInit) {
       attemptAccess,
       pages,
       navigateTo,
+      toggleEditing,
     },
   };
 }

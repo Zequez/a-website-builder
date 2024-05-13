@@ -4,7 +4,7 @@ declare module '*.html?raw' {
 }
 
 declare module '*.yml' {
-  const value: string;
+  const value: Record<string, any>;
   export default value;
 }
 

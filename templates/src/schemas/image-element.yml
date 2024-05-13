@@ -1,0 +1,21 @@
+$id: 'ImageElementConfig'
+type: 'object'
+properties:
+  uuid:
+    type: 'string'
+  type:
+    type: 'string'
+    enum: ['Image']
+  url:
+    type: 'object'
+    properties:
+      large:
+        type: 'string'
+      medium:
+        type: 'string'
+      small:
+        type: 'string'
+    required: ['large', 'medium', 'small']
+    additionalProperties: false
+required: ['uuid', 'type', 'url']
+additionalProperties: false

@@ -1,0 +1,2 @@
+$id: 'PageElementConfig'
+anyOf: [{ $ref: './text-element.yml' }, { $ref: './image-element.yml' }]

@@ -1,29 +1,31 @@
 import IconGripVertical from '~icons/fa6-solid/grip-vertical';
 import EyeIcon from '~icons/fa6-regular/eye';
 import PenIcon from '~icons/fa6-solid/pen';
-import usePageContentEditorStore, {
-  Wrapper,
-  PageConfig,
-  PageElement,
-} from './usePageContentEditorStore';
+import usePageContentEditorStore, { Wrapper } from './usePageContentEditorStore';
 import { cx } from '@shared/utils';
 import TextEditor from './TextEditor';
 import ElementPicker from './ElementPicker';
 import { Button } from '../ui';
+import { effect } from '@preact/signals';
+import PageElementsRenderer from './PageElementsRenderer';
 
 export default function PageContentEditor(p: {
   config: PageConfig;
   onConfigChange: (newConfig: PageConfig) => void;
 }) {
   return (
-    <Wrapper init={p.config}>
-      <PageContentEditorBase onConfigChange={p.onConfigChange} />
+    <Wrapper init={p.config} onChange={p.onConfigChange}>
+      <PageContentEditorBase />
     </Wrapper>
   );
 }
 
-function PageContentEditorBase(p: { onConfigChange: (newConfig: PageConfig) => void }) {
+function PageContentEditorBase() {
   const { state, computed, actions } = usePageContentEditorStore();
+
+  // effect(() => {
+  //   p.onConfigChange(state.value.config);
+  // });
 
   return (
     <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/60">
@@ -35,7 +37,7 @@ function PageContentEditorBase(p: { onConfigChange: (newConfig: PageConfig) => v
         <PageElementsList />
         <ElementPicker />
       </div>
-      {computed.previewing.value && <PageElementsRenderer />}
+      {computed.previewing.value && <PageElementsRenderer elements={state.value.config.elements} />}
       <Button
         customSize
         class="absolute -right-1 -top-1 h-8 w-8"
@@ -47,23 +49,6 @@ function PageContentEditorBase(p: { onConfigChange: (newConfig: PageConfig) => v
         {state.value.previewLocked ? <PenIcon /> : <EyeIcon />}
       </Button>
     </main>
-  );
-}
-
-function PageElementsRenderer() {
-  const { state } = usePageContentEditorStore();
-  return state.value.config.elements.length ? (
-    <div class="py4 space-y-2">
-      {state.value.config.elements.map((pageEl) =>
-        pageEl.type === 'Text' ? (
-          <div class="prose" dangerouslySetInnerHTML={{ __html: pageEl.compiledValue }}></div>
-        ) : (
-          <div>{JSON.stringify(pageEl)}</div>
-        ),
-      )}
-    </div>
-  ) : (
-    <div class="py4"></div>
   );
 }
 
@@ -79,7 +64,7 @@ function PageElementsList() {
   ) : null;
 }
 
-function PageElementEditor(p: { element: PageElement }) {
+function PageElementEditor(p: { element: PageElementConfig }) {
   const {
     state,
     actions: { reportInteraction },
@@ -109,6 +94,9 @@ function PageElementEditor(p: { element: PageElement }) {
   );
 }
 
-function ImageEditor(p: { element: PageElement & { type: 'Image' }; onInteract: () => void }) {
+function ImageEditor(p: {
+  element: PageElementConfig & { type: 'Image' };
+  onInteract: () => void;
+}) {
   return <div>{JSON.stringify(p.element)}</div>;
 }

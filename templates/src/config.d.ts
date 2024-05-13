@@ -1,14 +1,6 @@
 /* GENERATED */
 
-type Page = {
-  uuid: string;
-  path: string;
-  title: string;
-  icon: string;
-  onNav: boolean;
-  content: string;
-}
-
+type PageElementConfig = TextElementConfig | ImageElementConfig;
 
 type Config = {
   title: string;
@@ -26,5 +18,29 @@ type Config = {
   };
   domain: string;
   subdomain: string;
-  pages: Page[];
+  pages: PageConfig[];
+}
+type PageConfig = {
+  uuid: string;
+  path: string;
+  title: string;
+  icon: string;
+  onNav: boolean;
+  elements: PageElementConfig[];
+}
+type TextElementConfig = {
+  uuid: string;
+  type: "Text";
+  value: string;
+  compiledValue: string;
+  boxColor: string;
+}
+type ImageElementConfig = {
+  uuid: string;
+  type: "Image";
+  url: {
+    large: string;
+    medium: string;
+    small: string;
+  };
 }

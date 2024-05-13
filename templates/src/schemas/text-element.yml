@@ -1,0 +1,18 @@
+
+$id: 'TextElementConfig'
+type: 'object'
+properties:
+  uuid:
+    type: 'string'
+  type:
+    type: 'string'
+    enum: ['Text']
+  value:
+    type: 'string'
+  compiledValue:
+    type: 'string'
+  boxColor:
+    type: 'string'
+required: ['uuid', 'type', 'value', 'compiledValue', 'boxColor']
+additionalProperties: false
+

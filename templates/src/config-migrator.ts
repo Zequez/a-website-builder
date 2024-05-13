@@ -9,6 +9,8 @@ export default function migrateConfig(unknownConfig: any): Config | any {
       newConfig = addFavicon(newConfig);
     } else if (['theme', 'pattern', 'patternIntensity'].includes(error.params.missingProperty)) {
       newConfig = addTheme(newConfig);
+    } else if (['elements'].includes(error.params.missingProperty)) {
+      newConfig = upgradePageConfig(newConfig);
     }
   }
 
@@ -44,4 +46,22 @@ function addTheme(unknownConfig: any): Config {
   }
 
   return { ...newConfig, ...patch };
+}
+
+function upgradePageConfig(unknownConfig: any): Config {
+  unknownConfig.pages.forEach((page: any) => {
+    if (typeof page.elements === 'undefined') {
+      page.elements = [
+        {
+          uuid: crypto.randomUUID(),
+          type: 'Text',
+          value: page.content,
+          compiledValue: `<p>${page.content}</p>`,
+          boxColor: 'none',
+        } as TextElementConfig,
+      ];
+      delete page.content;
+    }
+  });
+  return unknownConfig;
 }

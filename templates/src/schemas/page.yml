@@ -1,0 +1,20 @@
+$id: 'PageConfig'
+type: 'object'
+properties:
+  uuid:
+    type: 'string'
+  path:
+    type: 'string'
+    # pattern: '^[a-zA-Z0-9_\\\\-/]+$'
+  title:
+    type: 'string'
+  icon:
+    type: 'string'
+  onNav:
+    type: 'boolean'
+  elements:
+    type: 'array'
+    items:
+      { $ref: './page-element.yml' }
+required: ['title', 'uuid', 'path', 'icon', 'onNav', 'elements']
+additionalProperties: false

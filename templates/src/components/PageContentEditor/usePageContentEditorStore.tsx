@@ -9,31 +9,10 @@ type State = {
   previewPeeking: boolean;
 };
 
-export type PageConfig = {
-  elements: PageElement[];
-};
-
-export type PageElement = TextConfig | ImageConfig;
-
-export type TextConfig = {
-  uuid: string;
-  type: 'Text';
-  value: string;
-  compiledValue: string;
-  boxColor: 'none' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'indigo' | 'purple' | 'black';
-};
-
-export type ImageConfig = {
-  uuid: string;
-  type: 'Image';
-  url: {
-    large: string;
-    medium: string;
-    small: string;
-  };
-};
-
-function usePageContentEditorStoreBase(init: PageConfig) {
+function usePageContentEditorStoreBase(
+  init: PageConfig,
+  onChange: (newConfig: PageConfig) => void,
+) {
   const state = useSignal<State>({
     config: init,
     interactingWith: null,
@@ -50,10 +29,12 @@ function usePageContentEditorStoreBase(init: PageConfig) {
   }
 
   function patchConfig(patch: Partial<PageConfig>) {
-    patchState({ config: { ...state.value.config, ...patch } });
+    const newConfig = { ...state.value.config, ...patch };
+    patchState({ config: newConfig });
+    onChange(newConfig);
   }
 
-  function patchPageElement<T extends PageElement>(uuid: string, patch: Partial<T>) {
+  function patchPageElement<T extends PageElementConfig>(uuid: string, patch: Partial<T>) {
     patchConfig({
       elements: state.value.config.elements.map((e) =>
         e.uuid === uuid ? ({ ...e, ...patch } as T) : e,
@@ -68,12 +49,12 @@ function usePageContentEditorStoreBase(init: PageConfig) {
   const actions = new (class {
     addElement(type: 'Text' | 'Image') {
       console.log('Adding element', type);
-      const newEl: Pick<PageElement, 'type' | 'uuid'> = {
+      const newEl: Pick<PageElementConfig, 'type' | 'uuid'> = {
         type,
         uuid: crypto.randomUUID(),
       };
 
-      let specificEl: PageElement;
+      let specificEl: PageElementConfig;
 
       if (newEl.type === 'Text') {
         specificEl = { ...newEl, type: 'Text', value: '', compiledValue: '', boxColor: 'none' };
@@ -97,8 +78,8 @@ function usePageContentEditorStoreBase(init: PageConfig) {
     }
 
     patchState = patchState;
-    patchTextElement = patchPageElement<TextConfig>;
-    patchImageElement = patchPageElement<ImageConfig>;
+    patchTextElement = patchPageElement<TextElementConfig>;
+    patchImageElement = patchPageElement<ImageElementConfig>;
   })();
 
   return { state, computed, actions };
@@ -108,8 +89,12 @@ const PageContentContext = createContext<ReturnType<typeof usePageContentEditorS
   undefined!,
 );
 
-export const Wrapper = (p: { children: any; init: PageConfig }) => {
-  const store = usePageContentEditorStoreBase(p.init);
+export const Wrapper = (p: {
+  children: any;
+  init: PageConfig;
+  onChange: (newConfig: PageConfig) => void;
+}) => {
+  const store = usePageContentEditorStoreBase(p.init, p.onChange);
   return <PageContentContext.Provider value={store}>{p.children}</PageContentContext.Provider>;
 };
 

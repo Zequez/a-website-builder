@@ -2,13 +2,10 @@ import { marked } from 'marked';
 import { Editor } from 'tiny-markdown-editor';
 import DOMPurify from 'dompurify';
 
-import usePageContentEditorStore, { PageElement } from './usePageContentEditorStore';
+import usePageContentEditorStore from './usePageContentEditorStore';
 import { useEffect, useRef } from 'preact/hooks';
 
-export default function TextEditor(p: {
-  element: PageElement & { type: 'Text' };
-  onInteract: () => void;
-}) {
+export default function TextEditor(p: { element: TextElementConfig; onInteract: () => void }) {
   const {
     actions: { patchTextElement },
   } = usePageContentEditorStore();
