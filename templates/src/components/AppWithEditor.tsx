@@ -36,113 +36,10 @@ export default function AppWithEditor() {
 
   return (
     <div class="h-screen w-screen flex">
-      <div class="relative w-full sm:w-60 bg-main-200 text-white flex-shrink-0 flex flex-col pb0 sm:pb2  overflow-auto space-y-2 pt2 pb14 sm:pb2 px4">
-        <TexturePattern />
-        <Separator>Sitio</Separator>
-        <div class="flex">
-          <Button
-            reff={faviconButtonRef}
-            onClick={() => setEmojiPickerOpen(true)}
-            customSize
-            class="relative z-20 mr-2 flexcc w-10 h-full p1"
-          >
-            {C.icon.value}
-          </Button>
-          {emojiPickerOpen && (
-            <EmojiPicker
-              target={faviconButtonRef.current!}
-              onClose={() => {
-                setEmojiPickerOpen(false);
-              }}
-              onSelect={(val) => {
-                setEmojiPickerOpen(false);
-                A.setConfigVal('icon', { type: 'emoji', value: val });
-              }}
-            />
-          )}
-          <TextInput
-            label="Titulo"
-            value={C.title}
-            onChange={(val) => A.setConfigVal('title', val)}
-          />
-        </div>
-        <TextAreaInput
-          label="Descripción"
-          value={C.description}
-          onChange={(val) => A.setConfigVal('description', val)}
-        />
-
-        <Separator>Colores</Separator>
-        <ThemePicker />
-
-        <Separator>Páginas</Separator>
-        <PagesList />
-
-        {/* <Separator>Links Redes</Separator>
-        <div class="flexcc mb2 px-4">
-          Instagram Facebook Whatsapp YouTube Telegram Twitter LinkedIn Github
-        </div> */}
-
-        <div class="flex-grow"></div>
-
-        <Separator>Dirección</Separator>
-        <TextInput
-          label="Subdominio"
-          value={C.subdomain}
-          onChange={(val) => A.setConfigVal('subdomain', val)}
-        />
-
-        <select
-          onChange={({ currentTarget }) => A.setConfigVal('domain', currentTarget.value)}
-          value={C.domain}
-          class="w-full text-black/70 rounded-md py2 px2 h-10 flex-shrink-0"
-        >
-          {publicDomains.map((domain) => {
-            return <option value={domain}>{domain}</option>;
-          })}
-          {publicDomains.indexOf(C.domain) === -1 ? (
-            <option value={C.domain}>{C.domain}</option>
-          ) : null}
-        </select>
-
-        {/* <div class="px4">
-          {store.subdomainAvailabilityStatus === 'unknown' && (
-            <div class="mb2">Checkeando disponibilidad...</div>
-          )}
-          {store.subdomainAvailabilityStatus === 'available' && subdomainChanged && (
-            <div class="mb2">Subdominio disponible</div>
-          )}
-          {store.subdomainAvailabilityStatus === 'taken' && (
-            <div class="text-center text-red-500 mb2">Subdominio no disponible</div>
-          )}
-        </div> */}
-
-        <Button
-          expandH
-          onClick={A.saveConfig}
-          tint="green"
-          disabled={
-            !configChanged ||
-            store.subdomainAvailabilityStatus !== 'available' ||
-            store.configIsSaving
-          }
-        >
-          {store.configIsSaving ? 'Guardando...' : 'Guardar'}
-        </Button>
-        <Button
-          tint="green"
-          disabled={configChanged || store.deploySiteInProgress || !publishedConfigIsDifferent}
-          expandH
-          onClick={handleDeploySite}
-        >
-          {store.deploySiteInProgress
-            ? 'Publicando...'
-            : deploySiteResult
-              ? 'Publicar'
-              : 'Error. Reintentar?'}
-        </Button>
+      <div class="relative w-full h-full sm:w-60  text-white flex-shrink-0 flex flex-col">
+        {/** FIXED */}
         <div
-          class={cx('sm:hidden pt[1px] z-50 -mx4 fixed bottom-0 ', {
+          class={cx('sm:hidden z-50 fixed left-0 bottom-0 ', {
             'bg-gray-600 shadow-md w-full': !store.previewing,
           })}
         >
@@ -162,6 +59,112 @@ export default function AppWithEditor() {
               Ver &rarr;
             </Button>
           )}
+        </div>
+        <div class="relative flex-grow bg-main-200 overflow-auto space-y-2 pb0 sm:pb2  sm:pb2 px4 pt2 pb14">
+          <TexturePattern />
+          <Separator>Sitio</Separator>
+          <div class="flex">
+            <Button
+              reff={faviconButtonRef}
+              onClick={() => setEmojiPickerOpen(true)}
+              customSize
+              class="relative z-20 mr-2 flexcc w-10 h-full p1"
+            >
+              {C.icon.value}
+            </Button>
+            {emojiPickerOpen && (
+              <EmojiPicker
+                target={faviconButtonRef.current!}
+                onClose={() => {
+                  setEmojiPickerOpen(false);
+                }}
+                onSelect={(val) => {
+                  setEmojiPickerOpen(false);
+                  A.setConfigVal('icon', { type: 'emoji', value: val });
+                }}
+              />
+            )}
+            <TextInput
+              label="Titulo"
+              value={C.title}
+              onChange={(val) => A.setConfigVal('title', val)}
+            />
+          </div>
+          <TextAreaInput
+            label="Descripción"
+            value={C.description}
+            onChange={(val) => A.setConfigVal('description', val)}
+          />
+
+          <Separator>Colores</Separator>
+          <ThemePicker />
+
+          <Separator>Páginas</Separator>
+          <PagesList />
+
+          {/* <Separator>Links Redes</Separator>
+        <div class="flexcc mb2 px-4">
+          Instagram Facebook Whatsapp YouTube Telegram Twitter LinkedIn Github
+        </div> */}
+
+          <div class="flex-grow"></div>
+
+          <Separator>Dirección</Separator>
+          <TextInput
+            label="Subdominio"
+            value={C.subdomain}
+            onChange={(val) => A.setConfigVal('subdomain', val)}
+          />
+
+          <select
+            onChange={({ currentTarget }) => A.setConfigVal('domain', currentTarget.value)}
+            value={C.domain}
+            class="w-full text-black/70 rounded-md py2 px2 h-10 flex-shrink-0"
+          >
+            {publicDomains.map((domain) => {
+              return <option value={domain}>{domain}</option>;
+            })}
+            {publicDomains.indexOf(C.domain) === -1 ? (
+              <option value={C.domain}>{C.domain}</option>
+            ) : null}
+          </select>
+
+          {/* <div class="px4">
+          {store.subdomainAvailabilityStatus === 'unknown' && (
+            <div class="mb2">Checkeando disponibilidad...</div>
+          )}
+          {store.subdomainAvailabilityStatus === 'available' && subdomainChanged && (
+            <div class="mb2">Subdominio disponible</div>
+          )}
+          {store.subdomainAvailabilityStatus === 'taken' && (
+            <div class="text-center text-red-500 mb2">Subdominio no disponible</div>
+          )}
+        </div> */}
+
+          <Button
+            expandH
+            onClick={A.saveConfig}
+            tint="main"
+            disabled={
+              !configChanged ||
+              store.subdomainAvailabilityStatus !== 'available' ||
+              store.configIsSaving
+            }
+          >
+            {store.configIsSaving ? 'Guardando...' : 'Guardar'}
+          </Button>
+          <Button
+            tint="main"
+            disabled={configChanged || store.deploySiteInProgress || !publishedConfigIsDifferent}
+            expandH
+            onClick={handleDeploySite}
+          >
+            {store.deploySiteInProgress
+              ? 'Publicando...'
+              : deploySiteResult
+                ? 'Publicar'
+                : 'Error. Reintentar?'}
+          </Button>
         </div>
       </div>
       <div
