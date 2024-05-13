@@ -1,3 +1,9 @@
+:root {
+  --un-prose-headings: rgba(0,0,0,0.7);
+  --un-prose-body: rgba(0,0,0,0.7);
+}
+
+
 .TinyMDE {
   padding: 0!important;
   background: transparent!important;

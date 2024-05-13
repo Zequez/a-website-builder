@@ -26,7 +26,7 @@ function PageContentEditorBase() {
   const { state, computed, actions } = usePageContentEditorStore();
 
   return (
-    <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/60">
+    <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/80">
       <div
         class={cx('py4', {
           hidden: computed.previewing.value,

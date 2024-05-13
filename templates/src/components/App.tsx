@@ -62,7 +62,7 @@ export default function App() {
                 onConfigChange={(pageConfig) => A.pages.patch(pageConfig.uuid, pageConfig)}
               />
             ) : (
-              <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/60">
+              <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/80">
                 <PageElementsRenderer elements={selectedPage.elements} />
               </main>
             )
