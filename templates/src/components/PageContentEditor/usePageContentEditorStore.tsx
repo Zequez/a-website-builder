@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { useContext, useEffect, useMemo } from 'preact/hooks';
-import { signal, useSignal, effect, useComputed } from '@preact/signals';
+import { signal, useSignal, useSignalEffect, useComputed } from '@preact/signals';
 import { debounce } from '@shared/utils';
 
 type State = {
@@ -21,7 +21,7 @@ function usePageContentEditorStoreBase(
     previewPeeking: false,
   });
 
-  effect(() => {
+  useSignalEffect(() => {
     console.log('PageContent state', state.value);
   });
 
@@ -32,7 +32,6 @@ function usePageContentEditorStoreBase(
   function patchConfig(patch: Partial<PageConfig>) {
     const newConfig = { ...state.value.config, ...patch };
     patchState({ config: newConfig });
-    console.log('Changing');
     debouncedOnChange(newConfig);
   }
 
@@ -88,6 +87,20 @@ function usePageContentEditorStoreBase(
     patchState = patchState;
     patchTextElement = patchPageElement<TextElementConfig>;
     patchImageElement = patchPageElement<ImageElementConfig>;
+
+    moveElement(uuid: string, targetUuid: string, direction: 'up' | 'down') {
+      const elements = state.value.config.elements;
+      const element = elements.find((e) => e.uuid === uuid)!;
+      const newElements = elements.filter((e) => e.uuid !== uuid);
+      const targetIndex = newElements.findIndex((e) => e.uuid === targetUuid)!;
+
+      if (direction === 'up') {
+        newElements.splice(targetIndex, 0, element);
+      } else {
+        newElements.splice(targetIndex + 1, 0, element);
+      }
+      patchConfig({ elements: newElements });
+    }
   })();
 
   return { state, computed, actions };

@@ -8,6 +8,7 @@ import ElementPicker from './ElementPicker';
 import { Button } from '../ui';
 import { effect } from '@preact/signals';
 import PageElementsRenderer from './PageElementsRenderer';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 export default function PageContentEditor(p: {
   config: PageConfig;
@@ -52,34 +53,204 @@ function PageContentEditorBase() {
   );
 }
 
+type DragState = {
+  elementId: string;
+  elementRect: DOMRect;
+  initialMousePos: { x: number; y: number };
+  mousePos: { x: number; y: number };
+  delta: { x: number; y: number };
+  targetIndex: number;
+  targetDirection: 'up' | 'down' | 'none';
+  targets: { [key: string]: { rect: DOMRect; el: HTMLElement } };
+};
+
 function PageElementsList() {
-  const { state } = usePageContentEditorStore();
+  const { state, actions } = usePageContentEditorStore();
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  function handleDragStart(
+    elementId: string,
+    initialMousePos: { x: number; y: number },
+    refElement: HTMLElement,
+  ) {
+    const elementRect = refElement.getBoundingClientRect();
+    const targets = Object.fromEntries(
+      (Array.from(containerRef.current!.childNodes) as HTMLElement[]).map((el) => {
+        el.style.transition = 'transform 0.3s';
+        return [el.getAttribute('data-drag-key')!, { rect: el.getBoundingClientRect(), el }];
+      }),
+    );
+    const targetIndex = Object.keys(targets).indexOf(elementId);
+
+    let dragState: DragState = {
+      elementId,
+      elementRect,
+      initialMousePos,
+      mousePos: initialMousePos,
+      targets,
+      targetIndex,
+      targetDirection: 'none',
+      delta: { x: 0, y: 0 },
+    };
+
+    setDragState(dragState);
+
+    function handleMouseUp() {
+      Object.values(dragState.targets).forEach(({ el }) => {
+        el.style.transform = '';
+        el.style.backgroundColor = '';
+        el.style.transition = '';
+      });
+      containerRef.current!.style.transition = '';
+      setDragState(null);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove);
+
+      if (dragState.targetDirection !== 'none') {
+        actions.moveElement(
+          dragState.elementId,
+          Object.keys(targets)[dragState.targetIndex],
+          dragState.targetDirection,
+        );
+      }
+    }
+
+    function handleMouseMove(ev: MouseEvent) {
+      ev.preventDefault();
+      const mousePos = { x: ev.clientX, y: ev.clientY };
+      const delta = {
+        x: mousePos.x - dragState.initialMousePos.x,
+        y: mousePos.y - dragState.initialMousePos.y,
+      };
+      const newDragState = { ...dragState, mousePos, delta };
+
+      dragState = newDragState;
+      // const hoverY =
+      //   dragState.delta.y + dragState.elementRect.top + dragState.elementRect.height / 2;
+
+      let furthestTargetMoved: null | [string, number] = null;
+
+      for (let elId in dragState.targets) {
+        const target = dragState.targets[elId];
+        const distance = target.rect.top - dragState.elementRect.top;
+
+        if (distance > 0) {
+          // Elements below
+          // target.el.style.backgroundColor = 'blue';
+          const hoverY =
+            dragState.delta.y + dragState.elementRect.top + dragState.elementRect.height;
+          if (hoverY > target.rect.top + target.rect.height / 2) {
+            // Dragged element has moved above this element; move element down
+            target.el.style.transform = `translateY(-${dragState.elementRect.height}px)`;
+            if (!furthestTargetMoved || furthestTargetMoved[1] < distance) {
+              furthestTargetMoved = [elId, distance];
+            }
+          } else {
+            // Do not move element, clear transform
+            target.el.style.transform = '';
+          }
+        } else if (distance < 0) {
+          // target.el.style.backgroundColor = 'yellow';
+          const hoverY = dragState.delta.y + dragState.elementRect.top;
+          // Elements above
+          if (hoverY < target.rect.top + target.rect.height / 2) {
+            // Dragged element has moved below this element; move element up
+            target.el.style.transform = `translateY(${dragState.elementRect.height}px)`;
+            if (!furthestTargetMoved || furthestTargetMoved[1] > distance) {
+              furthestTargetMoved = [elId, distance];
+            }
+          } else {
+            // Do not move element, clear transform
+            target.el.style.transform = '';
+          }
+        }
+      }
+
+      if (furthestTargetMoved) {
+        const [id, distance] = furthestTargetMoved;
+        dragState.targetIndex = Object.keys(dragState.targets).indexOf(id);
+        dragState.targetDirection = distance < 0 ? 'up' : 'down';
+      } else {
+        dragState.targetIndex = Object.keys(dragState.targets).indexOf(dragState.elementId);
+        dragState.targetDirection = 'none';
+      }
+
+      setDragState(newDragState);
+    }
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }
+
+  const draggedElement = useMemo(() => {
+    if (!dragState?.elementId) return null;
+    return state.value.config.elements.find((e) => e.uuid === dragState.elementId);
+  }, [dragState?.elementId, state.value.config.elements]);
 
   return state.value.config.elements.length ? (
-    <div class="space-y-0.5 mb-4">
-      {state.value.config.elements.map((e, i) => (
-        <PageElementEditor key={i} element={e}></PageElementEditor>
-      ))}
-    </div>
+    <>
+      <div class="space-y-0.5 mb-4" ref={containerRef}>
+        {state.value.config.elements.map((e, i) => (
+          <PageElementEditor
+            key={e.uuid}
+            dragKey={e.uuid}
+            element={e}
+            onDragStart={(mousePos, refElement) => handleDragStart(e.uuid, mousePos, refElement)}
+            class={cx({
+              'opacity-0': dragState?.elementId === e.uuid,
+              // 'bg-red-500!': dragState?.targetIndex === i,
+            })}
+          ></PageElementEditor>
+        ))}
+      </div>
+      {dragState && draggedElement && (
+        <>
+          <div
+            class="fixed z-100"
+            style={{
+              top: dragState.elementRect.top,
+              left: dragState.elementRect.left,
+              transform: `translateX(${(dragState.delta.x, 0)}px) translateY(${dragState.delta.y}px)`,
+              width: dragState.elementRect.width,
+              height: dragState.elementRect.height,
+            }}
+          >
+            <PageElementEditor element={draggedElement} highlight={true} />
+          </div>
+        </>
+      )}
+    </>
   ) : null;
 }
 
-function PageElementEditor(p: { element: PageElementConfig }) {
+function PageElementEditor(p: {
+  element: PageElementConfig;
+  onDragStart?: (mousePos: { x: number; y: number }, element: HTMLElement) => void;
+  class?: string;
+  dragKey?: string;
+  highlight?: boolean;
+}) {
   const {
     state,
     actions: { reportInteraction },
   } = usePageContentEditorStore();
 
   return (
-    <div class="flex relative">
-      <div class="peer absolute -ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40">
+    <div class={cx('flex relative', p.class)} data-drag-key={p.dragKey}>
+      <div
+        class="peer absolute -ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
+        onMouseDown={(ev) => {
+          p.onDragStart?.({ x: ev.clientX, y: ev.clientY }, ev.currentTarget.parentElement!);
+        }}
+      >
         <IconGripVertical />
       </div>
       <div
         class={cx(
           'absolute peer-hover:bg-white/30 h-full -left-4 -right-4 top-0 z-0 pointer-events-none',
           {
-            'bg-white/30': state.value.interactingWith === p.element.uuid,
+            'bg-white/30': state.value.interactingWith === p.element.uuid || p.highlight,
           },
         )}
       ></div>
