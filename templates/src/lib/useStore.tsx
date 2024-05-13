@@ -78,7 +78,9 @@ export function useStoreBase(init: StoreInit) {
   const { store, patchStore } = usePatchableStore<Store>(INITIAL_STATE);
 
   function patchConfig(patch: Partial<Config> | ((config: Config) => Partial<Config>)) {
-    return patchStore(({ config }) => ({ config: { ...config, ...patch } }));
+    return patchStore(({ config }) => ({
+      config: { ...config, ...(typeof patch === 'function' ? patch(config) : patch) },
+    }));
   }
 
   //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗

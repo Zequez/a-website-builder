@@ -32,14 +32,14 @@ function usePageContentEditorStoreBase(
   function patchConfig(patch: Partial<PageConfig>) {
     const newConfig = { ...state.value.config, ...patch };
     patchState({ config: newConfig });
-    debouncedOnChange(newConfig);
+    debouncedOnChange(2000, newConfig);
   }
 
   useEffect(() => {
     patchState({ config: init });
   }, [init]);
 
-  const debouncedOnChange = useMemo(() => debounce(onChange, 2000), []);
+  const debouncedOnChange = useMemo(() => debounce(onChange), []);
 
   function patchPageElement<T extends PageElementConfig>(uuid: string, patch: Partial<T>) {
     patchConfig({
@@ -112,6 +112,8 @@ function usePageContentEditorStoreBase(
       }
       patchConfig({ elements: newElements });
     }
+
+    finishOnChangeAction = () => debouncedOnChange(0, state.value.config);
   })();
 
   return { state, computed, actions };

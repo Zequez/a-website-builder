@@ -74,9 +74,9 @@ export function capitalizeFirstLetter(str: string) {
   return str.charAt(0).toLocaleUpperCase() + str.slice(1);
 }
 
-export function debounce<T>(fn: (...args: T[]) => void, delay: number) {
+export function debounce<T>(fn: (...args: T[]) => void) {
   let timeoutId: NodeJS.Timeout;
-  return (...args: T[]) => {
+  return (delay: number, ...args: T[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       fn(...args);
