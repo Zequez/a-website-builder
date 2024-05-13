@@ -5,7 +5,7 @@ import { debounce } from '@shared/utils';
 
 type State = {
   config: PageConfig;
-  interactingWith: string | null;
+  focusActivation: string | null;
   previewLocked: boolean;
   previewPeeking: boolean;
 };
@@ -16,7 +16,7 @@ function usePageContentEditorStoreBase(
 ) {
   const state = useSignal<State>({
     config: init,
-    interactingWith: null,
+    focusActivation: null,
     previewLocked: false,
     previewPeeking: false,
   });
@@ -76,12 +76,23 @@ function usePageContentEditorStoreBase(
       }
     }
 
+    backDeleteElement(uuid: string) {
+      let previousElement: null | string = null;
+      const elements = state.value.config.elements.filter((e, i) => {
+        if (e.uuid === uuid && i > 0) {
+          previousElement = state.value.config.elements[i - 1]!.uuid;
+        }
+        return e.uuid !== uuid;
+      });
+      patchState({ config: { ...state.value.config, elements }, focusActivation: previousElement });
+    }
+
     // setPreview(previewing: boolean) {
     // patchState({ previewing });
     // }
 
     reportInteraction(uuid: string) {
-      patchState({ interactingWith: uuid });
+      patchState({ focusActivation: uuid });
     }
 
     patchState = patchState;

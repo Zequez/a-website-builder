@@ -5,19 +5,33 @@ import DOMPurify from 'dompurify';
 import usePageContentEditorStore from './usePageContentEditorStore';
 import { useEffect, useRef } from 'preact/hooks';
 
-export default function TextEditor(p: { element: TextElementConfig; onInteract: () => void }) {
+export default function TextEditor(p: { element: TextElementConfig }) {
   const {
-    actions: { patchTextElement },
+    state,
+    actions: { patchTextElement, backDeleteElement: deleteElement },
   } = usePageContentEditorStore();
 
   const elRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<Editor>(null!);
+
+  useEffect(() => {
+    if (state.value.focusActivation === p.element.uuid) {
+      if (editorRef.current) {
+        editorRef.current.setSelection({ col: 0, row: 0 });
+      }
+    }
+  }, [state.value.focusActivation]);
 
   async function handleChange(value: string) {
+    const valueForcedBreaks = value.replace(/\n\n/g, '\n&nbsp;\n');
     patchTextElement(p.element.uuid, {
       value,
-      compiledValue: DOMPurify.sanitize(await marked.parse(value, { gfm: true, breaks: true }), {
-        USE_PROFILES: { html: true, svg: true },
-      }),
+      compiledValue: DOMPurify.sanitize(
+        await marked.parse(valueForcedBreaks, { gfm: true, breaks: true }),
+        {
+          USE_PROFILES: { html: true, svg: true },
+        },
+      ),
     });
   }
 
@@ -27,14 +41,21 @@ export default function TextEditor(p: { element: TextElementConfig; onInteract: 
     editor.setContent(p.element.value);
     editor.setSelection({ col: 0, row: 0 });
     editor.addEventListener('change', () => handleChange(editor.getContent()));
+    elRef.current!.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Backspace') {
+        if (editor.getContent().length === 0) {
+          ev.preventDefault();
+          deleteElement(p.element.uuid);
+        }
+      }
+    });
+    editorRef.current = editor;
   }, []);
 
   return (
     <div
-      // onChange={({ currentTarget }) => handleChange(currentTarget.innerText)}
       ref={elRef}
       class="block w-full outline-none! resize-none bg-transparent py2 line-height-[1rem] text-black/50"
-      // onFocus={p.onInteract}
     />
   );
 }

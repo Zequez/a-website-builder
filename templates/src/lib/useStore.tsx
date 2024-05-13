@@ -7,6 +7,7 @@ import * as storage from './storage';
 import prerender from '../prerender';
 import { slugify, wait } from '@shared/utils';
 import * as urlHelpers from './url-helpers';
+import { usePatchableStore } from './usePatchableStore';
 
 type Store = {
   editing: boolean;
@@ -74,15 +75,10 @@ export function useStoreBase(init: StoreInit) {
     settingsMenuOpen: false,
   };
 
-  const [store, setStoreBase] = useState<Store>(INITIAL_STATE);
+  const { store, patchStore } = usePatchableStore<Store>(INITIAL_STATE);
 
-  function setStore(store: Store) {
-    console.log('setStore', store);
-    setStoreBase(store);
-  }
-
-  function patchStore(patch: Partial<Store>) {
-    setStore({ ...store, ...patch });
+  function patchConfig(patch: Partial<Config> | ((config: Config) => Partial<Config>)) {
+    return patchStore(({ config }) => ({ config: { ...config, ...patch } }));
   }
 
   //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗
@@ -276,20 +272,28 @@ export function useStoreBase(init: StoreInit) {
     });
   }
 
-  function setPages(pages: PageConfig[], regenerateUrls: boolean = true) {
-    setConfigVal('pages', regenerateUrls ? setPagesPaths(pages) : pages);
+  function setPages(
+    pages: PageConfig[] | ((pages: PageConfig[]) => PageConfig[]),
+    regenerateUrls: boolean = true,
+  ) {
+    patchConfig((config) => {
+      const resolvedPages = typeof pages === 'function' ? pages(config.pages) : pages;
+      const finalPages = regenerateUrls ? setPagesPaths(resolvedPages) : resolvedPages;
+      return { pages: finalPages };
+    });
   }
 
   const pages = new (class {
     patch(uuid: string, patch: Partial<PageConfig>) {
       setPages(
-        store.config.pages.map((page) => {
-          if (page.uuid === uuid) {
-            return { ...page, ...patch };
-          } else {
-            return page;
-          }
-        }),
+        (pages) =>
+          pages.map((page) => {
+            if (page.uuid === uuid) {
+              return { ...page, ...patch };
+            } else {
+              return page;
+            }
+          }),
         patch.title ? true : false,
       );
     }

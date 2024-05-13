@@ -9,6 +9,7 @@ import { Button } from '../ui';
 import PageElementsRenderer from './PageElementsRenderer';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import useDragState from './useDragState';
+import ImageEditor from './ImageEditor';
 
 export default function PageContentEditor(p: {
   config: PageConfig;
@@ -108,27 +109,12 @@ function PageElementEditor(p: {
     actions: { reportInteraction },
   } = usePageContentEditorStore();
 
-  // function handleDragStart(
-  //   pos: { clientX: number; clientY: number },
-  //   target: HTMLElement,
-  //   touch: boolean,
-  // ) {
-  //   p.onDragStart?.({ x: pos.clientX, y: pos.clientY }, target.parentElement!, touch);
-  // }
-
   return (
     <div class={cx('flex relative', p.class)} data-drag-key={p.dragKey}>
       <div
         class="peer absolute -ml-6 sm:-ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
         onMouseDown={p.onDragStart}
         onTouchStart={p.onDragStart}
-        // onMouseDown={(ev) => {
-        //   handleDragStart(ev, ev.currentTarget, false);
-        // }}
-        // onTouchStart={(ev) => {
-        //   ev.preventDefault();
-        //   handleDragStart(ev.targetTouches[0], ev.currentTarget, true);
-        // }}
       >
         <IconGripVertical />
       </div>
@@ -136,24 +122,17 @@ function PageElementEditor(p: {
         class={cx(
           'absolute peer-hover:bg-white/30 h-full -left-4 -right-4 top-0 z-0 pointer-events-none',
           {
-            'bg-white/30': state.value.interactingWith === p.element.uuid || p.highlight,
+            'bg-white/30': state.value.focusActivation === p.element.uuid || p.highlight,
           },
         )}
       ></div>
       <div class="flexcs relative z-10 flex-grow">
         {p.element.type === 'Text' ? (
-          <TextEditor element={p.element} onInteract={() => reportInteraction(p.element.uuid)} />
+          <TextEditor element={p.element} />
         ) : (
-          <ImageEditor element={p.element} onInteract={() => reportInteraction(p.element.uuid)} />
+          <ImageEditor element={p.element} />
         )}
       </div>
     </div>
   );
-}
-
-function ImageEditor(p: {
-  element: PageElementConfig & { type: 'Image' };
-  onInteract: () => void;
-}) {
-  return <div>{JSON.stringify(p.element)}</div>;
 }
