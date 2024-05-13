@@ -24,6 +24,13 @@ export default function App() {
 
   const inEditor = window.location.href.match(/templates\/editor/);
 
+  function handleClickEditToggle(ev: MouseEvent | TouchEvent) {
+    if (window.location.href.match(/templates\/editor/)) {
+      ev.preventDefault();
+      A.toggleEditing();
+    }
+  }
+
   return (
     <>
       <style>{`:root {
@@ -38,12 +45,8 @@ export default function App() {
             <a
               class="block bg-main-600 hover:bg-main-500 text-white rounded-bl-full h7 w7 p2 text-xs overflow-hidden"
               href={editorUrl}
-              onClick={(ev) => {
-                if (window.location.href.match(/templates\/editor/)) {
-                  ev.preventDefault();
-                  A.toggleEditing();
-                }
-              }}
+              onClick={handleClickEditToggle}
+              onTouchStart={handleClickEditToggle}
             >
               <div class="relative -top-1">
                 {editing ? <EyeIcon /> : inEditor ? <PenIcon /> : <KeyIcon class="-rotate-90" />}
