@@ -1,5 +1,5 @@
 import IconGripVertical from '~icons/fa6-solid/grip-vertical';
-import EyeIcon from '~icons/fa6-solid/eye';
+import EyeIcon from '~icons/fa6-regular/eye';
 import PenIcon from '~icons/fa6-solid/pen';
 import usePageContentEditorStore, {
   Wrapper,
@@ -38,7 +38,7 @@ function PageContentEditorBase(p: { onConfigChange: (newConfig: PageConfig) => v
       {computed.previewing.value && <PageElementsRenderer />}
       <Button
         customSize
-        class="absolute -right-2 -top-2 h-8 w-8"
+        class="absolute -right-1 -top-1 h-8 w-8"
         tint="main"
         onClick={() =>
           actions.patchState({ previewLocked: !state.value.previewLocked, previewPeeking: false })

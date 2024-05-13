@@ -9,25 +9,24 @@ export function Nav() {
     actions: A,
   } = useStore();
 
-  return (
-    <nav class="bg-white/30 rounded-b-lg flexcc flex-wrap text-xl sm:text-2xl space-x-1">
-      {navPages.length > 1 &&
-        navPages.map(({ uuid, path, title, icon }) => (
-          <div class="flex">
-            <NavItem
-              onClick={(ev: MouseEvent | TouchEvent) => {
-                ev.preventDefault();
-                A.navigateTo(path);
-              }}
-              active={uuid === selectedPageId}
-              path={path}
-              icon={icon}
-              title={title}
-            />
-          </div>
-        ))}
+  return navPages.length > 1 ? (
+    <nav class="bg-white/10 b-t b-t-main-400 rounded-b-lg flexcc flex-wrap text-2xl space-x-1">
+      {navPages.map(({ uuid, path, title, icon }) => (
+        <div class="flex">
+          <NavItem
+            onClick={(ev: MouseEvent | TouchEvent) => {
+              ev.preventDefault();
+              A.navigateTo(path);
+            }}
+            active={uuid === selectedPageId}
+            path={path}
+            icon={icon}
+            title={title}
+          />
+        </div>
+      ))}
     </nav>
-  );
+  ) : null;
 }
 
 export function NavItem(p: {
@@ -40,9 +39,9 @@ export function NavItem(p: {
   return (
     <a
       class={cx(
-        'relative px3 group sm:px4 py1 sm:py2 -mt1 -mb1 rounded-lg flexcc font-semibold hover:z-30 tracking-wide',
+        'relative px3 group sm:px4 py1 sm:py2 -mt1 -mb1 h-12 rounded-lg flexcc font-medium hover:z-30 tracking-wide',
         {
-          'bg-main-900 text-black/50 shadow-md': p.active,
+          'bg-main-900 text-black/90 shadow-md': p.active,
           'hover:bg-white/20 text-white/60': !p.active,
         },
       )}

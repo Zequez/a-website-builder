@@ -8,9 +8,12 @@ export default function Header() {
     selectedPage,
   } = useStore();
   return (
-    <header class="bg-black/20 max-w-screen-lg mx-auto rounded-lg mb-4 shadow-sm" style={{}}>
+    <header
+      class="bg-black/20 max-w-screen-lg mx-auto rounded-lg mb-4 shadow-sm b b-main-400"
+      style={{}}
+    >
       <div class="relative">
-        <h1 class="text-center text-3xl sm:text-5xl font-black h-40 flexcc tracking-widest text-white/80">
+        <h1 class="text-center text-5xl font-black h-40 flexcc tracking-widest text-white/80">
           <a
             href="/"
             onClick={(ev) => {
@@ -19,6 +22,9 @@ export default function Header() {
             }}
           >
             {config.title}
+            {config.description ? (
+              <p class="font-normal text-xl tracking-wider mt-4">{config.description}</p>
+            ) : null}
           </a>
         </h1>
         {!!(selectedPage && !selectedPage.onNav) && (

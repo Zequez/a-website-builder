@@ -8,7 +8,7 @@
 }
 
 .TMMark_TMH1, .TMMark_TMH2, .TMMark_TMUL, .TMMark_TMOL {
-  color: hsl(var(--main-hue), 50%, 50%)
+  color: hsl(var(--main-hue), var(--main-saturation), 50%)
 }
 
 .TMH1 {

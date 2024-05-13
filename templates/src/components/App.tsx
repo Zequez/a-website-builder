@@ -33,7 +33,7 @@ export default function App() {
       <div class="relative overflow-auto bg-main-500 text-white min-h-screen w-full">
         {editing && <CurrentPageUrlVisualizer />}
         <TexturePattern />
-        <div class="relative w-full h-full overflow-auto p-4 pb-12">
+        <div class="relative w-full h-full overflow-auto p2 sm:p4 pb-12">
           <div class="absolute top-0 right-0">
             {!editing ? (
               <a

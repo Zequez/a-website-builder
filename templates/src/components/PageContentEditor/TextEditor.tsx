@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import { Editor } from 'tiny-markdown-editor';
+import DOMPurify from 'dompurify';
 
 import usePageContentEditorStore, { PageElement } from './usePageContentEditorStore';
 import { useEffect, useRef } from 'preact/hooks';
@@ -17,12 +18,14 @@ export default function TextEditor(p: {
   async function handleChange(value: string) {
     patchTextElement(p.element.uuid, {
       value,
-      compiledValue: await marked.parse(value, { gfm: true, breaks: true }),
+      compiledValue: DOMPurify.sanitize(await marked.parse(value, { gfm: true, breaks: true }), {
+        USE_PROFILES: { html: true, svg: true },
+      }),
     });
   }
 
   useEffect(() => {
-    const editor = new Editor({ element: elRef.current!, content: p.element.value || 'ars' });
+    const editor = new Editor({ element: elRef.current!, content: p.element.value || ' ' });
     editor.addEventListener('change', () => handleChange(editor.getContent()));
   }, []);
 
