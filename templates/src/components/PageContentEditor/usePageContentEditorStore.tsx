@@ -1,6 +1,7 @@
 import { createContext } from 'preact';
-import { useContext } from 'preact/hooks';
+import { useContext, useEffect, useMemo } from 'preact/hooks';
 import { signal, useSignal, effect, useComputed } from '@preact/signals';
+import { debounce } from '@shared/utils';
 
 type State = {
   config: PageConfig;
@@ -31,8 +32,15 @@ function usePageContentEditorStoreBase(
   function patchConfig(patch: Partial<PageConfig>) {
     const newConfig = { ...state.value.config, ...patch };
     patchState({ config: newConfig });
-    onChange(newConfig);
+    console.log('Changing');
+    debouncedOnChange(newConfig);
   }
+
+  useEffect(() => {
+    patchState({ config: init });
+  }, [init]);
+
+  const debouncedOnChange = useMemo(() => debounce(onChange, 2000), []);
 
   function patchPageElement<T extends PageElementConfig>(uuid: string, patch: Partial<T>) {
     patchConfig({

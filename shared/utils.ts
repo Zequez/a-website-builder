@@ -73,3 +73,13 @@ export function slugify(title: string) {
 export function capitalizeFirstLetter(str: string) {
   return str.charAt(0).toLocaleUpperCase() + str.slice(1);
 }
+
+export function debounce<T>(fn: (...args: T[]) => void, delay: number) {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: T[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
