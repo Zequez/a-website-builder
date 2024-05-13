@@ -32,6 +32,9 @@ The investment is paid pack from subscriptions at a 50% split rate until the inv
 Additionally, Node Investors are invited to play Node Ambassador roles, which makes it so after th
 investment is paid back, they still can receive income from everyone they onboarded.
 
+## Language
+
+Hoja core UI is currently internationalized to Spanish as that's the expected native language of the initial rollout. English and more languages will be added soon.
 
 ## Development
 
