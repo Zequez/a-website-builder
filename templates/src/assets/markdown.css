@@ -1,26 +1,26 @@
 .TinyMDE {
-  padding: 0;
-  background: transparent;
+  padding: 0!important;
+  background: transparent!important;
 }
 
 .TMFencedCodeBacktick, .TMFencedCodeTilde, .TMIndentedCode, .TMCode {
-  background-color: hsl(var(--main-hue), 30%, 70%);
+  background-color: hsl(var(--main-hue), 30%, 70%)!important;
 }
 
 .TMMark_TMH1, .TMMark_TMH2, .TMMark_TMUL, .TMMark_TMOL {
-  color: hsl(var(--main-hue), var(--main-saturation), 50%)
+  color: hsl(var(--main-hue), var(--main-saturation), 50%)!important
 }
 
 .TMH1 {
-  font-size: 2rem;
+  font-size: 2rem!important;
 }
 
 .TMH2 {
-  font-size: 1.75rem;
+  font-size: 1.75rem!important;
 }
 
 .TMH3 {
-  font-size: 1.375rem;
+  font-size: 1.375rem!important;
 }
 
 
