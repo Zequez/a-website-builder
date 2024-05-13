@@ -60,7 +60,7 @@ export default function AppWithEditor() {
             </Button>
           )}
         </div>
-        <div class="relative flex-grow bg-main-200 overflow-auto space-y-2 pb0 sm:pb2  sm:pb2 px4 pt2 pb14">
+        <div class="relative flex-grow bg-main-200 overflow-auto space-y-2 pb0 sm:pb2  sm:pb2 px4 pt2 pb14 flex flex-col">
           <TexturePattern />
           <Separator>Sitio</Separator>
           <div class="flex">
