@@ -73,6 +73,7 @@ function PageElementsList() {
     elementId: string,
     initialMousePos: { x: number; y: number },
     refElement: HTMLElement,
+    touch: boolean,
   ) {
     const elementRect = refElement.getBoundingClientRect();
     const targets = Object.fromEntries(
@@ -104,8 +105,13 @@ function PageElementsList() {
       });
       containerRef.current!.style.transition = '';
       setDragState(null);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('mousemove', handleMouseMove);
+      if (touch) {
+        window.removeEventListener('touchend', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+      } else {
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
 
       if (dragState.targetDirection !== 'none') {
         actions.moveElement(
@@ -116,8 +122,17 @@ function PageElementsList() {
       }
     }
 
+    function handleTouchMove(ev: TouchEvent) {
+      ev.preventDefault();
+      handleMove(ev.targetTouches[0]);
+    }
+
     function handleMouseMove(ev: MouseEvent) {
       ev.preventDefault();
+      handleMove(ev);
+    }
+
+    function handleMove(ev: { clientX: number; clientY: number }) {
       const mousePos = { x: ev.clientX, y: ev.clientY };
       const delta = {
         x: mousePos.x - dragState.initialMousePos.x,
@@ -126,8 +141,6 @@ function PageElementsList() {
       const newDragState = { ...dragState, mousePos, delta };
 
       dragState = newDragState;
-      // const hoverY =
-      //   dragState.delta.y + dragState.elementRect.top + dragState.elementRect.height / 2;
 
       let furthestTargetMoved: null | [string, number] = null;
 
@@ -179,8 +192,13 @@ function PageElementsList() {
       setDragState(newDragState);
     }
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    if (touch) {
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleMouseUp);
+    } else {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
   }
 
   const draggedElement = useMemo(() => {
@@ -196,7 +214,9 @@ function PageElementsList() {
             key={e.uuid}
             dragKey={e.uuid}
             element={e}
-            onDragStart={(mousePos, refElement) => handleDragStart(e.uuid, mousePos, refElement)}
+            onDragStart={(mousePos, refElement, touch) =>
+              handleDragStart(e.uuid, mousePos, refElement, touch)
+            }
             class={cx({
               'opacity-0': dragState?.elementId === e.uuid,
               // 'bg-red-500!': dragState?.targetIndex === i,
@@ -226,7 +246,7 @@ function PageElementsList() {
 
 function PageElementEditor(p: {
   element: PageElementConfig;
-  onDragStart?: (mousePos: { x: number; y: number }, element: HTMLElement) => void;
+  onDragStart?: (mousePos: { x: number; y: number }, element: HTMLElement, touch: boolean) => void;
   class?: string;
   dragKey?: string;
   highlight?: boolean;
@@ -236,12 +256,24 @@ function PageElementEditor(p: {
     actions: { reportInteraction },
   } = usePageContentEditorStore();
 
+  function handleDragStart(
+    pos: { clientX: number; clientY: number },
+    target: HTMLElement,
+    touch: boolean,
+  ) {
+    p.onDragStart?.({ x: pos.clientX, y: pos.clientY }, target.parentElement!, touch);
+  }
+
   return (
     <div class={cx('flex relative', p.class)} data-drag-key={p.dragKey}>
       <div
         class="peer absolute -ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
         onMouseDown={(ev) => {
-          p.onDragStart?.({ x: ev.clientX, y: ev.clientY }, ev.currentTarget.parentElement!);
+          handleDragStart(ev, ev.currentTarget, false);
+        }}
+        onTouchStart={(ev) => {
+          ev.preventDefault();
+          handleDragStart(ev.targetTouches[0], ev.currentTarget, true);
         }}
       >
         <IconGripVertical />
