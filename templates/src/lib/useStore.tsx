@@ -10,6 +10,7 @@ import * as urlHelpers from './url-helpers';
 
 type Store = {
   editing: boolean;
+  previewing: boolean;
   settingsMenuOpen: boolean;
   selectedPageId: null | string;
   siteId: null | string;
@@ -40,11 +41,11 @@ type StoreInit = {
 };
 
 export function useStoreBase(init: StoreInit) {
-  const firstPage = init.config ? init.config.pages[0] : null;
   const initialConfig = init.config ?? configDefault;
 
   const INITIAL_STATE: Store = {
     editing: init.editing,
+    previewing: false,
 
     selectedPageId:
       initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
@@ -355,6 +356,10 @@ export function useStoreBase(init: StoreInit) {
     patchStore({ editing: !store.editing });
   }
 
+  function togglePreviewing() {
+    patchStore({ previewing: !store.previewing });
+  }
+
   return {
     store,
     ...computed,
@@ -367,6 +372,7 @@ export function useStoreBase(init: StoreInit) {
       pages,
       navigateTo,
       toggleEditing,
+      togglePreviewing,
     },
   };
 }

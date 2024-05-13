@@ -24,7 +24,6 @@ export default function AppWithEditor() {
 
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const faviconButtonRef = useRef<HTMLButtonElement>(null);
-  const [previewing, _previewing] = useState(false);
   const [deploySiteResult, setDeploySiteResult] = useState(true);
 
   async function handleDeploySite() {
@@ -144,11 +143,11 @@ export default function AppWithEditor() {
         </Button>
         <div
           class={cx('sm:hidden pt[1px] z-50 -mx4 fixed bottom-0 ', {
-            'bg-gray-600 shadow-md w-full': !previewing,
+            'bg-gray-600 shadow-md w-full': !store.previewing,
           })}
         >
-          {previewing ? (
-            <Button tint="teal" class="ml1 mb1 w7 h7" customSize onClick={() => _previewing(false)}>
+          {store.previewing ? (
+            <Button tint="teal" class="ml1 mb1 w7 h7" customSize onClick={A.togglePreviewing}>
               &larr;
             </Button>
           ) : (
@@ -158,7 +157,7 @@ export default function AppWithEditor() {
               tint="teal"
               align="right"
               class="w-full"
-              onClick={() => _previewing(true)}
+              onClick={A.togglePreviewing}
             >
               Ver &rarr;
             </Button>
@@ -167,8 +166,8 @@ export default function AppWithEditor() {
       </div>
       <div
         class={cx('flex-grow sm:(inset-none! block! relative! overflow-none!) bg-white z-40', {
-          'fixed inset-0 block overflow-auto': previewing,
-          'hidden ': !previewing,
+          'fixed inset-0 block overflow-auto': store.previewing,
+          'hidden ': !store.previewing,
         })}
       >
         <App />
