@@ -22,7 +22,10 @@ export default function TextEditor(p: { element: TextElementConfig; onInteract: 
   }
 
   useEffect(() => {
-    const editor = new Editor({ element: elRef.current!, content: p.element.value || ' ' });
+    const editor = new Editor({ element: elRef.current!, content: p.element.value });
+    // @ts-ignore
+    editor.setContent(p.element.value);
+    editor.setSelection({ col: 0, row: 0 });
     editor.addEventListener('change', () => handleChange(editor.getContent()));
   }, []);
 

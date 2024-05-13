@@ -1,6 +1,7 @@
 .TinyMDE {
   padding: 0!important;
   background: transparent!important;
+  color: rgba(0,0,0,0.6)
 }
 
 .TMFencedCodeBacktick, .TMFencedCodeTilde, .TMIndentedCode, .TMCode {
@@ -13,6 +14,7 @@
 
 .TMH1 {
   font-size: 2rem!important;
+  line-height: inherit!important;
 }
 
 .TMH2 {
@@ -34,16 +36,41 @@
   line-height: 1.375em;
 }
 
+.prose :where(h1,h2,h3,h4,h5,h6):not(:where(.not-prose,.not-prose *)) {
+  font-weight: 700!important;
+}
+
 .prose :where(h1):not(:where(.not-prose,.not-prose *)) {
   margin: 0;
+  font-size: 2rem;
+}
+
+.prose :where(h1):not(:where(.not-prose,.not-prose *)):before {
+  content: '# ';
+  color: hsl(var(--main-hue), var(--main-saturation), 50%);
 }
 
 .prose :where(h2):not(:where(.not-prose,.not-prose *)) {
   margin-top: 0.5em;
   margin: 0;
+  font-size: 1.75rem;
+}
+
+.prose :where(h2):not(:where(.not-prose,.not-prose *)):before {
+  content: '## ';
+  color: hsl(var(--main-hue), var(--main-saturation), 50%);
 }
 
 .prose :where(h3):not(:where(.not-prose,.not-prose *)) {
   margin-top: 0.5em;
   margin: 0;
+  font-size: 1.375rem;
+  font-weight: inherit!important;
 }
+
+.prose :where(h3):not(:where(.not-prose,.not-prose *)):before {
+  content: '### ';
+  color: rgba(0,0,0,0.4);
+}
+
+
