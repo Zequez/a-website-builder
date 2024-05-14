@@ -28,7 +28,7 @@ export default function HuePicker(p: { value: number; onChange: (value: number) 
     function handleMouseUp() {
       setDragStartX(null);
       // Better performance than updating it on move
-      p.onChange(newHueFromTranslate(maxMovement, latestTranslateX, p.value));
+      p.onChange(newHueFromTranslate(maxMovement, latestTranslateX, p.value) % 360);
       setTranslateX(0);
     }
 
