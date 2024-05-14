@@ -79,4 +79,7 @@
   color: rgba(0,0,0,0.4);
 }
 
-
+.prose :where(a):not(:where(.not-prose,.not-prose *)) {
+  color: hsl(var(--main-hue), var(--main-saturation), 60%);
+  text-decoration-color: hsl(var(--main-hue), var(--main-saturation), 75%);
+}

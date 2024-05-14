@@ -132,7 +132,7 @@ function PageElementEditor(p: {
           },
         )}
       ></div>
-      <div class="flexcs relative z-10 flex-grow">
+      <div class="flexcs relative z-10 flex-grow max-w-full">
         {p.element.type === 'Text' ? (
           <TextEditor element={p.element} />
         ) : (
