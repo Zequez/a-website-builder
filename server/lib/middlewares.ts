@@ -61,4 +61,4 @@ export const hostnameParsingMiddleware = (req: Request, res: Response, next: Nex
   next();
 };
 
-export const jsonParser = bodyParser.json();
+export const jsonParser = bodyParser.json({ limit: '500kb' });
