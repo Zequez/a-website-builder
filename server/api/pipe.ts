@@ -11,7 +11,7 @@ router.post('/pipe/:fun', jsonParser, async (req, res) => {
 });
 
 async function runPipe(fun: string, query: any, req: Request, res: Response) {
-  const functions = new Functions();
+  const functions = new Functions(req);
   const key = `$${fun}` as keyof typeof functions;
 
   if (functions[key]) {

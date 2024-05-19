@@ -79,18 +79,18 @@
 //     // The webhook will retry 5 times waiting for a 200
 //     return res.status(400).json({ error: (error as Error).message });
 //   }
-// });
+// // });
 
-// export type OnUploadCompleteQuery = { memberId: number; url: string };
-// export type OnUploadCompleteResponse = EmptyObject;
-// router.post('/blobs/onUploadComplete', authorize, jsonParser, async (req, res) => {
-//   if (!isDev) return res.status(403).json({ error: 'Forbidden' });
-//   const { memberId, url } = req.body as OnUploadCompleteQuery;
-//   if (!memberId) return res.status(400).json({ error: 'User ID is required' });
-//   if (!url) return res.status(400).json({ error: 'URL is required' });
-//   await handleOnUploadComplete({ memberId, url });
-//   return res.status(200).json({});
-// });
+// // export type OnUploadCompleteQuery = { memberId: number; url: string };
+// // export type OnUploadCompleteResponse = EmptyObject;
+// // router.post('/blobs/onUploadComplete', authorize, jsonParser, async (req, res) => {
+// //   if (!isDev) return res.status(403).json({ error: 'Forbidden' });
+// //   const { memberId, url } = req.body as OnUploadCompleteQuery;
+// //   if (!memberId) return res.status(400).json({ error: 'User ID is required' });
+// //   if (!url) return res.status(400).json({ error: 'URL is required' });
+// //   await handleOnUploadComplete({ memberId, url });
+// //   return res.status(200).json({});
+// // });
 
 // async function handleOnUploadComplete({ url, memberId }: { url: string; memberId: number }) {
 //   const blobDetails = await head(url);

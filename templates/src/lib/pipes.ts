@@ -11,6 +11,7 @@ export const checkDomainAvailability = pipeWrapper<FAT<F['$checkDomainAvailabili
 export const adminTsites = pipeWrapper<FAT<F['$adminTsites']>, ART<F['$adminTsites']>>('adminTsites');
 export const deploySite = pipeWrapper<FAT<F['$deploySite']>, ART<F['$deploySite']>>('deploySite');
 export const tsiteSetConfig = pipeWrapper<FAT<F['$tsiteSetConfig']>, ART<F['$tsiteSetConfig']>>('tsiteSetConfig');
+export const handleUpload = pipeWrapper<FAT<F['$handleUpload']>, ART<F['$handleUpload']>>('handleUpload');
 export const setAccessKey = pipeWrapper<FAT<F['$setAccessKey']>, ART<F['$setAccessKey']>>('setAccessKey');
 export const adminSaveSite = pipeWrapper<FAT<F['$adminSaveSite']>, ART<F['$adminSaveSite']>>('adminSaveSite');
 export const adminCreateSite = pipeWrapper<FAT<F['$adminCreateSite']>, ART<F['$adminCreateSite']>>('adminCreateSite');

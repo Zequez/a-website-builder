@@ -1,3 +1,6 @@
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { list, del, PutBlobResult, head } from '@vercel/blob';
+import { Request } from 'express';
 import { T, QQ, sql, TSite, Member } from '@db';
 import { ValidationError, valErr, validateConfig } from '../../templates/src/config-validator';
 import Token, { MemberTokenData, TokenData } from '@server/lib/Token';
@@ -25,7 +28,10 @@ function E(message: string, status: number, data: any) {
 }
 
 export class Functions {
-  constructor() {}
+  req: Request;
+  constructor(req: Request) {
+    this.req = req;
+  }
 
   // ███████╗██╗  ██╗ █████╗ ██████╗ ███████╗██████╗
   // ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗
@@ -248,6 +254,59 @@ export class Functions {
       return { errors: [] };
     }
   }
+
+  // This endpoint is called by Vercel fronten API so types are unnecesary
+  async $handleUpload(p: any): Promise<any> {
+    const body = this.req.body as HandleUploadBody;
+
+    try {
+      const jsonResponse = await handleUpload({
+        body,
+        request: this.req,
+        onBeforeGenerateToken: async (pathname, clientPayload) => {
+          const { token, siteId } = JSON.parse(clientPayload || '{}') as {
+            token: string;
+            siteId: string;
+          };
+          await this.accessKeyAuthorizeOnly(token, siteId);
+
+          return {
+            allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+            maximumSizeInBytes: 3 * 1024 * 1024, // 3MB
+            tokenPayload: '',
+          };
+        },
+        onUploadCompleted: async ({ blob, tokenPayload }) => {
+          // Get notified of client upload completion
+          // ⚠️ This will not work on `localhost` websites,
+          // Gotta call onUploadComplete from the frontend manually
+
+          console.log('Blob upload completed', blob, tokenPayload);
+
+          // 2 paths:
+          // - Either programatically track blob usage by site on the DB
+          // - Or just set a cron job to analyze DB and clear up unused blobs
+        },
+      });
+
+      return jsonResponse;
+    } catch (error) {
+      // The webhook will retry 5 times waiting for a 200
+      throw E('Upload failed', 500, error);
+    }
+  }
+
+  // async handleOnUploadComplete({ url, memberId }: { url: string; memberId: number }) {
+  //   const blobDetails = await head(url);
+  //   const insertedBlob = await T.blobs.insert({
+  //     url,
+  //     member_id: memberId,
+  //     content_type: blobDetails.contentType,
+  //     name: blobDetails.pathname,
+  //     size: blobDetails.size,
+  //   });
+  //   return insertedBlob;
+  // }
 
   //  +-+-+-+-+-+
   //  |A|D|M|I|N|
