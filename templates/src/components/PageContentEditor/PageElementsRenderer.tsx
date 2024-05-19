@@ -1,3 +1,5 @@
+import ImageRenderer from './ImageRenderer';
+
 export default function PageElementsRenderer(p: { elements: PageElementConfig[] }) {
   return p.elements.length ? (
     <div class="py4 space-y-2 max-w-full break-all">
@@ -9,7 +11,7 @@ export default function PageElementsRenderer(p: { elements: PageElementConfig[] 
             dangerouslySetInnerHTML={{ __html: pageEl.compiledValue }}
           ></div>
         ) : (
-          <div key={pageEl.uuid}>{JSON.stringify(pageEl)}</div>
+          <ImageRenderer key={pageEl.uuid} img={pageEl} />
         ),
       )}
     </div>
