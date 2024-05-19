@@ -19,7 +19,7 @@ export default function PagesList() {
     return navPages.length === 1 && navPages[0].uuid === uuid;
   }
 
-  const pageWidget = (page: Page) => (
+  const pageWidget = (page: PageConfig) => (
     <PageWidget
       page={page}
       dragEnabled={!isLastNavPage(page.uuid)}
@@ -89,8 +89,8 @@ function PagesDroppableWrapper(p: {
 }
 
 function PageWidget(p: {
-  page: Page;
-  onChange: (patch: Partial<Page>) => void;
+  page: PageConfig;
+  onChange: (patch: Partial<PageConfig>) => void;
   onDragDrop: (droppedPageUuid: string) => void;
   onDragOver: () => void;
   onDragEnd: () => void;

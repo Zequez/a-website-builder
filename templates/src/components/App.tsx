@@ -7,10 +7,9 @@ import NetworksLinks from './NetworksLinks';
 import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
 import { useEffect } from 'preact/hooks';
 import Header from './Header';
-import noiseImg from '../assets/noise.png';
 import TexturePattern from './TexturePattern';
 import PageContentEditor from './PageContentEditor';
-import PageElementsRenderer from './PageContentEditor/PageElementsRenderer';
+import PageContentRenderer from './PageContentEditor/PageContentRenderer';
 
 export default function App() {
   const {
@@ -63,7 +62,7 @@ export default function App() {
               />
             ) : (
               <main class="relative max-w-screen-sm mx-auto bg-main-900 rounded-lg px-4 text-black/80">
-                <PageElementsRenderer elements={selectedPage.elements} />
+                <PageContentRenderer elements={selectedPage.elements} />
               </main>
             )
           ) : (

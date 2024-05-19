@@ -8,8 +8,10 @@ type DragState = {
   delta: { x: number; y: number };
   targetIndex: number;
   targetDirection: 'up' | 'down' | 'none';
-  targets: { [key: string]: { rect: DOMRect; el: HTMLElement } };
+  targets: Targets;
 };
+
+type Targets = { [key: string]: { rect: DOMRect; el: HTMLElement } };
 
 const ATTR = 'data-drag-key';
 
@@ -20,39 +22,21 @@ export default function useDragState(p: {
   const containerRef = useRef<HTMLDivElement>(null);
 
   function startDrag(ev: TouchEvent | MouseEvent) {
-    const touch = ev.type === 'touchstart';
     if (ev.cancelable) ev.preventDefault();
-    const evClientPos =
-      ev.type === 'touchstart' ? (ev as TouchEvent).targetTouches[0] : (ev as MouseEvent);
-    const initialMousePos = { x: evClientPos.clientX, y: evClientPos.clientY };
-    function getElementAndKey(el: HTMLElement) {
-      const elementId = el.getAttribute(ATTR);
-      if (elementId === null) {
-        if (el.parentElement) {
-          return getElementAndKey(el.parentElement);
-        } else {
-          throw `No ${ATTR} attribute was found`;
-        }
-      } else {
-        return [el, elementId] as [HTMLElement, string];
-      }
-    }
-    const [refElement, elementId] = getElementAndKey(ev.currentTarget as HTMLElement);
 
-    const elementRect = refElement.getBoundingClientRect();
-    const targets = Object.fromEntries(
-      (Array.from(containerRef.current!.childNodes) as HTMLElement[]).map((el) => {
-        el.style.transition = 'transform 0.3s';
-        return [el.getAttribute('data-drag-key')!, { rect: el.getBoundingClientRect(), el }];
-      }),
-    );
-    const targetIndex = Object.keys(targets).indexOf(elementId);
+    const { touch, pos } = localizedEventToMousePos(ev);
+
+    const targets = getAllTargetsFromContainer(containerRef.current!);
+
+    const targetKey = getTargetKey(ev.currentTarget as HTMLElement);
+    const target = targets[targetKey];
+    const targetIndex = Object.keys(targets).indexOf(targetKey);
 
     let dragState: DragState = {
-      elementId,
-      elementRect,
-      initialMousePos,
-      mousePos: initialMousePos,
+      elementId: targetKey,
+      elementRect: target.rect,
+      initialMousePos: pos,
+      mousePos: pos,
       targets,
       targetIndex,
       targetDirection: 'none',
@@ -60,15 +44,11 @@ export default function useDragState(p: {
     };
 
     setDragState(dragState);
+    addTemporalStyles(targets);
 
     function handleMouseUp() {
-      Object.values(dragState.targets).forEach(({ el }) => {
-        el.style.transform = '';
-        el.style.backgroundColor = '';
-        el.style.transition = '';
-      });
-      containerRef.current!.style.transition = '';
       setDragState(null);
+      removeTemporalStyles(targets);
       if (touch) {
         window.removeEventListener('touchend', handleMouseUp);
         window.removeEventListener('touchmove', handleTouchMove);
@@ -87,7 +67,6 @@ export default function useDragState(p: {
     }
 
     function handleTouchMove(ev: TouchEvent) {
-      // ev.preventDefault();
       handleMove(ev.targetTouches[0]);
     }
 
@@ -166,4 +145,54 @@ export default function useDragState(p: {
   }
 
   return { containerRef, dragState, startDrag };
+}
+
+function addTemporalStyles(targets: Targets) {
+  document.body.style.cursor = 'grabbing';
+  Object.values(targets).forEach(({ el }) => {
+    el.style.transition = 'transform 0.3s';
+  });
+}
+
+function removeTemporalStyles(targets: Targets) {
+  document.body.style.cursor = '';
+  Object.values(targets).forEach(({ el }) => {
+    el.style.transform = '';
+    el.style.backgroundColor = '';
+    el.style.transition = '';
+  });
+}
+
+function localizedEventToMousePos(ev: MouseEvent | TouchEvent): {
+  touch: boolean;
+  pos: { x: number; y: number };
+} {
+  const touch = ev.type === 'touchstart';
+  const evClientPos =
+    ev.type === 'touchstart' ? (ev as TouchEvent).targetTouches[0] : (ev as MouseEvent);
+  const pos = { x: evClientPos.clientX, y: evClientPos.clientY };
+
+  return { touch, pos };
+}
+
+// Checks for parent with data-drag-key attribute
+function getTargetKey(el: HTMLElement) {
+  const elementId = el.getAttribute(ATTR);
+  if (elementId === null) {
+    if (el.parentElement) {
+      return getTargetKey(el.parentElement);
+    } else {
+      throw `No ${ATTR} attribute was found`;
+    }
+  } else {
+    return elementId;
+  }
+}
+
+function getAllTargetsFromContainer(el: HTMLDivElement) {
+  return Object.fromEntries(
+    (Array.from(el.childNodes) as HTMLElement[]).map((el) => {
+      return [el.getAttribute('data-drag-key')!, { rect: el.getBoundingClientRect(), el }];
+    }),
+  );
 }

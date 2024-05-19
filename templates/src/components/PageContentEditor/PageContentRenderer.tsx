@@ -1,6 +1,6 @@
 import ImageRenderer from './ImageRenderer';
 
-export default function PageElementsRenderer(p: { elements: PageElementConfig[] }) {
+export default function PageContentRenderer(p: { elements: PageElementConfig[] }) {
   return p.elements.length ? (
     <div class="py4 space-y-2 max-w-full break-all">
       {p.elements.map((pageEl) =>

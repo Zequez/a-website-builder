@@ -1,4 +1,5 @@
 import IconGripVertical from '~icons/fa6-solid/grip-vertical';
+import MenuEllipsisVIcon from '~icons/fa6-solid/ellipsis-vertical';
 import EyeIcon from '~icons/fa6-regular/eye';
 import PenIcon from '~icons/fa6-solid/pen';
 import usePageContentEditorStore, { Wrapper } from './usePageContentEditorStore';
@@ -6,7 +7,7 @@ import { cx } from '@shared/utils';
 import TextEditor from './TextEditor';
 import ElementPicker from './ElementPicker';
 import { Button } from '../ui';
-import PageElementsRenderer from './PageElementsRenderer';
+import PageElementsRenderer from './PageContentRenderer';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import useDragState from './useDragState';
 import ImageEditor from './ImageEditor';
@@ -95,7 +96,7 @@ function PageElementsList() {
               height: dragState.elementRect.height,
             }}
           >
-            <PageElementEditor element={draggedElement} highlight={true} />
+            <PageElementEditor element={draggedElement} highlight={true} grabbed={true} />
           </div>
         </>
       )}
@@ -109,6 +110,7 @@ function PageElementEditor(p: {
   class?: string;
   dragKey?: string;
   highlight?: boolean;
+  grabbed?: boolean;
 }) {
   const {
     state,
@@ -118,12 +120,23 @@ function PageElementEditor(p: {
   return (
     <div class={cx('flex relative', p.class)} data-drag-key={p.dragKey}>
       <div
-        class="peer absolute z-30 -ml-6 sm:-ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
+        class={cx(
+          `peer absolute z-30 flexcc
+          w-4 h-8 -ml-6 sm:-ml-8 mr-2
+          bg-main-700  b b-black/5 hover:bg-main-800 text-white/40 rounded-sm`,
+          {
+            'cursor-grabbing!': p.grabbed,
+            'cursor-grab': !p.grabbed,
+          },
+        )}
         onMouseDown={p.onDragStart}
         onTouchStart={p.onDragStart}
       >
         <IconGripVertical />
       </div>
+      <button class="absolute right-0 z-30 -mr-6 sm:-mr-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 text-white/40">
+        <MenuEllipsisVIcon />
+      </button>
       <div
         class={cx(
           'absolute z-20 peer-hover:bg-white/30 h-full -left-4 -right-4 top-0 z-0 pointer-events-none',
