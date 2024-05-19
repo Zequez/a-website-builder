@@ -5,26 +5,76 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { TargetedEvent } from 'preact/compat';
 import { API_BASE_URL } from '../../lib/api-helper';
 import useStore from '../../lib/useStore';
+import { ImageElementConfig } from '../../schemas';
 
 export default function ImageEditor(p: { element: ImageElementConfig }) {
   const {
     actions: { patchImageElement },
   } = usePageContentEditorStore();
 
+  function handleUploadDone(url: ImageElementConfig['url']) {
+    patchImageElement(p.element.uuid, {
+      url,
+    });
+  }
+
+  return p.element.url.medium ? (
+    <ImageViewer url={p.element.url} />
+  ) : (
+    <ImageUploader onDone={handleUploadDone} />
+  );
+}
+
+function ImageViewer(p: { url: { small: string; medium: string; large: string } }) {
+  return (
+    <img
+      srcset={`${p.url.large} 1200w, ${p.url.medium} 800w, ${p.url.small} 400w`}
+      sizes="(max-width: 600px) 400px, (max-width: 1200px) 800px, 1200px"
+      src={p.url.large}
+      alt="Image"
+    ></img>
+  );
+}
+
+function convertToWebp(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const newName = file.name.replace(/\.(jpg|png|gif|webp)$/, '.webp');
+          resolve(new File([blob], newName, { type: 'image/webp' }));
+        } else {
+          console.log('No blob!');
+          reject();
+        }
+      });
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function ImageUploader(p: { onDone: (url: ImageElementConfig['url']) => void }) {
   const {
     store: { accessToken, siteId },
   } = useStore();
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
 
   async function handlePickFile(ev: TargetedEvent<HTMLInputElement, Event>) {
     setIsDraggingOver(false);
-    console.log(ev);
     const files = ev.currentTarget.files as FileList;
-    console.log(files);
     if (files.length) {
-      const file = files[0];
+      setIsConverting(true);
+      const file = await convertToWebp(files[0]);
+      setIsConverting(false);
       setIsUploading(true);
       const blob = await upload(file.name, file, {
         access: 'public',
@@ -35,17 +85,15 @@ export default function ImageEditor(p: { element: ImageElementConfig }) {
         }),
       });
       setIsUploading(false);
-      patchImageElement(p.element.uuid, {
-        url: {
-          large: blob.url,
-          medium: blob.url,
-          small: blob.url,
-        },
+
+      p.onDone({
+        small: blob.url,
+        medium: blob.url,
+        large: blob.url,
       });
 
       console.log(blob.url);
     }
-    // ev.currentTarget.files?.[0] && patchImageElement(p.element, ev.currentTarget.files[0]);
   }
 
   useEffect(() => {
@@ -64,20 +112,15 @@ export default function ImageEditor(p: { element: ImageElementConfig }) {
     setIsDraggingOver(true);
   }
 
-  return p.element.url.medium ? (
-    <img src={p.element.url.medium} />
-  ) : (
+  return (
     <div
       class={cx('h-40 rounded-md w-full', {
         'bg-blue-500': isDraggingOver && !isUploading,
         'bg-black/10': !isDraggingOver && !isUploading,
         'bg-red-500': isUploading,
+        'bg-green-500!': isConverting,
       })}
       onDragOver={handleDragOver}
-      // onDrop={(e) => {
-      //   e.preventDefault();
-      //   console.log(e);
-      // }}
     >
       <input
         type="file"
