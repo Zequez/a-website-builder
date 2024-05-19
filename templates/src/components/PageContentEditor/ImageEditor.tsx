@@ -1,3 +1,4 @@
+import UploadIcon from '~icons/fa6-solid/upload';
 import { upload } from '@vercel/blob/client';
 import { cx } from '@shared/utils';
 import usePageContentEditorStore from './usePageContentEditorStore';
@@ -7,6 +8,7 @@ import { API_BASE_URL } from '../../lib/api-helper';
 import useStore from '../../lib/useStore';
 import convertToWebp from '../../lib/convertToWebp';
 import ImageRenderer from './ImageRenderer';
+import ThreeDots from '../ui/ThreeDots';
 
 export default function ImageEditor(p: { element: ImageElementConfig }) {
   const {
@@ -51,17 +53,23 @@ function ImageViewer(p: {
       <ImageRenderer img={p.img} />
       <div class="absolute right-1 top-1 rounded-md overflow-hidden">
         {displaySizes.map(([label, value]) => (
-          <DisplaySizeBtn label={label} onClick={() => p.onSetDisplaySize(value)} />
+          <DisplaySizeBtn
+            label={label}
+            onClick={() => p.onSetDisplaySize(value)}
+            active={p.img.displaySize === value}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function DisplaySizeBtn(p: { label: string; onClick: () => void }) {
+function DisplaySizeBtn(p: { label: string; onClick: () => void; active: boolean }) {
   return (
     <button
-      class="p1 bg-black/20 text-white b-r last:b-r-0 b-black/20 hover:bg-black/30"
+      class={cx('p1 bg-black/20 text-white b-r last:b-r-0 b-black/20 hover:bg-black/30', {
+        'bg-black/30': p.active,
+      })}
       onClick={p.onClick}
     >
       {p.label}
@@ -131,20 +139,32 @@ function ImageUploader(p: {
 
   return (
     <div
-      class={cx('h-40 rounded-md w-full', {
-        'bg-blue-500': isDraggingOver && !isUploading,
-        'bg-black/10': !isDraggingOver && !isUploading,
-        'bg-red-500': isUploading,
-        'bg-green-500!': isConverting,
+      class={cx('h-40 rounded-md w-full relative shadow-sm shadow-inset', {
+        'bg-main-800': isDraggingOver,
+        'bg-black/10': !isDraggingOver,
       })}
       onDragOver={handleDragOver}
     >
       <input
         type="file"
         accept="image/*"
-        class="h-full w-full bg-red-500 opacity-0"
+        class="h-full w-full bg-red-500 opacity-0 cursor-pointer"
         onChange={handlePickFile}
       />
+      {!isUploading ? (
+        <div class="w-full h-full absolute top-0 left-0 flexcc flex-col text-black/30 pointer-events-none">
+          <UploadIcon class="text-5xl mb-2" />
+          <div>Seleccionar archivo</div>
+        </div>
+      ) : null}
+      {isUploading || isConverting ? (
+        <div class="w-full h-full absolute top-0 left-0 flexcc flex-col text-black/30 pointer-events-none">
+          <div>
+            Subiendo
+            <ThreeDots />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
