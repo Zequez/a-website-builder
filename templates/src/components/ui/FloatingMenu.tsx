@@ -71,7 +71,7 @@ export default function FloatingMenu(p: {
   return createPortal(
     <div class="fixed inset-0 z-50">
       <div
-        class="absolute z-20 flex flex-col py-1 bg-white text-gray-600 shadow-md rounded-sm overflow-hidden"
+        class="absolute z-20 flex flex-col py-1 bg-main-950 text-gray-600 shadow-md rounded-sm overflow-hidden"
         style={style}
       >
         {Object.entries(p.items).map(([item, selectHandler]) => (

@@ -66,7 +66,13 @@ function usePageContentEditorStoreBase(
       if (newEl.type === 'Text') {
         specificEl = { ...newEl, type: 'Text', value: '', compiledValue: '', boxColor: 'none' };
       } else if (newEl.type === 'Image') {
-        specificEl = { ...newEl, type: 'Image', url: { large: '', medium: '', small: '' } };
+        specificEl = {
+          ...newEl,
+          type: 'Image',
+          url: { large: '', medium: '', small: '' },
+          displaySize: 'full',
+          originalSize: { width: 0, height: 0 },
+        };
       } else {
         return;
       }
@@ -111,6 +117,10 @@ function usePageContentEditorStoreBase(
         newElements.splice(targetIndex + 1, 0, element);
       }
       patchConfig({ elements: newElements });
+    }
+
+    removeElement(uuid: string) {
+      patchConfig({ elements: state.value.config.elements.filter((e) => e.uuid !== uuid) });
     }
 
     finishOnChangeAction = () => debouncedOnChange(0, state.value.config);
