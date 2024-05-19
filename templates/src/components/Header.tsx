@@ -13,8 +13,13 @@ export default function Header() {
       style={{}}
     >
       <div class="relative">
-        <h1 class="text-center text-5xl font-black h-40 flexcc tracking-widest text-white/80">
+        <h1 class="text-center text-5xl font-black flexcc py4 flex-col sm:flex-row tracking-widest text-white/80">
+          {/* <div class="flex-grow"></div> */}
+          {config.header.imageUrl ? (
+            <img class="max-h-24 max-w-48 mx4 mb4 sm:mb0 rounded-md" src={config.header.imageUrl} />
+          ) : null}
           <a
+            class=""
             href="/"
             onClick={(ev) => {
               ev.preventDefault();
@@ -26,6 +31,7 @@ export default function Header() {
               <p class="font-normal text-xl tracking-wider mt-4">{config.description}</p>
             ) : null}
           </a>
+          {/* <div class="flex-grow"></div> */}
         </h1>
         {!!(selectedPage && !selectedPage.onNav) && (
           <div class="absolute bottom-2 left-2 bg-black/20 rounded-md px1 py0.5">

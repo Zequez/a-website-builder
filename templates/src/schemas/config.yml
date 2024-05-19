@@ -6,6 +6,13 @@ properties:
     type: 'string'
   description:
     type: 'string'
+  header:
+    type: 'object'
+    properties:
+      imageUrl:
+        type: string
+    required: ['imageUrl']
+    additionalProperties: false
   theme:
     type: 'object'
     properties:
@@ -49,4 +56,4 @@ properties:
     items:
       $ref: './page.yml'
 additionalProperties: false
-required: ['title', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']
+required: ['title', 'header', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']

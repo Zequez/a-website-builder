@@ -7,6 +7,7 @@ import EditorPreScreen from './EditorPreScreen';
 import { useRef, useState } from 'preact/hooks';
 import ThemePicker from './ThemePicker';
 import TexturePattern from './TexturePattern';
+import { HeaderImageEditor } from './HeaderImageEditor';
 
 const publicDomains = import.meta.env.DEV
   ? ['.hoja.localhost', '.hojaweb.localhost']
@@ -94,6 +95,10 @@ export default function AppWithEditor() {
             label="Descripción"
             value={C.description}
             onChange={(val) => A.setConfigVal('description', val)}
+          />
+          <HeaderImageEditor
+            imageUrl={C.header.imageUrl}
+            onChange={(val) => A.setConfigVal('header', { imageUrl: val })}
           />
 
           <Separator>Colores</Separator>

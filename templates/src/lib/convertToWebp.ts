@@ -2,7 +2,7 @@
 
 export default function convertToWebp(
   file: File,
-  sizes: [number, number, number],
+  sizes: number[],
   quality = 80,
 ): Promise<{ files: File[]; originalSize: { width: number; height: number } }> {
   return new Promise((resolve, reject) => {

@@ -1,17 +1,29 @@
 import { validateConfig } from './config-validator';
 
 export default function migrateConfig(unknownConfig: any): Config | any {
-  const errors = validateConfig(unknownConfig);
-  let newConfig = { ...unknownConfig };
+  let rounds = 5;
+  let newConfig;
+  while (rounds > 0) {
+    const errors = validateConfig(unknownConfig);
+    newConfig = { ...unknownConfig };
 
-  for (let error of errors) {
-    if (error.params.missingProperty === 'icon') {
-      newConfig = addFavicon(newConfig);
-    } else if (['theme', 'pattern', 'patternIntensity'].includes(error.params.missingProperty)) {
-      newConfig = addTheme(newConfig);
-    } else if (['elements'].includes(error.params.missingProperty)) {
-      newConfig = upgradePageConfig(newConfig);
+    if (errors.length === 0) {
+      return newConfig;
     }
+
+    for (let error of errors) {
+      if (error.params.missingProperty === 'icon') {
+        newConfig = addFavicon(newConfig);
+      } else if (['theme', 'pattern', 'patternIntensity'].includes(error.params.missingProperty)) {
+        newConfig = addTheme(newConfig);
+      } else if (['elements'].includes(error.params.missingProperty)) {
+        newConfig = upgradePageConfig(newConfig);
+      } else if (error.params.missingProperty === 'header') {
+        newConfig = addHeader(newConfig);
+      }
+    }
+
+    --rounds;
   }
 
   return newConfig;
@@ -46,6 +58,16 @@ function addTheme(unknownConfig: any): Config {
   }
 
   return { ...newConfig, ...patch };
+}
+
+function addHeader(unknownConfig: any): Config {
+  const patch: Pick<Config, 'header'> = {
+    header: {
+      imageUrl: '',
+    },
+  };
+
+  return { ...unknownConfig, ...patch };
 }
 
 function upgradePageConfig(unknownConfig: any): Config {

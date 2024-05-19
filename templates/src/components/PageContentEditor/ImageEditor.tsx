@@ -1,5 +1,5 @@
 import UploadIcon from '~icons/fa6-solid/upload';
-import { upload } from '@vercel/blob/client';
+
 import { cx } from '@shared/utils';
 import usePageContentEditorStore from './usePageContentEditorStore';
 import { useEffect, useState } from 'preact/hooks';
@@ -9,6 +9,7 @@ import useStore from '../../lib/useStore';
 import convertToWebp from '../../lib/convertToWebp';
 import ImageRenderer from './ImageRenderer';
 import ThreeDots from '../ui/ThreeDots';
+import uploader from '../../lib/uploader';
 
 export default function ImageEditor(p: { element: ImageElementConfig }) {
   const {
@@ -96,18 +97,7 @@ function ImageUploader(p: {
       const { files: newFiles, originalSize } = await convertToWebp(files[0], [400, 800, 1200]);
       setIsConverting(false);
       setIsUploading(true);
-      const uploadedUrls: string[] = [];
-      for (const file of newFiles) {
-        const blob = await upload(file.name, file, {
-          access: 'public',
-          handleUploadUrl: API_BASE_URL + 'pipe/handleUpload',
-          clientPayload: JSON.stringify({
-            token: accessToken,
-            siteId,
-          }),
-        });
-        uploadedUrls.push(blob.url);
-      }
+      const uploadedUrls = await uploader(newFiles, siteId!, accessToken!);
       setIsUploading(false);
 
       p.onDone({

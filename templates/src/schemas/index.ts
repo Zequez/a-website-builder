@@ -119,6 +119,7 @@ export const ImageElementConfig = {
         "1/3",
         "1/2",
         "2/3",
+        "full",
         "extra"
       ]
     },
@@ -157,6 +158,18 @@ export const Config = {
     },
     "description": {
       "type": "string"
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "imageUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "imageUrl"
+      ],
+      "additionalProperties": false
     },
     "theme": {
       "type": "object",
@@ -233,6 +246,7 @@ export const Config = {
   "additionalProperties": false,
   "required": [
     "title",
+    "header",
     "description",
     "theme",
     "subdomain",
