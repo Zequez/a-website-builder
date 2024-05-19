@@ -118,7 +118,7 @@ function PageElementEditor(p: {
   return (
     <div class={cx('flex relative', p.class)} data-drag-key={p.dragKey}>
       <div
-        class="peer absolute -ml-6 sm:-ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
+        class="peer absolute z-30 -ml-6 sm:-ml-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 cursor-ns-resize text-white/40"
         onMouseDown={p.onDragStart}
         onTouchStart={p.onDragStart}
       >
@@ -126,7 +126,7 @@ function PageElementEditor(p: {
       </div>
       <div
         class={cx(
-          'absolute peer-hover:bg-white/30 h-full -left-4 -right-4 top-0 z-0 pointer-events-none',
+          'absolute z-20 peer-hover:bg-white/30 h-full -left-4 -right-4 top-0 z-0 pointer-events-none',
           {
             'bg-white/30': state.value.focusActivation === p.element.uuid || p.highlight,
           },

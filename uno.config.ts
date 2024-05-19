@@ -86,6 +86,7 @@ export default defineConfig({
         for (let i = 10; i <= 90; i += 10) {
           colors.push([`${i}0`, `hsl(var(--main-hue), var(--main-saturation), ${i}%)`]);
         }
+        colors.push([`950`, `hsl(var(--main-hue), var(--main-saturation), 95%)`]);
         return Object.fromEntries(colors);
       })(),
     },

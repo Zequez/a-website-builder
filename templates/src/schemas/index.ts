@@ -111,12 +111,40 @@ export const ImageElementConfig = {
         "small"
       ],
       "additionalProperties": false
+    },
+    "displaySize": {
+      "type": "string",
+      "enum": [
+        "original",
+        "1/3",
+        "1/2",
+        "2/3",
+        "extra"
+      ]
+    },
+    "originalSize": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
     "uuid",
     "type",
-    "url"
+    "url",
+    "displaySize",
+    "originalSize"
   ],
   "additionalProperties": false
 };

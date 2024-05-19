@@ -1,115 +1,95 @@
 import { upload } from '@vercel/blob/client';
 import { cx } from '@shared/utils';
 import usePageContentEditorStore from './usePageContentEditorStore';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { TargetedEvent } from 'preact/compat';
 import { API_BASE_URL } from '../../lib/api-helper';
 import useStore from '../../lib/useStore';
-import { ImageElementConfig } from '../../schemas';
+import convertToWebp from '../../lib/convertToWebp';
 
 export default function ImageEditor(p: { element: ImageElementConfig }) {
   const {
     actions: { patchImageElement },
   } = usePageContentEditorStore();
 
-  function handleUploadDone(url: ImageElementConfig['url']) {
+  function handleUploadDone(partialConfig: Pick<ImageElementConfig, 'url' | 'originalSize'>) {
     patchImageElement(p.element.uuid, {
-      url,
+      ...partialConfig,
+      displaySize: 'original',
+    });
+  }
+
+  function handleChangeDisplaySize(newDisplaySize: ImageElementConfig['displaySize']) {
+    patchImageElement(p.element.uuid, {
+      displaySize: newDisplaySize,
     });
   }
 
   return p.element.url.medium ? (
-    <ImageViewer url={p.element.url} />
+    <ImageViewer img={p.element} onSetDisplaySize={handleChangeDisplaySize} />
   ) : (
     <ImageUploader onDone={handleUploadDone} />
   );
 }
 
-function ImageViewer(p: { url: { small: string; medium: string; large: string } }) {
+function ImageViewer(p: {
+  img: ImageElementConfig;
+  onSetDisplaySize: (size: ImageElementConfig['displaySize']) => void;
+}) {
+  const displaySizes: [string, ImageElementConfig['displaySize']][] = [
+    ['Default', 'original'],
+    ['1/3', '1/3'],
+    ['1/2', '1/2'],
+    ['2/3', '2/3'],
+    ['100%', 'full'],
+    ['110%', 'extra'],
+  ];
+
   return (
-    <div class="flexcc w-full">
-      <img
-        srcset={`${p.url.large} 1200w, ${p.url.medium} 800w, ${p.url.small} 400w`}
-        sizes="(max-width: 600px) 400px, (max-width: 1200px) 800px, 1200px"
-        src={p.url.large}
-        alt="Image"
-      />
+    <div
+      class={cx('relative flexcc w-full rounded-md flex-grow', {
+        '-mx-6': p.img.displaySize === 'extra',
+      })}
+    >
+      <div
+        class={cx('rounded-md overflow-hidden p-1 mb.5 bg-main-950 b b-black/10 shadow-sm', {
+          'w-full': p.img.displaySize === 'full' || p.img.displaySize === 'extra',
+          'w-1/3': p.img.displaySize === '1/3',
+          'w-1/2': p.img.displaySize === '1/2',
+          'w-2/3': p.img.displaySize === '2/3',
+        })}
+      >
+        <img
+          class="w-full rounded-md"
+          srcset={`${p.img.url.large} 1200w, ${p.img.url.medium} 800w, ${p.img.url.small} 400w`}
+          sizes="(max-width: 600px) 400px, (max-width: 1200px) 800px, 1200px"
+          src={p.img.url.large}
+          alt="Image"
+        />
+      </div>
+      <div class="absolute right-1 top-1 rounded-md overflow-hidden">
+        {displaySizes.map(([label, value]) => (
+          <DisplaySizeBtn label={label} onClick={() => p.onSetDisplaySize(value)} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function convertToWebp(file: File, sizes: [number, number, number], quality = 80): Promise<File[]> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = async () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-
-      const conversions: { w: number; h: number }[] = [];
-
-      for (const size of sizes) {
-        let width = img.width;
-        let height = img.height;
-
-        // Calculate new dimensions to fit into a square of the specified size
-        if (width > height) {
-          if (width > size) {
-            height *= size / width;
-            width = size;
-          }
-        } else {
-          if (height > size) {
-            width *= size / height;
-            height = size;
-          }
-        }
-
-        if (width !== img.width || height !== img.height) {
-          conversions.push({ w: width, h: height });
-        }
-      }
-
-      if (conversions.length === 0) {
-        conversions.push({ w: img.width, h: img.height });
-      }
-
-      let files: File[] = [];
-      for (const { w, h } of conversions) {
-        canvas.width = w;
-        canvas.height = h;
-        ctx.clearRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-
-        try {
-          const newFile = await new Promise<File>((resolveToBlob, rejectToBlob) => {
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  const newName = file.name.replace(/\.(jpg|png|gif|webp)$/, '.webp');
-                  resolveToBlob(new File([blob], newName, { type: 'image/webp' }));
-                } else {
-                  console.log('No blob!');
-                  reject();
-                }
-              },
-              'image/webp',
-              quality / 100,
-            );
-          });
-          files.push(newFile);
-        } catch (e) {
-          console.error('Some conversion error', e);
-          reject();
-        }
-      }
-
-      resolve(files);
-    };
-    img.src = URL.createObjectURL(file);
-  });
+function DisplaySizeBtn(p: { label: string; onClick: () => void }) {
+  return (
+    <button
+      class="p1 bg-black/20 text-white b-r last:b-r-0 b-black/20 hover:bg-black/30"
+      onClick={p.onClick}
+    >
+      {p.label}
+    </button>
+  );
 }
 
-function ImageUploader(p: { onDone: (url: ImageElementConfig['url']) => void }) {
+function ImageUploader(p: {
+  onDone: (url: Pick<ImageElementConfig, 'url' | 'originalSize'>) => void;
+}) {
   const {
     store: { accessToken, siteId },
   } = useStore();
@@ -123,7 +103,7 @@ function ImageUploader(p: { onDone: (url: ImageElementConfig['url']) => void }) 
     const files = ev.currentTarget.files as FileList;
     if (files.length) {
       setIsConverting(true);
-      const newFiles = await convertToWebp(files[0], [400, 800, 1200]);
+      const { files: newFiles, originalSize } = await convertToWebp(files[0], [400, 800, 1200]);
       setIsConverting(false);
       setIsUploading(true);
       const uploadedUrls: string[] = [];
@@ -141,9 +121,12 @@ function ImageUploader(p: { onDone: (url: ImageElementConfig['url']) => void }) 
       setIsUploading(false);
 
       p.onDone({
-        small: uploadedUrls[0],
-        medium: uploadedUrls[1] || uploadedUrls[0],
-        large: uploadedUrls[2] || uploadedUrls[1] || uploadedUrls[0],
+        url: {
+          small: uploadedUrls[0],
+          medium: uploadedUrls[1] || uploadedUrls[0],
+          large: uploadedUrls[2] || uploadedUrls[1] || uploadedUrls[0],
+        },
+        originalSize,
       });
     }
   }
