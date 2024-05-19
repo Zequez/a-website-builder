@@ -64,7 +64,9 @@ export function wait(time: number) {
 
 export function slugify(title: string) {
   return title
-    .toLowerCase()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Convert accents and stuff
     .replace(/[^a-z0-9 -]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
