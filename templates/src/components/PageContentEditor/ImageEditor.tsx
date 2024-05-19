@@ -47,7 +47,7 @@ function ImageViewer(p: {
   ];
 
   return (
-    <div class="relative w-full flex-grow">
+    <div class="relative w-full flexcc flex-grow">
       <ImageRenderer img={p.img} />
       <div class="absolute right-1 top-1 rounded-md overflow-hidden">
         {displaySizes.map(([label, value]) => (
