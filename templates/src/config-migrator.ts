@@ -2,10 +2,9 @@ import { validateConfig } from './config-validator';
 
 export default function migrateConfig(unknownConfig: any): Config | any {
   let rounds = 5;
-  let newConfig;
+  let newConfig = { ...unknownConfig };
   while (rounds > 0) {
-    const errors = validateConfig(unknownConfig);
-    newConfig = { ...unknownConfig };
+    const errors = validateConfig(newConfig);
 
     if (errors.length === 0) {
       return newConfig;

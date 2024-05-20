@@ -1,5 +1,8 @@
 const configDefault: Config = {
   title: 'Título',
+  header: {
+    imageUrl: '',
+  },
   subdomain: 'your-website',
   domain: 'hoja.ar',
   description: 'Esto es un sitio web',

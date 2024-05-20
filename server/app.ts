@@ -25,10 +25,6 @@ const appDist = express.static(APP_STATIC_PATH);
 app.use(appDist);
 
 app.all('*', async (req, res, next) => {
-  if (req.rootDomain === 'hojaweb.xyz') {
-    return res.redirect(301, 'https://hoja.ar');
-  }
-
   const url = req.resolvedUrl;
 
   // On Vercel it serves the app directly without going through here
@@ -63,6 +59,10 @@ app.all('*', async (req, res, next) => {
 });
 
 app.all('*', (req, res) => {
+  if (req.rootDomain === 'hojaweb.xyz') {
+    return res.redirect(301, 'https://hoja.ar');
+  }
+
   res.status(404).json({ error: 'Not found' });
 });
 

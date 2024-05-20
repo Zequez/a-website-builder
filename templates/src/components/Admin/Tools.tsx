@@ -5,6 +5,7 @@ import CloudIcon from '~icons/fa6-solid/cloud';
 import useAdminStore, { AdminStore, PartialSite } from './useAdminStore';
 import { cx } from '@shared/utils';
 import Sites from './Sites';
+import Domains from './Domains';
 
 export default function Tools() {
   const {
@@ -48,6 +49,7 @@ export default function Tools() {
         ))}
       </nav>
       {tab === 'sites' && <Sites />}
+      {tab === 'domains' && <Domains />}
     </div>
   );
 }

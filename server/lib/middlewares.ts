@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
-import { isDev, isTest, vercelMiddlewareMemberSite } from '@server/config.js';
+import { isDev, isTest } from '@server/config.js';
+import { prodRootHostnames, devRootHostnames } from '@server/domains';
+
+const rootHostnames = isDev || isTest ? devRootHostnames : prodRootHostnames;
 
 export const logger = (req: Request, res: Response, next: NextFunction) => {
   const { method } = req;
@@ -21,15 +24,12 @@ export async function errorHandler(err: any, req: Request, res: Response, next: 
   });
 }
 
-import { rootHostnames } from '../root-hostnames';
-
 export const hostnameParsingMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const forwardedHostFromVercel = req.headers['x-forwarded-host'];
-  const headersHost = req.headers['host'];
-  const resolvedHost = forwardedHostFromVercel || headersHost;
-  if (!resolvedHost) throw 'No host?';
+  // const forwardedHostFromVercel = req.headers['x-forwarded-host'];
+  const headersHost = req.headers['host']!;
+  // const resolvedHost = forwardedHostFromVercel || headersHost;
   if (!req.url) throw 'No URL?';
-  const url = new URL(`${req.url}`, `https://${resolvedHost}`);
+  const url = new URL(`${req.url}`, `https://${headersHost}`);
 
   let validHostname: null | string = null;
   let subdomain: null | string = null;
@@ -50,9 +50,9 @@ export const hostnameParsingMiddleware = (req: Request, res: Response, next: Nex
     });
   }
 
-  if (subdomain && url.pathname.startsWith(vercelMiddlewareMemberSite)) {
-    url.pathname = url.pathname.replace(vercelMiddlewareMemberSite, '/');
-  }
+  // if (subdomain && url.pathname.startsWith(vercelMiddlewareMemberSite)) {
+  //   url.pathname = url.pathname.replace(vercelMiddlewareMemberSite, '/');
+  // }
 
   req.rootDomain = validHostname;
   req.subDomain = subdomain;

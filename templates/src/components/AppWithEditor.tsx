@@ -2,6 +2,7 @@ import useStore from '../lib/useStore';
 import App from './App';
 import { TextInput, TextAreaInput, Button, EmojiPicker } from './ui';
 import { cx } from '@shared/utils';
+import { prodDomains, devDomains } from '@server/domains';
 import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
 import { useRef, useState } from 'preact/hooks';
@@ -9,9 +10,11 @@ import ThemePicker from './ThemePicker';
 import TexturePattern from './TexturePattern';
 import { HeaderImageEditor } from './HeaderImageEditor';
 
-const publicDomains = import.meta.env.DEV
-  ? ['.hoja.localhost', '.hojaweb.localhost']
-  : ['.hoja.ar', '.hojaweb.xyz'];
+const domains = import.meta.env.DEV ? devDomains : prodDomains;
+
+const availableDomains = domains
+  .filter((d) => d.scope === 'members' || d.scope === 'public')
+  .map((d) => d.host);
 
 export default function AppWithEditor() {
   const {
@@ -126,10 +129,10 @@ export default function AppWithEditor() {
             value={C.domain}
             class="w-full text-black/70 rounded-md py2 px2 h-10 flex-shrink-0"
           >
-            {publicDomains.map((domain) => {
+            {availableDomains.map((domain) => {
               return <option value={domain}>{domain}</option>;
             })}
-            {publicDomains.indexOf(C.domain) === -1 ? (
+            {availableDomains.indexOf(C.domain) === -1 ? (
               <option value={C.domain}>{C.domain}</option>
             ) : null}
           </select>

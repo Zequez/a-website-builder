@@ -12,6 +12,9 @@ import { ValidationError } from '../../config-validator';
 import { editorUrl, publicSiteUrl } from '../../lib/url-helpers';
 import ThreeDots from '../ui/ThreeDots';
 import { cx } from '@shared/utils';
+import { prodDomains, devDomains } from '@server/domains';
+
+const domains = import.meta.env.DEV ? devDomains : prodDomains;
 
 export default function Sites() {
   const {
@@ -149,12 +152,20 @@ function SiteControl(p: { site: PartialSite }) {
           value={site.subdomain}
           onChange={(subdomain) => patchSite({ subdomain })}
         />
-        <TextInput
-          label="Dominio"
-          joinL
+        <select
+          onChange={({ currentTarget }) => patchSite({ domain: currentTarget.value })}
           value={site.domain}
-          onChange={(domain) => patchSite({ domain })}
-        />
+          class="text-black/70 rounded-r-md py2 px2 h-10 flex-shrink-0 outline-slate-4"
+        >
+          {domains.map((domain) => {
+            return (
+              <option value={domain.host}>
+                {domain.subdomains ? '*' : ''}
+                {domain.host}
+              </option>
+            );
+          })}
+        </select>
       </div>
       <ErrorsListDisplay errors={saveSiteErrors} class="mb4" />
       <div class="flex space-x-4">

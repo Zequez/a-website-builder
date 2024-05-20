@@ -8,7 +8,11 @@ import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered, Tsites } from '@db/schema';
 import { spreadInsert } from '@db/squid';
 import { randomAlphaNumericString } from '@shared/utils';
-import { publicDomains, adminDomains } from '@server/config';
+import { isDev } from '@server/config';
+import { prodDomains, devDomains, resolveScopes } from '@server/domains';
+
+const domains = isDev ? devDomains : prodDomains;
+const defaultDomain = domains.find((d) => d.scope === 'members' && d.subdomains)!.host;
 
 export class Err extends Error {
   constructor(
@@ -118,8 +122,9 @@ export class Functions {
     return props.filter((c) => allowed.indexOf(c) !== -1);
   }
 
-  domainIsValid(domain: string, asAdmin: boolean = false) {
-    return publicDomains.indexOf(domain) !== -1 || (asAdmin && adminDomains.indexOf(domain) !== -1);
+  domainIsValid(domain: string, scope: 'admin' | 'public' | 'members') {
+    const resolvedScopes = resolveScopes(scope);
+    return !!domains.find((d) => d.host === domain && resolvedScopes.indexOf(d.scope) !== -1);
   }
 
   //  ██████╗ ███████╗████████╗████████╗███████╗██████╗ ███████╗
@@ -154,7 +159,7 @@ export class Functions {
     asAdmin: boolean;
   }): Promise<boolean> {
     console.log('Checking SUBDOMAIN', p.subdomain, p.siteId);
-    if (!this.domainIsValid(p.domain, p.asAdmin)) {
+    if (!this.domainIsValid(p.domain, p.asAdmin ? 'admin' : 'members')) {
       return false;
     }
     if (!p.domain.startsWith('.') && p.subdomain !== '') {
@@ -403,22 +408,26 @@ export class Functions {
     }
 
     const subdomain = p.site.config.subdomain;
-    const domain = publicDomains[0];
-    if (!(await this.$checkDomainAvailability({ subdomain, domain, asAdmin: true }))) {
+    if (
+      !(await this.$checkDomainAvailability({ subdomain, domain: defaultDomain, asAdmin: true }))
+    ) {
       return { errors: [valErr('Subdomain not available', 'subdomain')], site: null };
     }
 
-    p.site.config.domain = domain;
+    p.site.config.domain = defaultDomain;
     const { id } = await T.tsites.insert({
       name: p.site.name,
       config: p.site.config,
       subdomain,
-      domain,
+      domain: defaultDomain,
       template: 'genesis',
       access_key: await hashPass(randomAlphaNumericString()),
     });
 
-    return { errors: [], site: { id, name: p.site.name, subdomain, domain, deleted_at: null } };
+    return {
+      errors: [],
+      site: { id, name: p.site.name, subdomain, domain: defaultDomain, deleted_at: null },
+    };
   }
 
   async $adminDeleteSite(p: { token: string; siteId: string }) {
@@ -431,7 +440,7 @@ export class Functions {
     await this.adminMemberAuthorized(p.token);
     await QQ`UPDATE tsites SET
       deleted_at = null,
-      domain = ${publicDomains[0]},
+      domain = ${defaultDomain},
       subdomain = ${randomAlphaNumericString()}
     WHERE id = ${p.siteId}`;
   }
