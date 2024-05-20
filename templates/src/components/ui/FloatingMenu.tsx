@@ -69,7 +69,7 @@ export default function FloatingMenu(p: {
   }
 
   return createPortal(
-    <div class="fixed inset-0 z-50">
+    <div class="fixed inset-0 z-90">
       <div
         class="absolute z-20 flex flex-col py-1 bg-main-950 text-gray-600 shadow-md rounded-sm overflow-hidden"
         style={style}

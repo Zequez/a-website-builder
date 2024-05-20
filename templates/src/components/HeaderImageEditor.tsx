@@ -24,7 +24,7 @@ export function HeaderImageEditor(p: { imageUrl: string; onChange: (url: string)
     }
   }
   return (
-    <div class="text-center">
+    <div class="text-center w-full">
       <div class="mb2">Imagen encabezado</div>
       {p.imageUrl ? (
         <div class="flexcc">
@@ -39,7 +39,7 @@ export function HeaderImageEditor(p: { imageUrl: string; onChange: (url: string)
           <ThreeDots />
         </div>
       ) : (
-        <input type="file" accept={'image/*'} onChange={handleFileUpload} />
+        <input type="file" class="w-full" accept={'image/*'} onChange={handleFileUpload} />
       )}
     </div>
   );

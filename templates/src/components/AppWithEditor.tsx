@@ -7,8 +7,8 @@ import PagesList from './PagesList';
 import EditorPreScreen from './EditorPreScreen';
 import { useRef, useState } from 'preact/hooks';
 import ThemePicker from './ThemePicker';
-import TexturePattern from './TexturePattern';
 import { HeaderImageEditor } from './HeaderImageEditor';
+import { usePatternBackgroundWithOpacity } from '../lib/opacity-background-image';
 
 const domains = import.meta.env.DEV ? devDomains : prodDomains;
 
@@ -30,6 +30,13 @@ export default function AppWithEditor() {
   const faviconButtonRef = useRef<HTMLButtonElement>(null);
   const [deploySiteResult, setDeploySiteResult] = useState(true);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  usePatternBackgroundWithOpacity(
+    store.config.theme.pattern,
+    store.config.theme.patternIntensity,
+    containerRef,
+  );
+
   async function handleDeploySite() {
     setDeploySiteResult(await A.deploySite());
   }
@@ -39,33 +46,32 @@ export default function AppWithEditor() {
   if (showPreScreen) return <EditorPreScreen />;
 
   return (
-    <div class="h-screen w-screen flex">
-      <div class="relative w-full h-full sm:w-60  text-white flex-shrink-0 flex flex-col">
-        {/** FIXED */}
+    <div class="h-screen w-screen">
+      <div
+        class={cx('sm:hidden z-80 fixed left-0 bottom-0 ', {
+          'bg-gray-600 shadow-md w-full': !store.previewing,
+        })}
+      >
+        {store.previewing ? (
+          <Button tint="teal" class="ml1 mb1 w7 h7" customSize onClick={A.togglePreviewing}>
+            &larr;
+          </Button>
+        ) : (
+          <Button joinL joinR tint="teal" align="right" class="w-full" onClick={A.togglePreviewing}>
+            Ver &rarr;
+          </Button>
+        )}
+      </div>
+      <div
+        class={cx(
+          'fixed z-60 left-0 top-0 w-full h-full sm:w-60  text-white flex-shrink-0 flex flex-col',
+          { 'hidden!': store.previewing },
+        )}
+      >
         <div
-          class={cx('sm:hidden z-50 fixed left-0 bottom-0 ', {
-            'bg-gray-600 shadow-md w-full': !store.previewing,
-          })}
+          ref={containerRef}
+          class="relative flex-grow bg-main-200 overflow-auto space-y-2 pb0 sm:pb2  sm:pb2 px4 pt2 pb14 flex flex-col"
         >
-          {store.previewing ? (
-            <Button tint="teal" class="ml1 mb1 w7 h7" customSize onClick={A.togglePreviewing}>
-              &larr;
-            </Button>
-          ) : (
-            <Button
-              joinL
-              joinR
-              tint="teal"
-              align="right"
-              class="w-full"
-              onClick={A.togglePreviewing}
-            >
-              Ver &rarr;
-            </Button>
-          )}
-        </div>
-        <div class="relative flex-grow bg-main-200 overflow-auto space-y-2 pb0 sm:pb2  sm:pb2 px4 pt2 pb14 flex flex-col">
-          <TexturePattern />
           <Separator>Sitio</Separator>
           <div class="flex">
             <Button
@@ -176,9 +182,10 @@ export default function AppWithEditor() {
         </div>
       </div>
       <div
-        class={cx('flex-grow sm:(inset-none! block! relative! overflow-none!) bg-white z-40', {
-          'fixed inset-0 block overflow-auto': store.previewing,
-          'hidden ': !store.previewing,
+        class={cx('sm:pl-60  relative overflow-auto h-screen w-full', {
+          'pl0!': store.previewing,
+          // 'fixed inset-0 block overflow-auto': store.previewing,
+          'hidden sm:block ': !store.previewing,
         })}
       >
         <App />

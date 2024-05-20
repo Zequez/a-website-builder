@@ -4,12 +4,14 @@ import PenIcon from '~icons/fa6-solid/pen';
 import useStore from '../lib/useStore';
 import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
+
 import { CurrentPageUrlVisualizer } from './CurrentPageUrlVisualizer';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import Header from './Header';
 import TexturePattern from './TexturePattern';
 import PageContentEditor from './PageContentEditor';
 import PageContentRenderer from './PageContentEditor/PageContentRenderer';
+import { usePatternBackgroundWithOpacity } from '../lib/opacity-background-image';
 
 export default function App() {
   const {
@@ -30,15 +32,25 @@ export default function App() {
     }
   }
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  usePatternBackgroundWithOpacity(config.theme.pattern, config.theme.patternIntensity, {
+    current: document.body,
+  });
+
+  // useEffect(() => {
+  //   if (containerRef.current) {
+  //     // document.body.classList.add
+  //   }
+  // }, [containerRef.current])
+
   return (
     <>
       <style>{`:root {
         --main-hue: ${hue};
         --main-saturation: ${saturation}%;
       `}</style>
-      <div class="relative overflow-auto bg-main-500 text-white min-h-screen w-full">
+      <div ref={containerRef} class="relative text-white min-h-screen w-full">
         {editing && <CurrentPageUrlVisualizer />}
-        <TexturePattern />
         <div class="relative w-full h-full overflow-auto p2 sm:p4 pb-12">
           <div class="absolute top-0 right-0">
             <a

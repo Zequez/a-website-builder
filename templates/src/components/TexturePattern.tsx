@@ -10,9 +10,19 @@ export default function TexturePattern() {
   const elRef = useRef<HTMLDivElement>(null);
 
   // I gave up trying to work it with CSS
+  // This is a hacky way of doing it
   useEffect(() => {
-    elRef.current!.style.height = elRef.current!.parentElement!.scrollHeight + 'px';
-  }, [store]);
+    function setHeight() {
+      elRef.current!.style.height = elRef.current!.parentElement!.scrollHeight + 'px';
+    }
+
+    window.addEventListener('resize', setHeight);
+    setHeight();
+    setTimeout(() => {
+      setHeight();
+    }, 300);
+    return () => window.removeEventListener('resize', setHeight);
+  }, []);
 
   return (
     <div
