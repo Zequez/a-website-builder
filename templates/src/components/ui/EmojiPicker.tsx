@@ -43,7 +43,7 @@ export default function EmojiPicker(p: {
   );
 
   return createPortal(
-    <div class="fixed inset-0 z-50">
+    <div class="fixed inset-0 z-90">
       <div
         class="absolute z-20 bg-white shadow-md rounded-md overflow-hidden"
         style={rectangleToStyle(rectangle)}
