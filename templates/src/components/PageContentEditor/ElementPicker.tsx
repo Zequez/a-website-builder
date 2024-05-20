@@ -24,9 +24,9 @@ function ElementPickerButton(p: { children: any; icon: any; onClick: () => void 
       onClick={p.onClick}
       class="group bg-white/50 b b-black/10 b-t-black/5 rounded-md h-20 w1/3 flexcc text-2xl font-light tracking-wider text-black/40 hover:bg-white/80 transition-colors shadow-sm"
     >
-      <div class="flexcc group-hover:scale-110 transition-transform">
-        <div class="w-12 h-8">{p.icon}</div>
-        {p.children}
+      <div class="flexcc flex-col group-hover:scale-110 transition-transform">
+        <div class="w-12 h-8 flexcc">{p.icon}</div>
+        <div class="text-lg">{p.children}</div>
       </div>
     </button>
   );
