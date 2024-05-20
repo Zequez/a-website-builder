@@ -140,7 +140,7 @@ function PageElementEditor(p: {
       </div>
       <button
         ref={menuButtonRef}
-        class="absolute peer right-0 z-30 -mr-6 sm:-mr-8 mr-2 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 text-white/40"
+        class="absolute peer right-0 z-30 -mr-6 sm:-mr-8 bg-main-700 flexcc rounded-sm  b b-black/5 w-4 h-8 hover:bg-main-800 text-white/40"
         onClick={() => setMenuOpen(true)}
       >
         <MenuEllipsisVIcon />
