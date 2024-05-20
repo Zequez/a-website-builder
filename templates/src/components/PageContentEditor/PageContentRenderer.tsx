@@ -2,7 +2,7 @@ import ImageRenderer from './ImageRenderer';
 
 export default function PageContentRenderer(p: { elements: PageElementConfig[] }) {
   return p.elements.length ? (
-    <div class="py4 space-y-2 max-w-full break-all">
+    <div class="py4 space-y-2 max-w-full break-words">
       {p.elements.map((pageEl) =>
         pageEl.type === 'Text' ? (
           <div
