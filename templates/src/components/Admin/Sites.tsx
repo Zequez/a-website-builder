@@ -1,10 +1,17 @@
 import PlusIcon from '~icons/fa6-solid/plus';
+import GlobeIcon from '~icons/fa6-solid/globe';
+import PencilIcon from '~icons/fa6-solid/pencil';
+import UnlockIcon from '~icons/fa6-solid/unlock';
+import CheckIcon from '~icons/fa6-solid/check';
+import MinusIcon from '~icons/fa6-solid/minus';
 import { useMemo, useState } from 'preact/hooks';
 import useAdminStore, { PartialSite } from './useAdminStore';
 import { Button, Link, TextInput } from '../ui';
 import ErrorsListDisplay from '../ui/ErrorsListDisplay';
 import { ValidationError } from '../../config-validator';
 import { editorUrl, publicSiteUrl } from '../../lib/url-helpers';
+import ThreeDots from '../ui/ThreeDots';
+import { cx } from '@shared/utils';
 
 export default function Sites() {
   const {
@@ -23,31 +30,24 @@ export default function Sites() {
   }, [activeSites]);
 
   return (
-    <div class="flex flex-col space-y-4">
+    <div class="flex flex-col md:(space-y-4 pt-4)">
       {sortedSites && sortedSites.map((s) => <SiteControl key={s.id} site={s} />)}
       <div class="flexcc">
         <ErrorsListDisplay class="w-full" errors={errors.createSite} />
-        <Button onClick={A.createSite} disabled={inProgress.createSite} class="shadow-md!">
+        <Button onClick={A.createSite} disabled={inProgress.createSite} class="shadow-md! my4">
           <PlusIcon class="mr-2" /> {inProgress.createSite ? 'Agregando...' : 'Agregar'}
         </Button>
       </div>
       {deletedSites?.length ? (
         <div>
-          <h1 class="text-2xl mb4">Sitios eliminados</h1>
-          <div class="space-y-1 bg-white/20 rounded-md py4 shadow-md">
+          <div class="space-y-1 bg-white/20 py4 b b-black/20 md:(shadow-md rounded-md mb4) ">
+            <h1 class="text-2xl mb4 text-center">Sitios eliminados</h1>
             {deletedSites.map((site) => (
               <div class="flexcs space-x-2 p1 px4 hover:bg-white/10">
                 <div class="flex-grow">
-                  {site.name}
-                  <span class="text-white/50 text-xs ml-2">{site.id}</span>
+                  <div>{site.name}</div>
+                  <span class="text-white/50 text-xs">{site.id}</span>
                 </div>
-                <Button
-                  tint="green-brighter"
-                  disabled={inProgress.restoreSite}
-                  onClick={() => A.restoreSite(site.id!)}
-                >
-                  Restaurar
-                </Button>
                 <Button
                   disabled={inProgress.deleteSiteForGood}
                   tint="red"
@@ -57,6 +57,13 @@ export default function Sites() {
                   }}
                 >
                   Destruir
+                </Button>
+                <Button
+                  tint="green-brighter"
+                  disabled={inProgress.restoreSite}
+                  onClick={() => A.restoreSite(site.id!)}
+                >
+                  Restaurar
                 </Button>
               </div>
             ))}
@@ -102,50 +109,86 @@ function SiteControl(p: { site: PartialSite }) {
     }
   }
 
+  const [changeKeyOpen, setChangeKeyOpen] = useState(false);
+
   return (
-    <div class="bg-white/20 rounded-md p4 shadow-md">
-      <div class="text-2xl mb2">
-        <input
-          value={site.name}
-          class="bg-transparent w-full"
-          onChange={({ currentTarget }) => patchSite({ name: currentTarget.value })}
-        />
-        <div class="text-xs">{p.site.id}</div>
+    <div
+      class={cx('bg-white/20 p4 b b-black/20 md:(shadow-md rounded-md)', {
+        'b-4! b-emerald-700!': !p.site.subdomain && !p.site.domain.startsWith('.'),
+      })}
+    >
+      <div class="text-2xl mb2 flex">
+        <div class="flex-grow">
+          <input
+            value={site.name}
+            class="bg-transparent w-full"
+            onChange={({ currentTarget }) => patchSite({ name: currentTarget.value })}
+          />
+          <div class="text-xs">{p.site.id}</div>
+        </div>
+        <div class="font-bold mb4 text-lg flex">
+          <Button
+            customSize
+            class="p2"
+            href={publicSiteUrl(p.site.id, '/', p.site.subdomain)}
+            joinR
+            openNewPage
+          >
+            <GlobeIcon />
+          </Button>
+          <Button customSize class="p2" href={editorUrl(p.site.id, '/')} joinL openNewPage>
+            <PencilIcon />
+          </Button>
+        </div>
       </div>
-      <div class="font-bold mb4 text-xl">
-        <Link href={publicSiteUrl(p.site.id, '/', p.site.subdomain)} openNewPage>
-          Visitar
-        </Link>
-        <span class="mx2">•</span>
-        <Link href={editorUrl(p.site.id, '/')} openNewPage>
-          Abrir en editor
-        </Link>
-      </div>
-      <div class="flex flex-col space-y-4 sm:(flex-row space-x-4 space-y-0 ) mb4 ">
+
+      <div class="flex mb4 ">
         <TextInput
           label="Subdominio"
+          joinR
           value={site.subdomain}
           onChange={(subdomain) => patchSite({ subdomain })}
         />
         <TextInput
           label="Dominio"
+          joinL
           value={site.domain}
           onChange={(domain) => patchSite({ domain })}
         />
       </div>
-      <div class="flex mb4">
-        <TextInput label="Clave acceso" value={accessKey} onChange={setAccessKey} joinR />
-        <Button
-          joinL
-          disabled={!accessKey || setAccessKeyInProgress}
-          onClick={handleSetAccessKey}
-          class="flex-shrink-0"
-        >
-          {setAccessKeyInProgress ? 'Estableciendo...' : 'Establecer'}
-        </Button>
-      </div>
       <ErrorsListDisplay errors={saveSiteErrors} class="mb4" />
-      <div class="flex flex-col space-y-4 sm:(flex-row space-x-4 space-y-0)">
+      <div class="flex space-x-4">
+        {changeKeyOpen ? (
+          <div class="flex">
+            <TextInput label="Clave acceso" value={accessKey} onChange={setAccessKey} joinR focus />
+            <Button
+              joinL
+              customSize
+              tint={accessKey ? 'green-brighter' : ''}
+              disabled={setAccessKeyInProgress}
+              onClick={accessKey ? handleSetAccessKey : () => setChangeKeyOpen(false)}
+              class="flex-shrink-0 px2"
+            >
+              {setAccessKeyInProgress ? (
+                <div class="w-6">
+                  <ThreeDots />
+                </div>
+              ) : accessKey ? (
+                <CheckIcon />
+              ) : (
+                <MinusIcon />
+              )}
+            </Button>
+          </div>
+        ) : (
+          <Button customSize onClick={() => setChangeKeyOpen(true)} class="flex-shrink-0 px4">
+            <UnlockIcon />
+          </Button>
+        )}
+        <div class="flex-grow"></div>
+        <Button tint="red" disabled={inProgress.deleteSite} onClick={() => A.deleteSite(site.id)}>
+          Archivar
+        </Button>
         <Button
           class="flex-shrink-0"
           tint="green-brighter"
@@ -153,10 +196,6 @@ function SiteControl(p: { site: PartialSite }) {
           disabled={!saveable}
         >
           {saveSiteInProgress ? 'Guardando...' : 'Guardar'}
-        </Button>
-        <div class="contents sm:block flex-grow"></div>
-        <Button tint="red" disabled={inProgress.deleteSite} onClick={() => A.deleteSite(site.id)}>
-          Eliminar
         </Button>
       </div>
     </div>

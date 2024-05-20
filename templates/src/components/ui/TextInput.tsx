@@ -11,10 +11,18 @@ const TextInput = (p: {
   disabled?: boolean;
   details?: string;
   joinR?: boolean;
+  joinL?: boolean;
+  focus?: boolean;
 }) => {
   const [showPass, setShowPass] = useState(false);
 
-  const roundedClass = p.joinR ? 'rounded-l-md' : 'rounded-md';
+  const roundedClass = p.joinR
+    ? p.joinL
+      ? ''
+      : 'rounded-l-md'
+    : p.joinL
+      ? 'rounded-r-md'
+      : 'rounded-md';
 
   return (
     <div class={cx('relative w-full', p.class)}>
@@ -37,6 +45,7 @@ const TextInput = (p: {
             p.onChange(currentTarget.value);
           }}
           disabled={p.disabled}
+          ref={(el) => (p.focus ? el?.focus() : null)}
         />
         <label
           for={p.label}

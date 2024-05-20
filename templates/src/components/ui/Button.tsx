@@ -20,11 +20,13 @@ export default function Button(p: {
   tint?: keyof typeof TINTS;
   expandH?: boolean;
   class?: string;
-  reff?: Ref<HTMLButtonElement>;
+  reff?: Ref<HTMLButtonElement | HTMLAnchorElement>;
   customSize?: boolean;
   joinL?: boolean;
   joinR?: boolean;
   align?: 'left' | 'right' | 'center';
+  href?: string;
+  openNewPage?: boolean;
 }) {
   const tintClass = TINTS[p.tint || ''];
 
@@ -44,9 +46,11 @@ export default function Button(p: {
   const justifyClass =
     align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
 
+  const El = p.href ? 'a' : 'button';
+
   return (
-    <button
-      ref={p.reff}
+    <El
+      ref={p.reff as any}
       class={cx(
         `group
         flex items-center flex-shrink-0
@@ -71,8 +75,10 @@ export default function Button(p: {
       onMouseOver={p.onMouseOver}
       onMouseOut={p.onMouseOut}
       onClick={p.onClick}
+      target={p.openNewPage ? '_blank' : undefined}
+      href={p.href}
     >
       {p.children}
-    </button>
+    </El>
   );
 }
