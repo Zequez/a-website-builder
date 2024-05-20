@@ -10,7 +10,8 @@ import { usePatchableStore } from '../../lib/usePatchableStore';
 
 export type PartialSite = Pick<Tsites, 'id' | 'name' | 'subdomain' | 'domain' | 'deleted_at'>;
 
-type AdminStore = {
+export type AdminStore = {
+  tab: 'sites' | 'domains' | 'members' | 'storage';
   accessKeyToken: string | null;
   attemptAccessLoading: boolean;
   sites: PartialSite[] | null;
@@ -30,6 +31,7 @@ type StoreInit = {};
 export function useAdminStoreBase(init: StoreInit) {
   const { store, setStore, beginTransaction, endTransaction, patchStore } =
     usePatchableStore<AdminStore>({
+      tab: 'sites',
       accessKeyToken: storage.getMemberToken(),
       attemptAccessLoading: false,
       sites: null,
@@ -208,6 +210,10 @@ export function useAdminStoreBase(init: StoreInit) {
       patchStore({ sites: store.sites!.filter((s) => s.id !== siteId) });
       inProgressEnd('deleteSiteForGood');
       endTransaction();
+    }
+
+    setTab(tab: AdminStore['tab']) {
+      patchStore({ tab });
     }
   })();
 
