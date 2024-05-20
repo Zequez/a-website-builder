@@ -33,11 +33,11 @@ export default function Tools() {
   };
 
   return (
-    <div class="max-w-screen-md mx-auto pb-16">
-      <nav class="fixed bottom-0 left-0 w-full h-16 z-30 bg-emerald-300 flex_c text-emerald-600 font-semibold">
+    <div class="max-w-screen-md mx-auto pb16 sm:(pb0 pl24)">
+      <nav class="fixed bottom-0 w-full h-16 flex-row sm:(flex-col top-0 bottom-auto w-24 h-full) left-0  z-30 bg-emerald-300 flex_c text-emerald-600 font-semibold text-sm">
         {Object.entries(tabs).map(([key, { label, icon }]) => (
           <button
-            class={cx('px2 flexcc flex-col', {
+            class={cx('px2 sm:(px0 py2) flexcc flex-col', {
               'bg-white/20': key === tab,
             })}
             onClick={() => A.setTab(key as AdminStore['tab'])}
