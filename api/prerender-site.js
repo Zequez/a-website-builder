@@ -7,12 +7,12 @@ export default (req, res) => {
 
   // req.headers
 
-  if (post) {
-    body.push(`<h1>Hello test</h1>`);
-  } else {
-    res.statusCode = 404;
-    body.push(`<strong>404:</strong> Sorry! No blog post exists with this name…`);
-  }
+  // if (post) {
+  body.push(`<h1>Hello test</h1><pre>${JSON.stringify(req.params)}</pre>`);
+  // } else {
+  // res.statusCode = 404;
+  // body.push(`<strong>404:</strong> Sorry! No blog post exists with this name…`);
+  // }
 
   body.push(`<em>This page was rendered at: ${new Date()}</em>`);
 
