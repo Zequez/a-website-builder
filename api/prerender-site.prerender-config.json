@@ -1,3 +1,4 @@
 {
-  "expiration": false
+  "expiration": false,
+  "allowQuery": ["siteId", "path"]
 }

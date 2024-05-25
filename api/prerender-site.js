@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+export default (req, res) => {
   // const matches = parse(req.headers['x-now-route-matches']);
   // const { slug } = matches;
 
