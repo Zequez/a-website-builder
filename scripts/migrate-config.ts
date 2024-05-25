@@ -1,7 +1,7 @@
 import { QQ, pool, T } from '@db';
 import { Tsites } from '@db/schema';
-import migrateConfig from '../templates/src/config-migrator';
-import { validateConfig } from '../templates/src/config-validator';
+import migrateConfig from '../app/src/config-migrator';
+import { validateConfig } from '../app/src/config-validator';
 
 const tsites = await QQ<Tsites>`SELECT id, config, deploy_config, name FROM tsites`;
 

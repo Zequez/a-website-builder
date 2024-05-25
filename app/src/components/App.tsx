@@ -23,7 +23,7 @@ export default function App() {
 
   const { hue, saturation, lightness } = config.theme;
 
-  const inEditor = window.location.href.match(/templates\/editor/);
+  const inEditor = window.location.href.match(/app\/editor/);
 
   function handleClickEditToggle(ev: MouseEvent | TouchEvent) {
     if (inEditor) {

@@ -7,10 +7,10 @@ export function generate() {
   if (m) {
     const functions = m.map((s) => s.slice(7, -1));
     const generated = functions.map(functionToApiDefinition).join('\n');
-    const pipesContent = fs.readFileSync('./templates/src/lib/pipes.ts', 'utf8');
+    const pipesContent = fs.readFileSync('./app/src/lib/pipes.ts', 'utf8');
     const [firstPart] = pipesContent.split(MARKER);
 
-    fs.writeFileSync('./templates/src/lib/pipes.ts', `${firstPart}${MARKER}\n\n${generated}`);
+    fs.writeFileSync('./app/src/lib/pipes.ts', `${firstPart}${MARKER}\n\n${generated}`);
     console.log('Pipes helpers regenerated');
   }
 }

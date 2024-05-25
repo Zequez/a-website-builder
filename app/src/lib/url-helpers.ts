@@ -36,18 +36,18 @@ export function publicSiteUrl(siteId: string, path: string, subdomain: string) {
   if (hostEnv === 'production') {
     return currentBaseHost.replace('https://', 'https://' + subdomain + '.') + path;
   } else if (hostEnv === 'vite') {
-    return currentBaseHost + '/templates/index.html#!' + hash.generate({ siteId, path });
+    return currentBaseHost + '/app/index.html#!' + hash.generate({ siteId, path });
   } else {
     return currentBaseHost.replace('http://', 'http://' + subdomain + '.') + path;
   }
 }
 
 export function editorUrl(siteId: string, path: string) {
-  return currentBaseHost + `/templates/editor.html#!${hash.generate({ siteId, path })}`;
+  return currentBaseHost + `/app/editor.html#!${hash.generate({ siteId, path })}`;
 }
 
 export function adminUrl() {
-  return currentBaseHost + '/templates/admin';
+  return currentBaseHost + '/app/admin';
 }
 
 export const deployedUrl = (siteId: string, path: string, subdomain: string) => {};

@@ -13,8 +13,8 @@
     "lib": ["DOM"],
     "types": [
       "./node_modules/unplugin-icons/types/preact.d.ts",
-      "./templates/types.d.ts",
-      "./templates/src/config.d.ts",
+      "./app/types.d.ts",
+      "./app/src/config.d.ts",
     ],
     "paths": {
       "@db": ["./server/db"],
@@ -27,7 +27,7 @@
     "outDir": "./dist/ts"
   },
   "include": [
-    "templates/**/*",
+    "app/**/*",
     "server/**/*",
     "app/**/*",
     "vitest.setup.ts",

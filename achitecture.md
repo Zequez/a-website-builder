@@ -37,7 +37,7 @@ the backend consists of a single endpoint called `pipe/<functionName>`.
 - Every request is a POST request.
 - Every method that starts with $ on the `server/api/functions.ts` Functions class is callable
 - Every method takes a typed parameter read from the request body as JSON
-- Through static code generation all the functions, their parameter types and return types get a helper function to be used by the frontend at `templates/src/lib/pipes.ts` using a pipe wrapper
+- Through static code generation all the functions, their parameter types and return types get a helper function to be used by the frontend at `app/src/lib/pipes.ts` using a pipe wrapper
 - To make authenticaiton explicit, if a function requires authentication it might make a "token" part if it's parameters and use private Function methods to handle them
 - The pipe wrapper helper returns a promise with the return type from the Function method
 - Dates from the server are converted to Date on the frontend automatically if the attribute ends with "_at"
@@ -68,9 +68,7 @@ At `/scripts`
 
 ## Frontend
 
-At `/templates`
-
-This is the frontend. The name of the folder comes from the initial design idea of having multiple templates, but that that idea was discarded; no renaming has been done yet.
+At `/app`
 
 ### Main Tech stack
 
@@ -96,7 +94,7 @@ Work is pending on separating the editor store from the public app store for bet
 
 ### Config Schema
 
-Every site is configured with a Config. The type is defined as a JSON schema at `/templates/src/schemas/config.yml`. Sub-schemas are also defined on the same directory. Through codegen a single index.ts is generated that exports the schema ready to be used by both frontend and backend.
+Every site is configured with a Config. The type is defined as a JSON schema at `/app/src/schemas/config.yml`. Sub-schemas are also defined on the same directory. Through codegen a single index.ts is generated that exports the schema ready to be used by both frontend and backend.
 
 Validation of the site config is done using AJV.
 

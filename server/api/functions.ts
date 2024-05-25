@@ -2,7 +2,7 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { list, del, PutBlobResult, head } from '@vercel/blob';
 import { Request } from 'express';
 import { T, QQ, sql, TSite, Member } from '@db';
-import { ValidationError, valErr, validateConfig } from '../../templates/src/config-validator';
+import { ValidationError, valErr, validateConfig } from '../../app/src/config-validator';
 import Token, { MemberTokenData, TokenData } from '@server/lib/Token';
 import { hashPass, hashCompare } from '@server/lib/passwords';
 import { Prerendered, Tsites } from '@db/schema';

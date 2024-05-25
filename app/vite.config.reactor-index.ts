@@ -28,9 +28,9 @@ export default defineConfig(({ mode }) => {
       Icons({ compiler: 'jsx' }),
     ],
     root: resolve(__dirname),
-    base: '/templates',
+    base: '/app',
     build: {
-      outDir: resolve(__dirname, '../reactor-dist/template'),
+      outDir: resolve(__dirname, '../reactor-dist/app'),
       emptyOutDir: true,
       rollupOptions: {
         input: {

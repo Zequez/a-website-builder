@@ -5,7 +5,7 @@
       "name": "Dev",
       "description": "This is a description",
       "focus": true,
-      "command": "pnpm dev:template"
+      "command": "pnpm dev:app"
     },
     {
       "name": "Codegen",

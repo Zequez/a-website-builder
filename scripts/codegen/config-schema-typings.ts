@@ -11,7 +11,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export async function generate() {
   // Compilation of yml files into typescript export for loading in AJV from node
-  const schemasFiles = globSync('./templates/src/schemas/*.yml');
+  const schemasFiles = globSync('./app/src/schemas/*.yml');
   const schemasObjects = schemasFiles.map((file) => {
     const [_, name] = file.match(/\/([^/]+)\.yml$/)!;
     return replaceRefs(yamlLoad(fs.readFileSync(file, 'utf8')));
@@ -20,24 +20,24 @@ export async function generate() {
     return `export const ${object.$id} = ${JSON.stringify(object, null, 2)};`;
   });
   fs.writeFileSync(
-    './templates/src/schemas/index.ts',
+    './app/src/schemas/index.ts',
     MARKER + '\n\n' + bundledSchemas.join('\n'),
     'utf8',
   );
 
   // Actual compilation of typescript types
 
-  const schemaTypings = await compileFromFile('./templates/src/schemas/config.yml', {
+  const schemaTypings = await compileFromFile('./app/src/schemas/config.yml', {
     bannerComment: '',
   });
-  fs.writeFileSync('./templates/src/config.d.ts', `${MARKER}\n\n${interfaceToType(schemaTypings)}`);
+  fs.writeFileSync('./app/src/config.d.ts', `${MARKER}\n\n${interfaceToType(schemaTypings)}`);
 
   console.log('Config types regenerated');
 }
 
 export function watch() {
   generate();
-  globWatcher(['./templates/src/schemas/*.yml'], generate);
+  globWatcher(['./app/src/schemas/*.yml'], generate);
 }
 
 function replaceRefs(schemaObject: any) {

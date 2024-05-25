@@ -29,7 +29,7 @@ app.all('*', async (req, res, next) => {
 
   // On Vercel it serves the app directly without going through here
   const { fileName } = parseUrlFile(url);
-  if (fileName.match(/templates\/assets\/.*/)) {
+  if (fileName.match(/app\/assets\/.*/)) {
     return appDist(req, res, next);
   }
 
