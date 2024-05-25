@@ -10,7 +10,7 @@ export default function EditorPreScreen() {
   } = useStore();
 
   return (
-    <div class="min-h-screen bg-emerald-500 text-white p-4">
+    <div class="h-screen bg-emerald-500 text-white p-4 overflow-auto">
       {!accessToken ? (
         <Access />
       ) : invalidConfig && siteId ? (
