@@ -10,7 +10,6 @@
     }
   },
   "rewrites": [
-    { "source": "/api/prerender-site/(?<slug>[^/]*)", "destination": "/api/prerender-site/?slug=$slug" },
     {
       "source": "/(.*)",
       "destination": "/api"
