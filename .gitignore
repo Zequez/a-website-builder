@@ -8,3 +8,4 @@ elm-stuff
 .vercel
 independent-preact/bundle.js
 .vscode/settings.json
+reactor-dist

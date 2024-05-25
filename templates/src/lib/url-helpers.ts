@@ -22,7 +22,7 @@ export const hash = new (class UrlHash {
 
 export const hostEnv = import.meta.env.DEV
   ? 'vite'
-  : window.location.hostname === 'localhost'
+  : typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'local-server'
     : 'production';
 

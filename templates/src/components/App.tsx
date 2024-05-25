@@ -26,7 +26,7 @@ export default function App() {
   const inEditor = window.location.href.match(/templates\/editor/);
 
   function handleClickEditToggle(ev: MouseEvent | TouchEvent) {
-    if (window.location.href.match(/templates\/editor/)) {
+    if (inEditor) {
       ev.preventDefault();
       A.toggleEditing();
     }
@@ -48,6 +48,7 @@ export default function App() {
       <style>{`:root {
         --main-hue: ${hue};
         --main-saturation: ${saturation}%;
+      }
       `}</style>
       <div ref={containerRef} class="relative text-white min-h-screen w-full">
         {editing && <CurrentPageUrlVisualizer />}
