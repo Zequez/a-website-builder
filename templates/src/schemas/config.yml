@@ -2,6 +2,9 @@
 $id: 'Config'
 type: 'object'
 properties:
+  version:
+    type: number
+    const: 1
   title:
     type: 'string'
   description:
@@ -56,4 +59,4 @@ properties:
     items:
       $ref: './page.yml'
 additionalProperties: false
-required: ['title', 'header', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']
+required: ['version', 'title', 'header', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']

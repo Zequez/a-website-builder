@@ -10,7 +10,7 @@ import { MARKER, interfaceToType } from './utils';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export async function generate() {
-  // Compilation of yml files into typecript export for loading in AJV from node
+  // Compilation of yml files into typescript export for loading in AJV from node
   const schemasFiles = globSync('./templates/src/schemas/*.yml');
   const schemasObjects = schemasFiles.map((file) => {
     const [_, name] = file.match(/\/([^/]+)\.yml$/)!;
@@ -25,7 +25,7 @@ export async function generate() {
     'utf8',
   );
 
-  // Actual compilatino of typescript types
+  // Actual compilation of typescript types
 
   const schemaTypings = await compileFromFile('./templates/src/schemas/config.yml', {
     bannerComment: '',

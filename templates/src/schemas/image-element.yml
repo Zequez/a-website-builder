@@ -1,11 +1,14 @@
 $id: 'ImageElementConfig'
 type: 'object'
 properties:
+  version:
+    type: number
+    const: 1
   uuid:
     type: 'string'
   type:
     type: 'string'
-    enum: ['Image']
+    const: 'Image'
   url:
     type: 'object'
     properties:
@@ -29,5 +32,5 @@ properties:
         type: 'number'
     required: ['width', 'height']
     additionalProperties: false
-required: ['uuid', 'type', 'url', 'displaySize', 'originalSize']
+required: ['version', 'uuid', 'type', 'url', 'displaySize', 'originalSize']
 additionalProperties: false

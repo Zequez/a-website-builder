@@ -3,6 +3,7 @@
 type PageElementConfig = TextElementConfig | ImageElementConfig;
 
 type Config = {
+  version: 1;
   title: string;
   description: string;
   header: {
@@ -24,6 +25,7 @@ type Config = {
   pages: PageConfig[];
 }
 type PageConfig = {
+  version?: 1;
   uuid: string;
   path: string;
   title: string;
@@ -32,6 +34,7 @@ type PageConfig = {
   elements: PageElementConfig[];
 }
 type TextElementConfig = {
+  version: 1;
   uuid: string;
   type: "Text";
   value: string;
@@ -39,6 +42,7 @@ type TextElementConfig = {
   boxColor: string;
 }
 type ImageElementConfig = {
+  version: 1;
   uuid: string;
   type: "Image";
   url: {

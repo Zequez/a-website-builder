@@ -4,14 +4,16 @@ export const TextElementConfig = {
   "$id": "TextElementConfig",
   "type": "object",
   "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
     "uuid": {
       "type": "string"
     },
     "type": {
       "type": "string",
-      "enum": [
-        "Text"
-      ]
+      "const": "Text"
     },
     "value": {
       "type": "string"
@@ -24,6 +26,7 @@ export const TextElementConfig = {
     }
   },
   "required": [
+    "version",
     "uuid",
     "type",
     "value",
@@ -36,6 +39,10 @@ export const PageConfig = {
   "$id": "PageConfig",
   "type": "object",
   "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
     "uuid": {
       "type": "string"
     },
@@ -83,14 +90,16 @@ export const ImageElementConfig = {
   "$id": "ImageElementConfig",
   "type": "object",
   "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
     "uuid": {
       "type": "string"
     },
     "type": {
       "type": "string",
-      "enum": [
-        "Image"
-      ]
+      "const": "Image"
     },
     "url": {
       "type": "object",
@@ -141,6 +150,7 @@ export const ImageElementConfig = {
     }
   },
   "required": [
+    "version",
     "uuid",
     "type",
     "url",
@@ -153,6 +163,10 @@ export const Config = {
   "$id": "Config",
   "type": "object",
   "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
     "title": {
       "type": "string"
     },
@@ -245,6 +259,7 @@ export const Config = {
   },
   "additionalProperties": false,
   "required": [
+    "version",
     "title",
     "header",
     "description",

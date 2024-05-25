@@ -1,6 +1,9 @@
 $id: 'PageConfig'
 type: 'object'
 properties:
+  version:
+    type: number
+    const: 1
   uuid:
     type: 'string'
   path:

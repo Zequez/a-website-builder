@@ -23,7 +23,9 @@
     "test": "pnpm test:server",
     "test:server": "SILENCE_SQL_LOGS=true NODE_ENV=test vitest --no-file-parallelism --silent=false  -c vitest.config.ts -r server/",
     "codegen:watch": "tsx watch --ignore ./templates/src/config-schema-*.ts  ./scripts/codegen/codegen.ts",
-    "codegen:build": "tsx ./scripts/codegen/codegen.ts"
+    "codegen:build": "tsx ./scripts/codegen/codegen.ts",
+    "migrate-config:dev": "tsx ./scripts/migrate-config.ts",
+    "migrate-config:prod": "NODE_ENV=production tsx ./scripts/migrate-config.ts"
   },
   "type": "module",
   "keywords": [],

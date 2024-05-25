@@ -38,7 +38,7 @@ export function validateConfig(config: any): ValidationError[] {
   if (validator(config)) {
     return [];
   } else {
-    console.log('Errors:', validator.errors);
+    // console.log('Errors:', validator.errors);
     return validator.errors!.map(ajvToValidationError);
   }
 }

@@ -1,76 +1,33 @@
 import { validateConfig } from './config-validator';
 
 export default function migrateConfig(unknownConfig: any): Config | any {
-  let rounds = 5;
-  let newConfig = { ...unknownConfig };
-  while (rounds > 0) {
-    const errors = validateConfig(newConfig);
-
-    if (errors.length === 0) {
-      return newConfig;
-    }
-
-    for (let error of errors) {
-      if (error.params.missingProperty === 'icon') {
-        newConfig = addFavicon(newConfig);
-      } else if (['theme', 'pattern', 'patternIntensity'].includes(error.params.missingProperty)) {
-        newConfig = addTheme(newConfig);
-      } else if (['elements'].includes(error.params.missingProperty)) {
-        newConfig = upgradePageConfig(newConfig);
-      } else if (error.params.missingProperty === 'header') {
-        newConfig = addHeader(newConfig);
-      }
-    }
-
-    --rounds;
+  let newConfig: Config = unknownConfig;
+  if (!unknownConfig.version) {
+    newConfig = preVersioned(unknownConfig); // Delete all this after migrating everything on production
+    newConfig = v0_v1(newConfig);
   }
-
   return newConfig;
 }
 
-function addFavicon(unknownConfig: any): Config {
-  const patch: Pick<Config, 'icon'> = {
-    icon: {
-      type: 'emoji',
-      value: '🏠',
-    },
-  };
+function preVersioned(unknownConfig: any): Config {
+  const newConfig = { ...unknownConfig };
 
-  return { ...unknownConfig, ...patch };
-}
+  if (!newConfig.icon) {
+    newConfig.icon = { type: 'emoji', value: '🏠' };
+  }
 
-function addTheme(unknownConfig: any): Config {
-  let patch: Pick<Config, 'theme'> = {
-    theme: {
+  if (!newConfig.theme) {
+    newConfig.theme = {
       hue: 60,
       saturation: 50,
       lightness: 50,
       pattern: 'noise',
       patternIntensity: 5,
-    },
-  };
-
-  let newConfig = { ...unknownConfig };
-
-  if (typeof newConfig.themeColor !== 'undefined') {
+    };
     delete newConfig.themeColor;
   }
 
-  return { ...newConfig, ...patch };
-}
-
-function addHeader(unknownConfig: any): Config {
-  const patch: Pick<Config, 'header'> = {
-    header: {
-      imageUrl: '',
-    },
-  };
-
-  return { ...unknownConfig, ...patch };
-}
-
-function upgradePageConfig(unknownConfig: any): Config {
-  unknownConfig.pages.forEach((page: any) => {
+  newConfig.pages.forEach((page: any) => {
     if (typeof page.elements === 'undefined') {
       page.elements = [
         {
@@ -82,7 +39,37 @@ function upgradePageConfig(unknownConfig: any): Config {
         } as TextElementConfig,
       ];
       delete page.content;
+    } else {
+      page.elements.forEach((el: any) => {
+        if (el.type === 'TextElementConfig') {
+          el.type = 'Text';
+        }
+        if (el.type === 'Image') {
+          if (!el.displaySize) {
+            el.displaySize = 'original';
+          }
+          if (!el.originalSize) {
+            el.originalSize = { width: 0, height: 0 };
+          }
+        }
+      });
     }
   });
-  return unknownConfig;
+
+  if (!newConfig.header) {
+    newConfig.header = { imageUrl: '' };
+  }
+
+  return newConfig;
+}
+
+function v0_v1(v0Config: Config): Config {
+  const newConfig = { ...v0Config, version: 1 };
+  newConfig.pages.forEach((p) => {
+    p.version = 1;
+    p.elements.forEach((e) => {
+      e.version = 1;
+    });
+  });
+  return { ...v0Config, version: 1 };
 }

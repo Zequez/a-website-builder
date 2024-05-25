@@ -2,17 +2,20 @@
 $id: 'TextElementConfig'
 type: 'object'
 properties:
+  version:
+    type: number
+    const: 1
   uuid:
     type: 'string'
   type:
     type: 'string'
-    enum: ['Text']
+    const: 'Text'
   value:
     type: 'string'
   compiledValue:
     type: 'string'
   boxColor:
     type: 'string'
-required: ['uuid', 'type', 'value', 'compiledValue', 'boxColor']
+required: ['version', 'uuid', 'type', 'value', 'compiledValue', 'boxColor']
 additionalProperties: false
 
