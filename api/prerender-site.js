@@ -1,5 +1,5 @@
 export default (req, res) => {
-  // const matches = parse(req.headers['x-now-route-matches']);
+  const matches = parse(req.headers['x-now-route-matches']);
   // const { slug } = matches;
 
   const body = [];
@@ -8,7 +8,7 @@ export default (req, res) => {
   // req.headers
 
   // if (post) {
-  body.push(`<h1>Hello test</h1><pre>${JSON.stringify(req.params)}</pre>`);
+  body.push(`<h1>Hello test</h1><pre>${JSON.stringify(matches)}</pre>`);
   // } else {
   // res.statusCode = 404;
   // body.push(`<strong>404:</strong> Sorry! No blog post exists with this name…`);
