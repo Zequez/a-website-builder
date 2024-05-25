@@ -65,7 +65,7 @@ export default function EditorElementWrapper(p: {
         class={cx(
           `peer absolute z-30 flexcc
           w-6 h-8 -ml-6 sm:-ml-8 mr-2
-          bg-main-700  b b-black/5 hover:bg-main-800 text-white/40 rounded-sm`,
+          bg-main-700  b b-black/5 hover:bg-main-800 text-white/40 rounded-md`,
           {
             'cursor-grabbing!': p.grabbed,
             'cursor-grab': !p.grabbed,
