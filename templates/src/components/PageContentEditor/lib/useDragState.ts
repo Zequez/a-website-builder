@@ -21,7 +21,7 @@ export default function useDragState(p: {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  function startDrag(ev: TouchEvent | MouseEvent) {
+  function startDrag(ev: TouchEvent | MouseEvent, withholdMs: number = 0) {
     if (ev.cancelable) ev.preventDefault();
 
     const { touch, pos } = localizedEventToMousePos(ev);
@@ -43,10 +43,32 @@ export default function useDragState(p: {
       delta: { x: 0, y: 0 },
     };
 
-    setDragState(dragState);
-    addTemporalStyles(targets);
+    let cancelled = false;
+    setTimeout(() => {
+      if (!cancelled) {
+        setDragState(dragState);
+        addTemporalStyles(targets);
+      }
+    }, withholdMs);
 
     function handleMouseUp() {
+      cleanUp();
+
+      if (dragState.targetDirection !== 'none') {
+        p.onMoveElement(
+          dragState.elementId,
+          Object.keys(targets)[dragState.targetIndex],
+          dragState.targetDirection,
+        );
+      }
+    }
+
+    function cancelDrag() {
+      cancelled = true;
+      cleanUp();
+    }
+
+    function cleanUp() {
       setDragState(null);
       removeTemporalStyles(targets);
       if (touch) {
@@ -55,14 +77,6 @@ export default function useDragState(p: {
       } else {
         window.removeEventListener('mouseup', handleMouseUp);
         window.removeEventListener('mousemove', handleMouseMove);
-      }
-
-      if (dragState.targetDirection !== 'none') {
-        p.onMoveElement(
-          dragState.elementId,
-          Object.keys(targets)[dragState.targetIndex],
-          dragState.targetDirection,
-        );
       }
     }
 
@@ -142,6 +156,8 @@ export default function useDragState(p: {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
+
+    return cancelDrag;
   }
 
   return { containerRef, dragState, startDrag };

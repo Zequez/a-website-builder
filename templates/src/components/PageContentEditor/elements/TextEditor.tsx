@@ -2,7 +2,7 @@ import { marked } from 'marked';
 import { Editor } from 'tiny-markdown-editor';
 import DOMPurify from 'dompurify';
 
-import usePageContentEditorStore from './usePageContentEditorStore';
+import usePageContentEditorStore from '../lib/usePageContentEditorStore';
 import { useEffect, useRef } from 'preact/hooks';
 
 export default function TextEditor(p: { element: TextElementConfig }) {

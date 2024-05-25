@@ -1,15 +1,15 @@
 import UploadIcon from '~icons/fa6-solid/upload';
 
 import { cx } from '@shared/utils';
-import usePageContentEditorStore from './usePageContentEditorStore';
+import usePageContentEditorStore from '../lib/usePageContentEditorStore';
 import { useEffect, useState } from 'preact/hooks';
 import { TargetedEvent } from 'preact/compat';
-import { API_BASE_URL } from '../../lib/api-helper';
-import useStore from '../../lib/useStore';
-import convertToWebp from '../../lib/convertToWebp';
+import { API_BASE_URL } from '../../../lib/api-helper';
+import useStore from '../../../lib/useStore';
+import convertToWebp from '../../../lib/convertToWebp';
 import ImageRenderer from './ImageRenderer';
-import ThreeDots from '../ui/ThreeDots';
-import uploader from '../../lib/uploader';
+import ThreeDots from '../../ui/ThreeDots';
+import uploader from '../../../lib/uploader';
 
 export default function ImageEditor(p: { element: ImageElementConfig }) {
   const {

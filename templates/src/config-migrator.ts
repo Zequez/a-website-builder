@@ -1,5 +1,3 @@
-import { validateConfig } from './config-validator';
-
 export default function migrateConfig(unknownConfig: any): Config | any {
   let newConfig: Config = unknownConfig;
   if (!unknownConfig.version) {

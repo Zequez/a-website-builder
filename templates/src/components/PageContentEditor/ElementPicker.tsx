@@ -1,6 +1,6 @@
 import FontIcon from '~icons/fa6-solid/font';
 import ImageIcon from '~icons/fa6-solid/image';
-import usePageContentEditorStore from './usePageContentEditorStore';
+import usePageContentEditorStore from './lib/usePageContentEditorStore';
 
 export default function ElementPicker(p: {}) {
   const {
