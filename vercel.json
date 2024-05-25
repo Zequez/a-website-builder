@@ -4,9 +4,13 @@
     "api/index.js": {
       "runtime": "@vercel/node@3.0.20",
       "includeFiles": "dist/ts/server/**/*"
+    },
+    "api/prerender-site.js": {
+      "runtime": "@vercel/node@3.0.20"
     }
   },
   "rewrites": [
+    { "source": "/prerender-site/(?<slug>[^/]*)", "destination": "/prerender-site/?slug=$slug" },
     {
       "source": "/(.*)",
       "destination": "/api"
