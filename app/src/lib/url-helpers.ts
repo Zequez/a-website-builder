@@ -43,7 +43,7 @@ export function publicSiteUrl(siteId: string, path: string, subdomain: string) {
 }
 
 export function editorUrl(siteId: string, path: string) {
-  return currentBaseHost + `/app/editor.html#!${hash.generate({ siteId, path })}`;
+  return currentBaseHost + `/app/editor#!${hash.generate({ siteId, path })}`;
 }
 
 export function adminUrl() {
