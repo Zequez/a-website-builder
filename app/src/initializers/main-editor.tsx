@@ -11,7 +11,7 @@ dragDropTouchPolyfill();
 
 const { siteId, path } = hash.getData();
 
-if (!siteId || !path) throw 'Editor must be started with a siteId and path';
+if (!siteId || !path) throw 'El editor necesita parámetros en la URL /#!siteId=*path=*';
 
 render(
   <StoreContextWrapper init={{ siteId: siteId, editing: true, config: null, initialPath: path }}>

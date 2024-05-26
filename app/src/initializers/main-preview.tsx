@@ -6,12 +6,7 @@ import { hash } from '../lib/url-helpers';
 
 const { siteId, path } = hash.getData();
 
-if (!siteId) {
-  throw 'Missing site id on URL';
-}
-if (!path) {
-  throw 'Missing path on URL';
-}
+if (!siteId && !path) throw 'El previsualizador necesita parámetros en la URL /#!siteId=*path=*';
 
 render(
   <StoreContextWrapper init={{ config: null, siteId, initialPath: path, editing: false }}>

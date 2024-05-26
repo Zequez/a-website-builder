@@ -1,5 +1,6 @@
 import './base';
 
 import { render } from 'preact';
+import ModuleSelector from '../components/ModuleSelector';
 
-render(<h1>Hello</h1>, document.getElementById('root')!);
+render(<ModuleSelector />, document.getElementById('root')!);

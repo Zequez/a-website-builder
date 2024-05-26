@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { Button } from './ui';
 
 export default function UnhandledErrorsDisplay() {
   const [errors, _errors] = useState<string[]>([]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function handleError(err: ErrorEvent) {
       console.error(err);
       _errors([...errors, (err && err.message) || '???']);
@@ -34,7 +34,7 @@ export default function UnhandledErrorsDisplay() {
         <div class="flex-grow">
           <div class="">Oops: Hubo algún error</div>
           {errors.map((message) => (
-            <div class="text-sm font-mono opacity-70">{message}</div>
+            <div class="text-sm font-mono opacity-70">{message.replace(/^Uncaught /, '')}</div>
           ))}
         </div>
         <Button class="ml2 px4" customSize onClick={handleDismiss}>
