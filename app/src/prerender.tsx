@@ -11,8 +11,8 @@ export default async function prerender(siteId: string, config: Config) {
   }
 
   const htmlPath = import.meta.env.DEV
-    ? 'http://localhost:3000/app/index.html'
-    : 'https://hoja.ar/app/index.html';
+    ? 'http://localhost:3000/app/pub/index.html'
+    : 'https://hoja.ar/app/pub/index.html';
 
   const response = await fetch(htmlPath);
   const htmlBase = await response.text();

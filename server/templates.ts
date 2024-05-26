@@ -6,7 +6,7 @@ import fs from 'fs';
 
 const templates = {
   get genesis() {
-    return fs.readFileSync(path.join('dist', 'app', 'index.html'), 'utf8');
+    return fs.readFileSync(path.join('dist', 'app', 'pub', 'index.html'), 'utf8');
   },
 };
 

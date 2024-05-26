@@ -36,7 +36,9 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       rollupOptions: {
         input: {
-          pub: resolve(__dirname, 'index.html'),
+          index: resolve(__dirname, 'index.html'),
+          pub: resolve(__dirname, 'pub.html'),
+          preview: resolve(__dirname, 'preview.html'),
           editor: resolve(__dirname, 'editor.html'),
           admin: resolve(__dirname, 'admin.html'),
         },
