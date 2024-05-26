@@ -1,5 +1,5 @@
 import App from './components/App';
-import { StoreContextWrapper } from './lib/useStore';
+import { StoreContextWrapper } from './lib/useEditorStore';
 import { render } from 'preact-render-to-string';
 
 export default function publicRender(

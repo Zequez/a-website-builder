@@ -3,7 +3,7 @@ import MenuEllipsisVIcon from '~icons/fa6-solid/ellipsis-vertical';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '@shared/utils';
 import FloatingMenu from './ui/FloatingMenu';
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import { EmojiPicker, Button } from './ui';
 
 export default function PagesList() {

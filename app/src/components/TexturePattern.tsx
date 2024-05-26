@@ -1,4 +1,4 @@
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import noiseImg from '../assets/noise.png';
 import { useEffect, useRef } from 'preact/hooks';
 

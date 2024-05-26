@@ -5,7 +5,7 @@ import usePageContentEditorStore from '../lib/usePageContentEditorStore';
 import { useEffect, useState } from 'preact/hooks';
 import { TargetedEvent } from 'preact/compat';
 import { API_BASE_URL } from '../../../lib/api-helper';
-import useStore from '../../../lib/useStore';
+import useStore from '../../../lib/useEditorStore';
 import convertToWebp from '../../../lib/convertToWebp';
 import ImageRenderer from './ImageRenderer';
 import ThreeDots from '../../ui/ThreeDots';

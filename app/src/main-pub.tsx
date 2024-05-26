@@ -3,7 +3,7 @@ import '@unocss/reset/tailwind.css';
 import 'virtual:uno.css';
 import './assets/markdown.css';
 import App from './components/App';
-import { StoreContextWrapper } from './lib/useStore';
+import { StoreContextWrapper } from './lib/useEditorStore';
 import { hash } from './lib/url-helpers';
 import { tsite as getSite } from './lib/pipes';
 import UnhandledErrorsDisplay from './components/UnhandledErrorsDisplay';

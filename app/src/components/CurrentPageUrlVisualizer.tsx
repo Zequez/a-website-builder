@@ -1,5 +1,5 @@
 import { useState, useRef } from 'preact/hooks';
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 
 export function CurrentPageUrlVisualizer() {
   const {

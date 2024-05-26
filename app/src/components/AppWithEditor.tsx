@@ -1,4 +1,4 @@
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import App from './App';
 import { TextInput, TextAreaInput, Button, EmojiPicker } from './ui';
 import { cx } from '@shared/utils';

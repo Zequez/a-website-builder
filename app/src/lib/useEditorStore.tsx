@@ -397,6 +397,6 @@ export const StoreContextWrapper = ({ init, children }: { init: StoreInit; child
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 };
 
-export default function useStore() {
+export default function useEditorStore() {
   return useContext(StoreContext);
 }

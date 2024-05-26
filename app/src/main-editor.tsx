@@ -4,7 +4,7 @@ import 'virtual:uno.css';
 import 'tiny-markdown-editor/dist/tiny-mde.min.css';
 import './assets/markdown.css';
 import App from './components/AppWithEditor';
-import { StoreContextWrapper } from './lib/useStore';
+import { StoreContextWrapper } from './lib/useEditorStore';
 // @ts-ignore
 import dragDropTouchPolyfill from './lib/drag-drop-touch-polyfill';
 import { hash } from './lib/url-helpers';

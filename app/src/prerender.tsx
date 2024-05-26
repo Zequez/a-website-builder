@@ -1,7 +1,7 @@
 import { render } from 'preact';
 import App from './components/App';
 import createValidator from './config-validator';
-import { StoreContextWrapper } from './lib/useStore';
+import { StoreContextWrapper } from './lib/useEditorStore';
 
 export default async function prerender(siteId: string, config: Config) {
   const validator = createValidator();

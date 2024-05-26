@@ -1,5 +1,5 @@
 import TrashCanIcon from '~icons/fa6-solid/trash-can';
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import { Button } from './ui';
 import { useState } from 'preact/hooks';
 import { TargetedEvent } from 'preact/compat';

@@ -1,4 +1,4 @@
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import { Nav } from './Nav';
 
 export default function Header() {

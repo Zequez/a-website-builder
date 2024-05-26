@@ -1,5 +1,5 @@
 import { cx } from '@shared/utils';
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import { useRef } from 'preact/hooks';
 
 export function Nav() {

@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import TextInput from '../ui/TextInput';
-import useStore from '../../lib/useStore';
+import useStore from '../../lib/useEditorStore';
 
 export default function AccessScreen() {
   const {

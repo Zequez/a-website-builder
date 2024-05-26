@@ -1,7 +1,7 @@
 import KeyIcon from '~icons/fa6-solid/key';
 import EyeIcon from '~icons/fa6-regular/eye';
 import PenIcon from '~icons/fa6-solid/pen';
-import useStore from '../lib/useStore';
+import useStore from '../lib/useEditorStore';
 import { Nav } from './Nav';
 import NetworksLinks from './NetworksLinks';
 

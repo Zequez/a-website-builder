@@ -1,4 +1,4 @@
-import useStore from '../../lib/useStore';
+import useStore from '../../lib/useEditorStore';
 
 import HuePicker from './HuePicker';
 import IntenstityPicker from './IntensityPicker';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import useStore from '../../lib/useStore';
+import useStore from '../../lib/useEditorStore';
 import ConfigurationFixer from './ConfigurationFixer';
 import Loading from './Loading';
 import Access from './Access';
