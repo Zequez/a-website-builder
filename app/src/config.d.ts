@@ -3,7 +3,8 @@
 type PageElementConfig = TextElementConfig | ImageElementConfig;
 
 type Config = {
-  version: 1;
+  version: 2;
+  iteration: number;
   title: string;
   description: string;
   header: {

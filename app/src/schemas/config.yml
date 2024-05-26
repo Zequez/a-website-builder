@@ -4,7 +4,9 @@ type: 'object'
 properties:
   version:
     type: number
-    const: 1
+    const: 2
+  iteration:
+    type: number
   title:
     type: 'string'
   description:
@@ -59,4 +61,4 @@ properties:
     items:
       $ref: './page.yml'
 additionalProperties: false
-required: ['version', 'title', 'header', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']
+required: ['version', 'iteration', 'title', 'header', 'description', 'theme', 'subdomain', 'domain', 'pages', 'icon']

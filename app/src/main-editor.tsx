@@ -16,10 +16,10 @@ const { siteId, path } = hash.getData();
 
 render(<UnhandledErrorsDisplay />, document.getElementById('unhandled-errors')!);
 
+if (!siteId || !path) throw 'Editor must be started with a siteId and path';
+
 render(
-  <StoreContextWrapper
-    init={{ siteId: siteId || null, editing: true, config: null, initialPath: path || '/' }}
-  >
+  <StoreContextWrapper init={{ siteId: siteId, editing: true, config: null, initialPath: path }}>
     <App />
   </StoreContextWrapper>,
   document.getElementById('root')!,

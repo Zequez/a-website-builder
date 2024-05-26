@@ -165,7 +165,10 @@ export const Config = {
   "properties": {
     "version": {
       "type": "number",
-      "const": 1
+      "const": 2
+    },
+    "iteration": {
+      "type": "number"
     },
     "title": {
       "type": "string"
@@ -260,6 +263,7 @@ export const Config = {
   "additionalProperties": false,
   "required": [
     "version",
+    "iteration",
     "title",
     "header",
     "description",

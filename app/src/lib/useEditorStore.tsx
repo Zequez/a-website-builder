@@ -14,10 +14,9 @@ type Store = {
   previewing: boolean;
   settingsMenuOpen: boolean;
   selectedPageId: null | string;
-  siteId: null | string;
+  siteId: string;
   attemptAccessLoading: boolean;
   accessToken: string | null;
-  siteNeedsToBeCreated: boolean;
 
   deploySiteInProgress: boolean;
 
@@ -26,6 +25,7 @@ type Store = {
   savedConfig: Config;
   publishedConfig: Config;
   configNeedsToLoadFromServer: boolean;
+  loadedFromLocalConfig: boolean;
   invalidConfig: null | Record<string, any>;
   remoteSetConfigErrors: ValidationError[];
   configIsSaving: boolean;
@@ -36,51 +36,70 @@ type Store = {
 
 type StoreInit = {
   config: Config | null;
-  siteId: string | null;
+  siteId: string;
   initialPath: string;
   editing: boolean;
 };
 
 export function useStoreBase(init: StoreInit) {
-  const initialConfig = init.config ?? configDefault;
+  const { store, patchStore } = usePatchableStore<Store>(() => {
+    const initialConfig = init.config ?? configDefault;
 
-  const INITIAL_STATE: Store = {
-    editing: init.editing,
-    previewing: false,
+    const localConfig = storage.getLocalConfigSave(init.siteId);
+    const shouldUseLocalConfig = !!(
+      init.editing &&
+      localConfig &&
+      localConfig.iteration > initialConfig.iteration
+    );
 
-    selectedPageId:
-      initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
-    siteId: init.siteId,
-    attemptAccessLoading: false,
-    accessToken: storage.getMemberToken() || storage.getAccessKeyToken(init.siteId) || null,
-    //
-    siteNeedsToBeCreated: !init.siteId,
-    configNeedsToLoadFromServer: !init.config,
+    const resolvedConfig = shouldUseLocalConfig ? localConfig : initialConfig;
 
-    //
-    configIsSaving: false,
-    savedConfig: { ...initialConfig },
-    config: { ...initialConfig },
-    publishedConfig: { ...initialConfig },
-    invalidConfig: null,
-    remoteSetConfigErrors: [],
+    return {
+      editing: init.editing,
+      previewing: false,
 
-    //
-    deploySiteInProgress: false,
+      selectedPageId:
+        initialConfig.pages.find((page) => page.path === init.initialPath)?.uuid || null,
+      siteId: init.siteId,
+      attemptAccessLoading: false,
+      accessToken: storage.getMemberToken() || storage.getAccessKeyToken(init.siteId) || null,
+      //
+      configNeedsToLoadFromServer: !init.config,
+      loadedFromLocalConfig: shouldUseLocalConfig,
 
-    //
-    subdomainAvailabilityStatus: 'available',
+      //
+      configIsSaving: false,
+      savedConfig: { ...resolvedConfig },
+      config: { ...resolvedConfig },
+      publishedConfig: { ...resolvedConfig },
+      invalidConfig: null,
+      remoteSetConfigErrors: [],
 
-    //
-    settingsMenuOpen: false,
-  };
+      //
+      deploySiteInProgress: false,
 
-  const { store, patchStore } = usePatchableStore<Store>(INITIAL_STATE);
+      //
+      subdomainAvailabilityStatus: 'available',
+
+      //
+      settingsMenuOpen: false,
+    };
+  });
 
   function patchConfig(patch: Partial<Config> | ((config: Config) => Partial<Config>)) {
-    return patchStore(({ config }) => ({
-      config: { ...config, ...(typeof patch === 'function' ? patch(config) : patch) },
-    }));
+    return patchStore(({ config }) => {
+      const newConfig = {
+        ...config,
+        ...(typeof patch === 'function' ? patch(config) : patch),
+        iteration: Date.now(),
+      };
+
+      storage.setLocalConfigSave(init.siteId, newConfig);
+
+      return {
+        config: newConfig,
+      };
+    });
   }
 
   //  ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗   ██╗████████╗███████╗██████╗
@@ -167,14 +186,18 @@ export function useStoreBase(init: StoreInit) {
   // Load Configuration
   useEffect(() => {
     (async () => {
-      if (store.accessToken && store.siteId && store.configNeedsToLoadFromServer) {
+      if (store.accessToken && store.configNeedsToLoadFromServer) {
         const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
         const validator = createValidator();
         if (validator(config)) {
           const validConfig = config as Config;
           const initialPage = validConfig.pages.find((page) => page.path === init.initialPath);
+
+          const preferLocal =
+            store.loadedFromLocalConfig && store.config.iteration > validConfig.iteration;
+
           patchStore({
-            config: validConfig,
+            config: preferLocal ? store.config : validConfig,
             savedConfig: { ...validConfig },
             publishedConfig: { ...validConfig },
             configNeedsToLoadFromServer: false,
@@ -202,7 +225,7 @@ export function useStoreBase(init: StoreInit) {
   }
 
   function setConfigVal(key: string, val: any) {
-    patchStore({ config: { ...store.config, [key]: val } });
+    patchConfig((config) => ({ ...config, [key]: val }));
   }
 
   function setThemeVal(key: keyof Config['theme'], val: any) {

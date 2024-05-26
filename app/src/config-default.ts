@@ -1,5 +1,6 @@
 const configDefault: Config = {
-  version: 1,
+  version: 2,
+  iteration: 0,
   title: 'Título',
   header: {
     imageUrl: '',
