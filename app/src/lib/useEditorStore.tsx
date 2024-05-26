@@ -287,8 +287,15 @@ export function useStoreBase(init: StoreInit) {
   //  +-+-+-+-+-+
 
   function setPagesPaths(pages: PageConfig[]): PageConfig[] {
+    let navIndex = -1;
+    let reservedPaths: string[] = ['/app'];
     return pages.map((page, i) => {
-      const newPath = i === 0 ? '/' : '/' + (page.title ? slugify(page.title) : page.uuid);
+      if (page.onNav) navIndex += 1;
+      let newPath = navIndex === 0 ? '/' : '/' + (page.title ? slugify(page.title) : page.uuid);
+      if (reservedPaths.includes(newPath)) {
+        newPath = newPath + '_';
+      }
+      reservedPaths.push(newPath);
       if (newPath !== page.path) {
         return { ...page, path: newPath };
       } else {
