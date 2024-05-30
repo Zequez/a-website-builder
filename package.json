@@ -15,6 +15,7 @@
     "build:app": "NODE_ENV=production vite build --config ./app/vite.config.ts",
     "build:copyTemplates": "tsx ./scripts/templateIndexesToJs.ts",
     "build:reactor": "NODE_ENV=production pnpm vite build -c app/vite.config.reactor-renderer.ts && pnpm vite build -c app/vite.config.reactor-index.ts",
+    "check": "tsc --noEmit",
     "deploy:prod": "vercel deploy --prod",
     "db:migrations:add": "tsx ./scripts/createMigration.ts",
     "db:migrations:run:dev": "tsx ./scripts/migrate.ts",
@@ -25,7 +26,8 @@
     "codegen:watch": "tsx watch --ignore ./app/src/config-schema-*.ts  ./scripts/codegen/codegen.ts",
     "codegen:build": "tsx ./scripts/codegen/codegen.ts",
     "migrate-config:dev": "tsx ./scripts/migrate-config.ts",
-    "migrate-config:prod": "NODE_ENV=production tsx ./scripts/migrate-config.ts"
+    "migrate-config:prod": "NODE_ENV=production tsx ./scripts/migrate-config.ts",
+    "prepare": "husky"
   },
   "type": "module",
   "keywords": [],
@@ -112,5 +114,8 @@
     "vitefu": "^0.2.5",
     "vitest": "^1.4.0",
     "wait-port": "^1.1.0"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11"
   }
 }

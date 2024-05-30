@@ -66,6 +66,7 @@ export const PageConfig = {
     }
   },
   "required": [
+    "version",
     "title",
     "uuid",
     "path",

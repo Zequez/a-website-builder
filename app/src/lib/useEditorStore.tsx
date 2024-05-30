@@ -2,12 +2,13 @@ import { createContext } from 'preact';
 import { useContext, useEffect, useMemo, useState } from 'preact/hooks';
 import * as pipes from './pipes';
 import configDefault from '../config-default';
-import createValidator, { ValidationError } from '../config-validator';
+import createValidator, { ValidationError, validateConfig } from '../config-validator';
 import * as storage from './storage';
 import prerender from '../prerender';
 import { slugify, wait } from '@shared/utils';
 import * as urlHelpers from './url-helpers';
 import { usePatchableStore } from './usePatchableStore';
+import migrateConfig, { latestConfigVersion } from '../config-migrator';
 
 type Store = {
   editing: boolean;
@@ -187,28 +188,55 @@ export function useStoreBase(init: StoreInit) {
   useEffect(() => {
     (async () => {
       if (store.accessToken && store.configNeedsToLoadFromServer) {
-        const { config } = (await pipes.tsite({ siteId: store.siteId, props: ['config'] }))!;
-        const validator = createValidator();
-        if (validator(config)) {
-          const validConfig = config as Config;
-          const initialPage = validConfig.pages.find((page) => page.path === init.initialPath);
+        let { config: serverConfig } = (await pipes.tsite({
+          siteId: store.siteId,
+          props: ['config'],
+        }))!;
+        let localConfig = store.config;
 
-          const preferLocal =
-            store.loadedFromLocalConfig && store.config.iteration > validConfig.iteration;
+        function validateMigrateAndValidate(config: Config) {
+          const errors = validateConfig(config);
+          if (errors.length) {
+            const migrated = migrateConfig(config);
+            const newErrors = validateConfig(migrated);
+            return { config: migrated, errors: newErrors };
+          } else {
+            return { config, errors };
+          }
+        }
 
+        const { config: migratedServerConfig, errors } = validateMigrateAndValidate(serverConfig);
+
+        if (errors.length) {
+          console.error('Invalid configuration', migratedServerConfig);
           patchStore({
-            config: preferLocal ? store.config : validConfig,
-            savedConfig: { ...validConfig },
-            publishedConfig: { ...validConfig },
-            configNeedsToLoadFromServer: false,
-            selectedPageId: initialPage?.uuid || null,
-          });
-        } else {
-          console.error('Invalid configuration', config);
-          patchStore({
-            invalidConfig: config,
+            invalidConfig: migratedServerConfig,
           });
         }
+
+        const preferLocal =
+          store.loadedFromLocalConfig && store.config.iteration >= migratedServerConfig.iteration;
+
+        if (preferLocal) {
+          const { config: migratedLocalConfig, errors } = validateMigrateAndValidate(localConfig);
+          if (!errors.length) {
+            localConfig = migratedLocalConfig;
+          } else {
+            console.error('Local config couldnt be migrated properly', migratedLocalConfig, errors);
+          }
+        } else {
+          localConfig = migratedServerConfig;
+        }
+
+        const initialPage = localConfig.pages.find((page) => page.path === init.initialPath);
+
+        patchStore({
+          config: localConfig,
+          savedConfig: { ...migratedServerConfig },
+          publishedConfig: { ...migratedServerConfig },
+          configNeedsToLoadFromServer: false,
+          selectedPageId: initialPage?.uuid || null,
+        });
       }
     })();
   }, [store.accessToken, store.siteId, store.configNeedsToLoadFromServer]);
@@ -332,17 +360,16 @@ export function useStoreBase(init: StoreInit) {
 
     add() {
       const uuid = crypto.randomUUID();
-      setPages(
-        store.config.pages.concat({
-          uuid,
-          path: '/' + uuid,
-          title: '',
-          icon: '',
-          onNav: false,
-          elements: [],
-        }),
-        false,
-      );
+      const newPage: PageConfig = {
+        version: 1,
+        uuid,
+        path: '/' + uuid,
+        title: '',
+        icon: '',
+        onNav: false,
+        elements: [],
+      };
+      setPages(store.config.pages.concat(newPage), false);
     }
 
     move(uuid: string, target: { uuid?: string; nav: boolean }) {

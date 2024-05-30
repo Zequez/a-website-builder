@@ -1,4 +1,4 @@
-import { marked } from 'marked';
+import marked from '../lib/marked';
 import { Editor } from 'tiny-markdown-editor';
 import DOMPurify from 'dompurify';
 
@@ -27,7 +27,7 @@ export default function TextEditor(p: { element: TextElementConfig }) {
     patchTextElement(p.element.uuid, {
       value,
       compiledValue: DOMPurify.sanitize(
-        await marked.parse(valueForcedBreaks, { gfm: true, breaks: true }),
+        await marked(valueForcedBreaks, { gfm: true, breaks: true }),
         {
           USE_PROFILES: { html: true, svg: true },
         },

@@ -26,7 +26,7 @@ type Config = {
   pages: PageConfig[];
 }
 type PageConfig = {
-  version?: 1;
+  version: 1;
   uuid: string;
   path: string;
   title: string;

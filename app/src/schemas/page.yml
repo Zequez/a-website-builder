@@ -19,5 +19,5 @@ properties:
     type: 'array'
     items:
       { $ref: './page-element.yml' }
-required: ['title', 'uuid', 'path', 'icon', 'onNav', 'elements']
+required: ['version', 'title', 'uuid', 'path', 'icon', 'onNav', 'elements']
 additionalProperties: false

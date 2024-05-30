@@ -64,10 +64,18 @@ function usePageContentEditorStoreBase(
       let specificEl: PageElementConfig;
 
       if (newEl.type === 'Text') {
-        specificEl = { ...newEl, type: 'Text', value: '', compiledValue: '', boxColor: 'none' };
+        specificEl = {
+          ...newEl,
+          version: 1,
+          type: 'Text',
+          value: '',
+          compiledValue: '',
+          boxColor: 'none',
+        };
       } else if (newEl.type === 'Image') {
         specificEl = {
           ...newEl,
+          version: 1,
           type: 'Image',
           url: { large: '', medium: '', small: '' },
           displaySize: 'full',
