@@ -84,6 +84,7 @@
     "express": "^4.18.3",
     "glob": "^10.3.15",
     "glob-watcher": "^6.0.0",
+    "husky": "^9.0.11",
     "js-base64": "^3.7.7",
     "js-yaml": "^4.1.0",
     "jsdom": "^24.0.0",
@@ -114,8 +115,5 @@
     "vitefu": "^0.2.5",
     "vitest": "^1.4.0",
     "wait-port": "^1.1.0"
-  },
-  "devDependencies": {
-    "husky": "^9.0.11"
   }
 }
