@@ -54,7 +54,6 @@
 }
 
 .prose :where(h1):not(:where(.not-prose,.not-prose *)):before {
-  content: '# ';
   color: hsl(var(--main-hue), var(--main-saturation), 50%);
 }
 
@@ -65,7 +64,6 @@
 }
 
 .prose :where(h2):not(:where(.not-prose,.not-prose *)):before {
-  content: '## ';
   color: hsl(var(--main-hue), var(--main-saturation), 50%);
 }
 
@@ -77,7 +75,6 @@
 }
 
 .prose :where(h3):not(:where(.not-prose,.not-prose *)):before {
-  content: '### ';
   color: rgba(0,0,0,0.4);
 }
 
