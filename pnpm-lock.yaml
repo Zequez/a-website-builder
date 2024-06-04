@@ -131,6 +131,9 @@ dependencies:
   glob-watcher:
     specifier: ^6.0.0
     version: 6.0.0
+  husky:
+    specifier: ^9.0.11
+    version: 9.0.11
   js-base64:
     specifier: ^3.7.7
     version: 3.7.7
@@ -221,11 +224,6 @@ dependencies:
   wait-port:
     specifier: ^1.1.0
     version: 1.1.0
-
-devDependencies:
-  husky:
-    specifier: ^9.0.11
-    version: 9.0.11
 
 packages:
 
@@ -4224,7 +4222,7 @@ packages:
     resolution: {integrity: sha512-AB6lFlbwwyIqMdHYhwPe+kjOC3Oc5P3nThEoW/AaO2BX3vJDjWPFxYLxokUZOo6RNX20He3AaT8sESs9NJcmEw==}
     engines: {node: '>=18'}
     hasBin: true
-    dev: true
+    dev: false
 
   /iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
