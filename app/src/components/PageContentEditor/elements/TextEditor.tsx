@@ -24,14 +24,13 @@ export default function TextEditor(p: { element: TextElementConfig }) {
 
   async function handleChange(value: string) {
     const valueForcedBreaks = value.replace(/\n\n/g, '\n&nbsp;\n');
+    const processedMarkdown = await marked(valueForcedBreaks, { gfm: true, breaks: true });
+    console.log(processedMarkdown);
     patchTextElement(p.element.uuid, {
       value,
-      compiledValue: DOMPurify.sanitize(
-        await marked(valueForcedBreaks, { gfm: true, breaks: true }),
-        {
-          USE_PROFILES: { html: true, svg: true },
-        },
-      ),
+      compiledValue: DOMPurify.sanitize(processedMarkdown, {
+        USE_PROFILES: { html: true, svg: true },
+      }),
     });
   }
 

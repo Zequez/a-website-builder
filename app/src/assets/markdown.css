@@ -85,3 +85,8 @@
   color: hsl(var(--main-hue), var(--main-saturation), 60%);
   text-decoration-color: hsl(var(--main-hue), var(--main-saturation), 75%);
 }
+
+.prose :where(hr):not(:where(.not-prose,.not-prose *)) {
+  border: 1px solid hsl(var(--main-hue), var(--main-saturation), 80%);
+  margin: 1.5em 0;
+}
